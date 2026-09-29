@@ -233,6 +233,10 @@
    bottom 은 .to-top 의 transition 목록에 없으므로 즉시 이동한다 — 표시/숨김 모션은 그대로 유지. */
 body.teaser-on .to-top{bottom:calc(22px + 74px)}
 @media(max-width:560px){body.teaser-on .to-top{bottom:calc(16px + 74px)}}
+/* 법정 허브 선택 바(legal-B LB13)가 떠 있는 동안 — 맨 위로 버튼을 바 위로 올리고 인재키움 티저는 숨긴다 */
+body.legal-tray-on .to-top{bottom:calc(22px + 76px)}
+body.legal-tray-on .teaser{display:none}
+@media(max-width:560px){body.legal-tray-on .to-top{bottom:calc(16px + 76px + env(safe-area-inset-bottom))}}
 
 /* ── 원타임 티저 스낵바 (명세서 v1.0 §2 M3 · NEXT_PUBLIC_KIUM_TEASER=on 일 때만) ──
    z-index 78 = FAB(60)·드로어(75) 위, 헤더(70/76) 아래.

@@ -55,6 +55,10 @@ export const HUB_COPY = {
     detail: '자세히 보기', preview: '맛보기', pick: '담기', picked: '담음',
     previewNote: '맛보기는 새 창에서 열립니다. 연결된 페이지의 \'맛보기 강의\' 버튼으로 재생됩니다.',
     sessionsUnit: '차시',
+    // ── 단계 6 추가 (기술명세서 §3-2 에 없던 상세 패널 라벨. 문구는 PRD LB7·기술명세서 §6-5 표기 그대로)
+    detailLabels: { audience: '이런 분께', goals: '학습 목표', outline: '주요 학습 내용', instructor: '강사', law: '법적 근거' },
+    previewFull: '맛보기 보기',
+    prev: '이전 과정', next: '다음 과정', close: '닫기',
   },
   law: {
     title: '법정 기준',

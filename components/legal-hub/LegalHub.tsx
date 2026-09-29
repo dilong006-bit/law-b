@@ -4,6 +4,8 @@ import { PickProvider, usePick } from '@/lib/legal/pick';
 import { HUB_COPY } from '@/data/legalHub';
 import HubHead from './HubHead';
 import Diagnose from './Diagnose';
+import CourseLineup from './CourseLineup';
+import PickTray from './PickTray';
 import LegacyAx5Body from './LegacyAx5Body';
 
 /** 선택 개수 변화 안내 — 시각적 숨김 aria-live (legal-B §4) */
@@ -14,7 +16,7 @@ function PickAnnouncer() {
 
 /**
  * /content#mandatory 법정 허브 (legal-B §6-2). 기존 #ax5 섹션 자리를 대체한다.
- * 단계 5 범위: 헤더·탭(LB4), 진단(LB5). 나머지 블록은 id 만 가진 빈 자리(높이 0)로 두고,
+ * 구현 범위: 헤더·탭(LB4), 진단(LB5), 라인업·상세(LB6·7), 선택 바(LB13). 나머지 블록은 id 만 가진 빈 자리(높이 0)로 두고,
  * 법정 기준 자리에는 기존 ax5 본문을 임시로 렌더한다(LegacyAx5Body, 단계 7 에서 교체).
  */
 export default function LegalHub({ icon }: { icon: () => JSX.Element }) {
@@ -26,8 +28,7 @@ export default function LegalHub({ icon }: { icon: () => JSX.Element }) {
         <div className="wrap">
           <HubHead icon={icon} />
           <Diagnose />
-          {/* LB6·LB7 과정 라인업 — 단계 6 */}
-          <div className="lg-anchor" id="mandatory-courses" />
+          <CourseLineup />
           {/* LB8 법정 기준 자리 — 임시로 기존 ax5 본문 (단계 7 에서 LawTable·Difference 로 교체) */}
           <div className="lg-block lg-anchor" id="mandatory-law">
             <LegacyAx5Body />
@@ -38,6 +39,7 @@ export default function LegalHub({ icon }: { icon: () => JSX.Element }) {
         {/* LB14 법정 문의 — 단계 8 */}
         <div className="lg-anchor" id="mandatory-inquiry" />
         <PickAnnouncer />
+        <PickTray />
       </PickProvider>
     </section>
   );

@@ -1,10 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
 import AxHead from '@/components/sections/content/AxHead';
 import { HUB_COPY } from '@/data/legalHub';
-
-const EDGE_EPS = 2;
+import { useEdgeFade } from './useEdgeFade';
 
 /**
  * 허브 헤더 + 허브 내부 탭 (legal-B LB4).
@@ -13,27 +11,7 @@ const EDGE_EPS = 2;
  */
 export default function HubHead({ icon }: { icon: () => JSX.Element }) {
   const H = HUB_COPY.head;
-  const scroller = useRef<HTMLDivElement | null>(null);
-
-  const syncEdges = useCallback(() => {
-    const el = scroller.current;
-    if (!el) return;
-    const canLeft = el.scrollLeft > EDGE_EPS;
-    const canRight = el.scrollLeft < el.scrollWidth - el.clientWidth - EDGE_EPS;
-    el.dataset.fade = canLeft ? (canRight ? 'both' : 'left') : canRight ? 'right' : 'none';
-  }, []);
-
-  useEffect(() => {
-    const el = scroller.current;
-    if (!el) return;
-    syncEdges();
-    el.addEventListener('scroll', syncEdges, { passive: true });
-    window.addEventListener('resize', syncEdges);
-    return () => {
-      el.removeEventListener('scroll', syncEdges);
-      window.removeEventListener('resize', syncEdges);
-    };
-  }, [syncEdges]);
+  const scroller = useEdgeFade<HTMLDivElement>();
 
   return (
     <div className="lg-head">
