@@ -4,12 +4,10 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Img from '@/components/common/Img';
 import { HERO_SLIDES } from '@/data/home';
-import HeroNotice, { type HeroNoticeData } from '@/components/home/HeroNotice';
 
 const DUR = 6000;
 
-/** notice: 히어로 공지 알약 (legal-B LB1). 지정 시에만 렌더 — 미지정이면 히어로 마크업이 기존과 100% 같다 */
-export default function HeroCarousel({ notice }: { notice?: HeroNoticeData } = {}) {
+export default function HeroCarousel() {
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(true);
   const rmRef = useRef(false);
@@ -84,36 +82,41 @@ export default function HeroCarousel({ notice }: { notice?: HeroNoticeData } = {
 
   return (
     <section
-      className={notice ? 'hero has-notice' : 'hero'}
+      className="hero"
       id="hero"
       aria-roledescription="carousel"
       aria-label="주요 소식"
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
     >
-      {/* 공지 알약 — 슬라이드 밖 단일 요소. 슬라이드 전환과 무관하게 같은 자리에 고정된다 */}
-      {notice && <HeroNotice notice={notice} />}
       <div className="hero-track">
         {HERO_SLIDES.map((s, k) => (
           <div
-            key={s.theme}
+            key={s.id ?? s.theme}
             className={`hero-slide${k === i ? ' active' : ''}`}
             data-theme={s.theme}
             aria-hidden={k === i ? 'false' : 'true'}
           >
             <div className="hs-bg" />
-            {s.img && <Img className="hs-img" src={s.img} eager={s.eager} />}
+            {/* imgMobile(선택): 760 이하 별도 크롭. 미지정 슬라이드는 기존 마크업 그대로 */}
+            {s.img && (s.imgMobile ? (
+              <picture>
+                <source media="(max-width:760px)" srcSet={s.imgMobile} />
+                <Img className="hs-img" src={s.img} eager={s.eager} />
+              </picture>
+            ) : <Img className="hs-img" src={s.img} eager={s.eager} />)}
             <div className="hs-scrim" />
             <div className="wrap">
               <div className="hs-content">
                 {s.tag && <div className="hs-tag">{s.tag}</div>}
-                <p className="eyebrow">{s.eyebrow}</p>
+                {s.eyebrow && <p className="eyebrow">{s.eyebrow}</p>}
                 <h1 dangerouslySetInnerHTML={{ __html: s.title }} />
                 <p className="sub" dangerouslySetInnerHTML={{ __html: s.sub }} />
-                <div className="actions">
+                {/* secondary(선택)가 있으면 버튼 2개 줄(actions-2). 없으면 기존 마크업 그대로 */}
+                <div className={s.secondary ? 'actions actions-2' : 'actions'}>
                   {/* href = 다른 라우트 이동(캠페인 슬라이드) / scroll = 같은 페이지 앵커 */}
                   {s.cta.href ? (
-                    <Link className="btn btn-ink" href={s.cta.href}>
+                    <Link className="btn btn-ink" href={s.cta.href} data-ga-id={s.cta.gaId}>
                       {s.cta.label}
                     </Link>
                   ) : (
@@ -121,7 +124,14 @@ export default function HeroCarousel({ notice }: { notice?: HeroNoticeData } = {
                       {s.cta.label}
                     </button>
                   )}
+                  {s.secondary && (
+                    <Link className="btn btn-glass" href={s.secondary.href} data-ga-id={s.secondary.gaId}>
+                      {s.secondary.label}
+                    </Link>
+                  )}
                 </div>
+                {s.link && <Link className="hs-link" href={s.link.href} data-ga-id={s.link.gaId}>{s.link.label}</Link>}
+                {s.trust && <p className="hs-trust">{s.trust}</p>}
               </div>
             </div>
           </div>

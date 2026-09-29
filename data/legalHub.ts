@@ -2,22 +2,22 @@
 // 기준: ref/legal/TECHSPEC_KEESS_26827_legal-B_v1.0.md §3-2 (확정본, 문구 수정 금지)
 // 과정 데이터는 data/legal.ts(LEGAL_COURSES), 법령 근거·대상·주기는 lawOf(lawKey)(AX5.laws) 를 쓴다.
 
-export const LEGAL_SEASON = { on: true } as const; // 알약·캠페인 카드 표시 플래그
+export const LEGAL_SEASON = { on: true } as const; // 홈 히어로 법정 슬라이드 표시 플래그 (off 면 홈이 B안 착수 전과 동일)
 
 export const HUB_COPY = {
-  notice: { label: '2026 법정필수교육', cta: '과정 보기', href: '/content#mandatory' },
-  campaign: {
-    legal: {
-      badge: '2026 법정필수교육',
-      title: '올해 법정교육, 한 곳에서 준비하세요',
-      desc: '성희롱 예방부터 자금세탁방지까지 7개 과정. 필요한 과정 진단부터 운영까지 함께합니다.',
-      cta: { label: '과정 보기', href: '/content#mandatory' },
-      sub: { label: '과정소개서 받기', href: '/content#mandatory-resources' },
-    },
-    kium: {
-      title: '인재키움 프리미엄 공개교육',
-      desc: '정부지원으로 운영되는 공개교육 일정을 확인하세요',
-      cta: { label: '일정 보기', href: '/kium?tab=courses&mode=open#courses' },
+  // 홈 히어로 법정 슬라이드 (upgrade-01 LB18, TECHSPEC upgrade-01 §2-1). 이미지는 D6 결정: Unsplash 핫링크(ref/legal/IMAGE_SOURCES.md)
+  heroSlide: {
+    tag: '2026 법정필수교육',
+    title: ['올해 법정교육,', '한 곳에서 준비하세요'],
+    desc: '성희롱 예방부터 자금세탁방지까지 2026년 최신 7개 과정. 필요한 과정 확인부터 도입 상담까지 함께합니다.',
+    primary: { label: '과정 보기', href: '/content#mandatory', gaId: 'home_hero_legal_courses' },
+    secondary: { label: '빠른 상담', href: '/content#mandatory-inquiry', gaId: 'home_hero_legal_consult' },
+    sub: { label: '과정소개서 받기', href: '/content#mandatory-resources', gaId: 'home_hero_legal_brochure' },
+    trust: '7개 과정 · 매년 자체 제작 · 전담 운영자 배정',
+    image: {
+      src: 'https://images.unsplash.com/photo-1663524789611-2c8330848379?q=80&w=2000&auto=format&fit=crop',
+      srcMobile: 'https://images.unsplash.com/photo-1663524789611-2c8330848379?q=80&w=1080&h=1350&auto=format&fit=crop',
+      alt: '',
     },
   },
   head: {

@@ -1,20 +1,30 @@
 // 홈 카피 — keess_home_C_v18 정본 verbatim (하드코딩 금지 · 여기서 주입)
+import { HUB_COPY, LEGAL_SEASON } from '@/data/legalHub';
 
 // ── 히어로 캐러셀 5슬라이드 (원본 535) ──
 export interface HeroSlide {
   theme: 'brand' | 'event' | 'new' | 'gov' | 'case' | 'kium';
+  /** React key 전용(선택). 같은 theme 를 두 슬라이드가 쓸 때 구분 — DOM 에 나가지 않는다 */
+  id?: string;
   /** 미지정 시 테마 그라디언트 배경만 사용(사진 슬롯 없음) */
   img?: string;
+  /** 760 이하 별도 크롭 이미지(선택, legal-B LB18) */
+  imgMobile?: string;
   tag?: string;
-  eyebrow: string;
+  /** 선택(legal-B LB18: 법정 슬라이드는 tag 만 쓴다). 기존 슬라이드는 모두 값이 있어 렌더 불변 */
+  eyebrow?: string;
   title: string; // <br> 허용
   sub: string; // <br> 허용
   /** scroll = 같은 페이지 앵커 / href = 다른 라우트 이동 (둘 중 하나만) */
-  cta: { label: string; scroll?: string; href?: string };
+  cta: { label: string; scroll?: string; href?: string; gaId?: string };
   eager?: boolean;
+  /** 이하 선택 필드(legal-B LB18) — 값이 있을 때만 렌더 */
+  secondary?: { label: string; href: string; gaId?: string };
+  link?: { label: string; href: string; gaId?: string };
+  trust?: string;
 }
 
-export const HERO_SLIDES: HeroSlide[] = [
+const BASE_HERO_SLIDES: HeroSlide[] = [
   {
     theme: 'brand',
     img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop',
@@ -72,6 +82,32 @@ export const HERO_SLIDES: HeroSlide[] = [
     cta: { label: '사례 문의', scroll: '#inq' },
   },
 ];
+
+/** 법정필수교육 시즌 슬라이드 (legal-B upgrade-01 LB18). 카피는 HUB_COPY.heroSlide */
+const H = HUB_COPY.heroSlide;
+const LEGAL_HERO_SLIDE: HeroSlide = {
+  id: 'legal',
+  // 기존 테마 재사용(새 값 없음): 콘텐츠 솔루션(P4) 톤
+  theme: 'new',
+  img: H.image.src,
+  imgMobile: H.image.srcMobile,
+  tag: H.tag,
+  title: H.title.join('<br>'),
+  sub: H.desc,
+  cta: { label: H.primary.label, href: H.primary.href, gaId: H.primary.gaId },
+  secondary: { ...H.secondary },
+  link: { ...H.sub },
+  trust: H.trust,
+  eager: true,
+};
+
+/**
+ * 시즌 on: 법정 슬라이드를 선두에, 기존 슬라이드는 한 칸씩 뒤로(첫 장만 즉시 로드 — 나머지 eager 해제).
+ * 시즌 off: 기존 배열 그대로(홈 DOM 이 B안 착수 전과 동일).
+ */
+export const HERO_SLIDES: HeroSlide[] = LEGAL_SEASON.on
+  ? [LEGAL_HERO_SLIDE, ...BASE_HERO_SLIDES.map((sl) => ({ ...sl, eager: false }))]
+  : BASE_HERO_SLIDES;
 
 // ── 인트로 (원본 537-544) ──
 export const INTRO = {
