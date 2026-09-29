@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom';
 import { courseById } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { usePick } from '@/lib/legal/pick';
-import { useContentModal } from '@/components/sections/content/ContentModals';
 import { IcChevUp } from './icons';
 
 const T = HUB_COPY.tray;
@@ -22,7 +21,6 @@ const isTextEntry = (el: EventTarget | null) =>
  */
 export default function PickTray() {
   const { picked, remove } = usePick();
-  const { openConsult } = useContentModal();
   const [inHub, setInHub] = useState(false);
   const [atInquiry, setAtInquiry] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -68,6 +66,15 @@ export default function PickTray() {
     return () => document.removeEventListener('keydown', onKey);
   }, [listOpen]);
 
+  /** 문의 섹션으로 이동한 뒤 희망과정 첫 체크박스에 포커스(preventScroll). 체크 상태가 바로 보이도록 희망과정 필드를 화면 가운데로 */
+  const goInquiry = () => {
+    const field = document.getElementById('f-course-0')?.closest('.field') ?? document.getElementById('mandatory-inquiry');
+    if (!field) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    field.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    document.getElementById('f-course-0')?.focus({ preventScroll: true });
+  };
+
   if (!mounted) return null;
 
   const names = picked.map((id) => courseById(id)!.short);
@@ -96,9 +103,8 @@ export default function PickTray() {
         <span className="lg-tray-names">{summary}</span>
         <span className="lg-tray-chev" aria-hidden="true"><IcChevUp /></span>
       </button>
-      {/* 단계 8 전까지 임시: 법정 문의 섹션이 없으므로 기존 상담 모달을 연다.
-          단계 8 에서 #mandatory-inquiry 이동 + 희망과정 동기화로 교체한다. */}
-      <button type="button" className="btn lg-tray-cta" onClick={() => openConsult('법정 헌터스')} data-ga-id="legal-tray-inquiry">
+      {/* 법정 문의로 이동 — 희망과정은 선택 상태와 이미 동기화돼 있다 */}
+      <button type="button" className="btn lg-tray-cta" onClick={goInquiry} data-ga-id="legal-tray-inquiry">
         {T.cta}
       </button>
     </div>,

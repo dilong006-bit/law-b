@@ -379,3 +379,20 @@
 .lg-faq li{border-bottom:1px solid var(--line)}
 .lg-faq summary{min-height:52px;display:flex;align-items:center;font-size:15px;font-weight:700;cursor:pointer;word-break:keep-all}
 .lg-faq p{padding:0 0 16px;font-size:14.5px;color:var(--muted);line-height:1.7;word-break:keep-all}
+
+/* ── LB14 법정 문의 (HubInquiry = 공유 폼 HomeInquiry) ───────────────── */
+/* 문의 섹션(.inq)이 자기 상하 여백을 가지므로 허브 하단 여백은 비운다 */
+.lg-hub{padding-bottom:0}
+/* 추가 정보 (선택) 접기 — HomeInquiry optionalFold 지정 시에만 렌더(법정 허브 전용) */
+.inq-fold{margin:6px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.inq-fold-sum{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;
+  list-style:none;font-size:14.5px;font-weight:700;color:var(--ink)}
+.inq-fold-sum::-webkit-details-marker{display:none}
+.inq-fold-sum::after{content:"";flex:none;width:8px;height:8px;margin-right:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);
+  transform:translateY(-2px) rotate(45deg);transition:transform .24s var(--ease)}
+.inq-fold[open]>.inq-fold-sum::after{transform:translateY(2px) rotate(-135deg)}
+.inq-fold-sum:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+.inq-fold-body{padding:2px 0 10px}
+@media(prefers-reduced-motion:reduce){.inq-fold-sum::after{transition:none}}
+/* 법정 문의 좌측 패널 제목 — 어절 단위 줄바꿈(허브 범위) */
+.lg-inq .inq-side .lead{word-break:keep-all}

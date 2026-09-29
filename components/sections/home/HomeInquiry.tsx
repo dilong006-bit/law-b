@@ -77,6 +77,21 @@ interface HomeInquiryProps {
   courseField?: CourseFieldConfig;
   /** 좌측 안내 패널 카피 교체 (미지정 시 기존 INQ.side 문구) */
   panel?: { title: readonly string[]; body: string };
+  /**
+   * 선택 필드 접기 (legal-B LB14). 지정한 필드를 '추가 정보 (선택)' 접기 영역으로 옮긴다(기본 닫힘).
+   * 접기 안 필드에 오류가 있으면 제출 시 자동으로 열고 해당 필드로 포커스한다. 필수 필드는 접지 않는다.
+   * companySize·trainees 는 한 줄(.frow)이라 둘 중 하나만 지정해도 함께 이동한다. 미지정이면 기존과 동일.
+   */
+  optionalFold?: { label: string; fields: readonly ('companySize' | 'trainees' | 'message' | 'attachment')[] };
+  /** 자동 채움 (legal-B LB11→LB14). 비어 있는 필드에만 채운다 — 이미 입력한 값은 덮어쓰지 않는다 */
+  prefill?: { company?: string; name?: string; email?: string };
+  /**
+   * 희망과정 외부 동기화 (legal-B LB14). courseField 와 함께 쓴다.
+   * courseValue: 체크할 option 라벨 목록(초기값·이후 변경 반영) / onCourseChange: 사용자가 체크를 바꿀 때 호출.
+   * '기타' 는 동기화 대상이 아니다(폼 안에서만 유지).
+   */
+  courseValue?: readonly string[];
+  onCourseChange?: (options: string[]) => void;
 }
 
 /** 제출 진행 상태 (기술명세서 §1) — idle·submitting 을 거쳐 결과 3종 중 하나로 간다. */
@@ -115,6 +130,10 @@ export default function HomeInquiry({
   prefillEventName,
   courseField,
   panel,
+  optionalFold,
+  prefill,
+  courseValue,
+  onCourseChange,
 }: HomeInquiryProps = {}) {
   const [v, setV] = useState({
     company: '', name: '', phone: '', position: '',
@@ -130,7 +149,7 @@ export default function HomeInquiry({
   const [consentOpen, setConsentOpen] = useState<Record<string, boolean>>({});
   const [hp, setHp] = useState('');
   /** 희망과정 — courseField 가 있을 때만 쓰인다 */
-  const [courseSel, setCourseSel] = useState<Record<string, boolean>>({});
+  const [courseSel, setCourseSel] = useState<Record<string, boolean>>(() => Object.fromEntries((courseValue ?? []).map((o) => [o, true])));
   const [etcOn, setEtcOn] = useState(false);
   const [etcText, setEtcText] = useState('');
   const [courseErr, setCourseErr] = useState<'required' | 'etc' | null>(null);
@@ -225,6 +244,7 @@ export default function HomeInquiry({
     setHp('');
     setStatus('idle');
     lastPayload.current = null;
+    setFoldOpen(false);
     requestAnimationFrame(() => firstFieldRef.current?.focus({ preventScroll: true }));
   }
 
@@ -298,6 +318,43 @@ export default function HomeInquiry({
   }, [prefillEventName, hasCourseField]);
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
+
+  /* ── optionalFold (지정 시에만) ── */
+  const [foldOpen, setFoldOpen] = useState(false);
+  const foldHas = (k: 'companySize' | 'trainees' | 'message' | 'attachment') => !!optionalFold?.fields.includes(k);
+  const foldSize = foldHas('companySize') || foldHas('trainees');
+
+  /* ── prefill: 비어 있는 필드에만 채운다. 최신 입력값은 ref 로 읽는다(이펙트 재실행 없이) ── */
+  const vRef = useRef(v);
+  vRef.current = v;
+  useEffect(() => {
+    if (!prefill) return;
+    const cur = vRef.current;
+    const next = { ...cur };
+    if (!cur.company.trim() && prefill.company) next.company = prefill.company.slice(0, INQ_MAX.company);
+    if (!cur.name.trim() && prefill.name) next.name = prefill.name.slice(0, INQ_MAX.name);
+    let custom: boolean | null = null;
+    if (!cur.emailLocal.trim() && !cur.emailDomain.trim() && prefill.email && prefill.email.includes('@')) {
+      const at = prefill.email.lastIndexOf('@');
+      const domain = prefill.email.slice(at + 1).trim();
+      next.emailLocal = prefill.email.slice(0, at).trim().slice(0, INQ_MAX.emailLocal);
+      next.emailDomain = domain.slice(0, INQ_MAX.emailDomain);
+      // 기존 이메일 입력 구조: 프리셋 도메인이면 선택, 아니면 '직접입력' 으로
+      custom = !(INQ.emailDomains as readonly string[]).includes(domain);
+    }
+    if (JSON.stringify(next) !== JSON.stringify(cur)) setV(next);
+    if (custom !== null) setCustomDomain(custom);
+  }, [prefill]);
+
+  /* ── courseValue → 희망과정 체크 (같은 값이면 갱신하지 않아 양방향 루프를 막는다) ── */
+  useEffect(() => {
+    if (!courseField || !courseValue) return;
+    setCourseSel((cur) => {
+      const same = courseField.options.every((o) => !!cur[o] === courseValue.includes(o));
+      return same ? cur : Object.fromEntries(courseField.options.map((o) => [o, courseValue.includes(o)]));
+    });
+    setCourseErr(null);
+  }, [courseField, courseValue]);
 
   /* 희망과정 — 선택값과 '기타'를 하나의 토큰으로 직렬화한다.
      토큰이 문의 내용 앞에 붙으므로, 입력 가능 길이는 그만큼 줄어든다(합산 초과 방지). */
@@ -397,10 +454,19 @@ export default function HomeInquiry({
     if (fileErr) ok = false;
     if (!ok) {
       const firstBad = over ?? (['company', 'name', 'phone', 'position'] as const).find((k) => next[k]);
-      if (firstBad) document.getElementById(FIELD_ID[firstBad])?.focus({ preventScroll: false });
-      else if (courseProblem) {
-        document.getElementById(courseProblem === 'etc' ? 'f-course-etc' : 'f-course-0')?.focus({ preventScroll: false });
-      }
+      // optionalFold: 접기 안 필드(길이 초과·첨부 오류)에 문제가 있으면 먼저 연다. 미지정이면 foldErr=false → 기존 경로 그대로
+      const foldErr = !!optionalFold && (
+        (over === 'message' && foldHas('message')) ||
+        ((over === 'companySize' || over === 'trainees') && foldSize) ||
+        (!!fileErr && foldHas('attachment'))
+      );
+      const focusFirst = () => {
+        if (firstBad) document.getElementById(FIELD_ID[firstBad])?.focus({ preventScroll: false });
+        else if (courseProblem) {
+          document.getElementById(courseProblem === 'etc' ? 'f-course-etc' : 'f-course-0')?.focus({ preventScroll: false });
+        } else if (foldErr && fileErr) fileboxRef.current?.focus({ preventScroll: false });
+      };
+      if (foldErr) { setFoldOpen(true); requestAnimationFrame(focusFirst); } else focusFirst();
       return;
     }
 
@@ -445,6 +511,83 @@ export default function HomeInquiry({
   const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
   const half = { flex: '1 1 160px', width: 'auto', minWidth: 0 } as const;
   const risky = hasRiskyInput(v.message);
+
+  /* 선택 필드 블록 — 기본은 기존 위치, optionalFold 지정 시 접기 영역에서 렌더(마크업 동일) */
+  const sizeRow = (
+    <div className="frow">
+      <div className="field">
+        <label htmlFor="f-csize">회사 규모 <span className="lopt">(임직원 수)</span></label>
+        <select id="f-csize" name="companySize" value={v.companySize} onChange={upd('companySize')}>
+          <option value="">선택</option>
+          {INQ.companySizes.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label htmlFor="f-trainees">예상 교육인원</label>
+        <select id="f-trainees" name="expectedTrainees" value={v.trainees} onChange={upd('trainees')}>
+          <option value="">선택</option>
+          {INQ.trainees.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+  const msgField = (
+    <div className="field">
+      <label htmlFor="f-msg">문의 내용</label>
+      <textarea id="f-msg" ref={msgRef} name="message" rows={3} maxLength={msgMax} value={v.message} onChange={upd('message')}
+        aria-describedby={risky ? 'f-msg-risky' : undefined}
+        placeholder="도입을 검토 중인 교육 주제와 예상 인원·시기, 해결하고 싶은 조직 과제를 남겨주시면 담당 컨설턴트가 맞춤 상담으로 안내드립니다. (예: 임직원 300명 대상 AX 전환 교육을 3분기 중 검토 중입니다.)" />
+      {/* 사전 안내 — 입력을 막지도, 제출을 잠그지도 않는다(§2-4) */}
+      {risky && (
+        <span id="f-msg-risky" className="phone-hint" aria-live="polite">
+          {RISKY_HINT[0]}<br />{RISKY_HINT[1]}
+        </span>
+      )}
+      <div className={`len-count${v.message.length >= msgMax ? ' max' : ''}`} aria-live="polite">
+        {v.message.length}/{msgMax}
+      </div>
+    </div>
+  );
+  const fileField = (
+    <div className="field"><label htmlFor="f-file">첨부파일</label>
+      {file ? (
+        /* Selected — 파일명·용량과 함께 변경·삭제 컨트롤을 항상 노출한다.
+           label이 아닌 div다: label 안에 버튼을 두면 삭제 버튼이 선택창을 연다. */
+        <div
+          className={`file-chip${dragOver ? ' over' : ''}`}
+          role="group"
+          aria-label="첨부된 파일"
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
+        >
+          <span className="file-name" title={file.name}>{file.name}</span>
+          <span className="file-size">({(file.size / 1048576).toFixed(1)}MB)</span>
+          <button type="button" className="file-act" onClick={openPicker} aria-label="첨부파일 변경">변경</button>
+          <button type="button" className="file-del" onClick={removeFile} aria-label={`첨부파일 ${file.name} 삭제`}>
+            <Trash2 size={17} aria-hidden="true" />
+          </button>
+        </div>
+      ) : (
+        /* Empty · Error — 기존 드롭존을 그대로 둔다(문구·높이·드래그&드롭 무변경).
+           tabIndex=-1은 삭제 후 포커스 복귀 지점을 만들기 위한 것이라 Tab 순서를 바꾸지 않는다. */
+        <label
+          ref={fileboxRef}
+          tabIndex={-1}
+          className={`filebox${dragOver ? ' over' : ''}`}
+          htmlFor="f-file"
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
+        >{FILE_PLACEHOLDER}</label>
+      )}
+      <input id="f-file" ref={fileInputRef} name="attachment" type="file" style={{ display: 'none' }} accept=".zip,.pdf,.hwp,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" onChange={(e) => takeFile(e.target.files?.[0])} />
+      <div className="filehint">zip·pdf·hwp·ppt·pptx·doc·docx·xls·xlsx·jpg·png·gif / 최대 10MB</div>
+      <div className="filehint">{FILE_PRIVACY_NOTE}</div>
+      {fileErr && <span className="err" style={{ display: 'block' }} role="alert">{fileErr}</span>}
+      <span className="file-live" aria-live="polite">{fileNotice}</span>
+    </div>
+  );
 
   return (
     <section className="section inq" id="inq">
@@ -527,23 +670,8 @@ export default function HomeInquiry({
                   <span className="err" aria-live="polite">이메일을 입력해 주세요.</span>
                 </div>
 
-                {/* 6·7 회사 규모 / 예상 교육인원 (별도 필드·선택) */}
-                <div className="frow">
-                  <div className="field">
-                    <label htmlFor="f-csize">회사 규모 <span className="lopt">(임직원 수)</span></label>
-                    <select id="f-csize" name="companySize" value={v.companySize} onChange={upd('companySize')}>
-                      <option value="">선택</option>
-                      {INQ.companySizes.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label htmlFor="f-trainees">예상 교육인원</label>
-                    <select id="f-trainees" name="expectedTrainees" value={v.trainees} onChange={upd('trainees')}>
-                      <option value="">선택</option>
-                      {INQ.trainees.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                  </div>
-                </div>
+                {/* 6·7 회사 규모 / 예상 교육인원 (별도 필드·선택) — optionalFold 지정 시 접기 영역으로 이동 */}
+                {!foldSize && sizeRow}
 
                 {/* 8 관심 영역 (선택·다중 5칩) */}
                 <div className="field">
@@ -588,8 +716,11 @@ export default function HomeInquiry({
                     selected={courseSel}
                     onToggle={(o) => {
                       // 오류는 입력 즉시 재평가한다 — 고르자마자 빨간 글씨가 사라진다
-                      setCourseSel((p) => ({ ...p, [o]: !p[o] }));
+                      const nextSel = { ...courseSel, [o]: !courseSel[o] };
+                      setCourseSel(nextSel);
                       setCourseErr(null);
+                      // 외부 선택 상태로 알린다(이벤트에서 1회 — 이펙트 경유가 아니라 루프가 생기지 않는다)
+                      onCourseChange?.(courseField.options.filter((x) => nextSel[x]));
                     }}
                     etcOn={etcOn}
                     onEtcToggle={(on) => { setEtcOn(on); setCourseErr(null); }}
@@ -599,62 +730,21 @@ export default function HomeInquiry({
                   />
                 )}
 
-                {/* 9 문의 내용 (선택) */}
-                <div className="field">
-                  <label htmlFor="f-msg">문의 내용</label>
-                  <textarea id="f-msg" ref={msgRef} name="message" rows={3} maxLength={msgMax} value={v.message} onChange={upd('message')}
-                    aria-describedby={risky ? 'f-msg-risky' : undefined}
-                    placeholder="도입을 검토 중인 교육 주제와 예상 인원·시기, 해결하고 싶은 조직 과제를 남겨주시면 담당 컨설턴트가 맞춤 상담으로 안내드립니다. (예: 임직원 300명 대상 AX 전환 교육을 3분기 중 검토 중입니다.)" />
-                  {/* 사전 안내 — 입력을 막지도, 제출을 잠그지도 않는다(§2-4) */}
-                  {risky && (
-                    <span id="f-msg-risky" className="phone-hint" aria-live="polite">
-                      {RISKY_HINT[0]}<br />{RISKY_HINT[1]}
-                    </span>
-                  )}
-                  <div className={`len-count${v.message.length >= msgMax ? ' max' : ''}`} aria-live="polite">
-                    {v.message.length}/{msgMax}
-                  </div>
-                </div>
+                {/* 9 문의 내용 (선택) · 10 첨부파일 (선택·드롭존) — optionalFold 지정 시 접기 영역으로 이동 */}
+                {!foldHas('message') && msgField}
+                {!foldHas('attachment') && fileField}
 
-                {/* 10 첨부파일 (선택·드롭존) */}
-                <div className="field"><label htmlFor="f-file">첨부파일</label>
-                  {file ? (
-                    /* Selected — 파일명·용량과 함께 변경·삭제 컨트롤을 항상 노출한다.
-                       label이 아닌 div다: label 안에 버튼을 두면 삭제 버튼이 선택창을 연다. */
-                    <div
-                      className={`file-chip${dragOver ? ' over' : ''}`}
-                      role="group"
-                      aria-label="첨부된 파일"
-                      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                      onDragLeave={() => setDragOver(false)}
-                      onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
-                    >
-                      <span className="file-name" title={file.name}>{file.name}</span>
-                      <span className="file-size">({(file.size / 1048576).toFixed(1)}MB)</span>
-                      <button type="button" className="file-act" onClick={openPicker} aria-label="첨부파일 변경">변경</button>
-                      <button type="button" className="file-del" onClick={removeFile} aria-label={`첨부파일 ${file.name} 삭제`}>
-                        <Trash2 size={17} aria-hidden="true" />
-                      </button>
+                {/* 추가 정보 (선택) 접기 — optionalFold 지정 시에만 렌더 */}
+                {optionalFold && (
+                  <details className="inq-fold" open={foldOpen} onToggle={(e) => setFoldOpen((e.currentTarget as HTMLDetailsElement).open)}>
+                    <summary className="inq-fold-sum">{optionalFold.label}</summary>
+                    <div className="inq-fold-body">
+                      {foldSize && sizeRow}
+                      {foldHas('message') && msgField}
+                      {foldHas('attachment') && fileField}
                     </div>
-                  ) : (
-                    /* Empty · Error — 기존 드롭존을 그대로 둔다(문구·높이·드래그&드롭 무변경).
-                       tabIndex=-1은 삭제 후 포커스 복귀 지점을 만들기 위한 것이라 Tab 순서를 바꾸지 않는다. */
-                    <label
-                      ref={fileboxRef}
-                      tabIndex={-1}
-                      className={`filebox${dragOver ? ' over' : ''}`}
-                      htmlFor="f-file"
-                      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                      onDragLeave={() => setDragOver(false)}
-                      onDrop={(e) => { e.preventDefault(); setDragOver(false); takeFile(e.dataTransfer.files?.[0]); }}
-                    >{FILE_PLACEHOLDER}</label>
-                  )}
-                  <input id="f-file" ref={fileInputRef} name="attachment" type="file" style={{ display: 'none' }} accept=".zip,.pdf,.hwp,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif" onChange={(e) => takeFile(e.target.files?.[0])} />
-                  <div className="filehint">zip·pdf·hwp·ppt·pptx·doc·docx·xls·xlsx·jpg·png·gif / 최대 10MB</div>
-                  <div className="filehint">{FILE_PRIVACY_NOTE}</div>
-                  {fileErr && <span className="err" style={{ display: 'block' }} role="alert">{fileErr}</span>}
-                  <span className="file-live" aria-live="polite">{fileNotice}</span>
-                </div>
+                  </details>
+                )}
 
                 <input className="hp" tabIndex={-1} autoComplete="off" placeholder="website" value={hp} onChange={(e) => setHp(e.target.value)} aria-hidden="true" />
 

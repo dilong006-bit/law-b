@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+// 법정 문의(HomeInquiry) 스타일 — /kium 과 같은 방식. home.css 선택자 162개 중 /content 기존 요소에 걸리는 것 0개(단계 8 실측)
+import '@/styles/home.css';
 import '@/styles/content.css';
 import '@/styles/legal-hub.css';
 import Nav from '@/components/common/Nav';
