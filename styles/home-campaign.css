@@ -1,0 +1,59 @@
+/* 홈 — 법정필수교육 노출 B안 (기술명세서 legal-B §5-1 · §5-2)
+   클래스 접두어 hc-. 색·라운드·그림자·이징은 전부 기존 토큰 경유(신규 토큰 0).
+   브레이크포인트는 Design.md 목록(1040/940/880/820/760/740/720/640/560)만 쓴다. */
+
+/* ── LB1 히어로 공지 알약 ───────────────────────────────────────────── */
+/* 슬라이드 밖 단일 레이어. 고정 nav(72px) 아래 28px. 인디케이터(하단)와 무관 */
+.hc-notice-layer{position:absolute;left:0;right:0;top:calc(72px + 28px);z-index:5;pointer-events:none}
+.hc-notice{pointer-events:auto;min-height:44px;gap:10px;font-weight:700;white-space:nowrap;max-width:100%}
+.hc-dot{width:8px;height:8px;border-radius:50%;background:var(--p4);flex:none}
+.hc-notice-sep{color:rgba(255,255,255,.6)}
+.hc-notice-cta{font-weight:600;color:rgba(255,255,255,.9)}
+.hc-notice-arr{flex:none;transition:transform .16s var(--ease)}
+.hc-notice:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media (hover:hover) and (pointer:fine){.hc-notice:hover .hc-notice-arr{transform:translateX(2px)}}
+/* 알약 자리만큼 슬라이드 콘텐츠를 내린다 — 6개 슬라이드 동일 적용(값은 실측으로 결정) */
+.hero.has-notice .hs-content{padding-top:56px}
+/* 슬라이드는 absolute 로 히어로 높이를 채우고 콘텐츠를 세로 가운데 둔다. 화면이 낮으면
+   알약(상단)과 인디케이터(하단) 사이가 콘텐츠보다 좁아져 겹치므로, 알약이 있을 때만 최소 높이를 둔다.
+   높이가 충분한 화면(720px 이상)은 기존과 같다. */
+.hero.has-notice{min-height:max(100vh,720px);min-height:max(100dvh,720px)}
+@media(max-width:560px){.hc-notice-sep,.hc-notice-cta{display:none}}
+@media(prefers-reduced-motion:reduce){.hc-notice-arr{transition:none}}
+
+/* ── LB2 캠페인 밴드 ───────────────────────────────────────────────── */
+.section.hc-band{padding:72px 0 48px}
+.hc-grid{display:grid;grid-template-columns:7fr 5fr;gap:20px;align-items:stretch}
+@media(max-width:760px){.hc-grid{grid-template-columns:1fr}}
+.hc-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-1);padding:28px;min-width:0}
+.hc-legal{display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:24px;align-items:center}
+.hc-kium{display:flex;flex-direction:column}
+.hc-kium .hc-acts{margin-top:auto;padding-top:20px}
+
+.hc-badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.02em;
+  color:color-mix(in srgb,#000 22%,var(--p4));background:color-mix(in srgb,var(--p4) 10%,#fff);
+  border-radius:999px;padding:5px 12px}
+.hc-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--p4)}
+.hc-title{margin-top:14px;font-size:clamp(20px,2.3vw,28px);font-weight:800;line-height:1.25;letter-spacing:-.02em;word-break:keep-all}
+.hc-kium .hc-title{margin-top:0}
+.hc-desc{margin-top:10px;font-size:15px;line-height:1.7;color:var(--muted);word-break:keep-all;max-width:54ch}
+.hc-acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;margin-top:22px}
+.hc-acts .btn{min-height:48px}
+.hc-link{display:inline-flex;align-items:center;min-height:44px;font-size:14.5px;font-weight:700;color:var(--ink);
+  text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:5px;
+  transition:text-decoration-color .2s var(--ease)}
+.hc-link:focus-visible,.hc-acts .btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+/* 썸네일 2×2 모자이크 (카드뉴스 재제작본 수령 전 대체). 비율 고정으로 로딩 흔들림 0 */
+.hc-visual{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hc-tile{aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--surface)}
+.hc-tile img{width:100%;height:100%;object-fit:cover;display:block}
+
+@media(max-width:1040px){.hc-legal{grid-template-columns:minmax(0,1fr)}.hc-visual{max-width:360px}}
+@media(max-width:560px){.hc-card{padding:22px}.hc-acts .btn{width:100%}.hc-link{width:100%;justify-content:center}}
+@media (hover:hover) and (pointer:fine){
+  .hc-card{transition:transform .3s var(--ease),box-shadow .4s var(--ease)}
+  .hc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-2)}
+  .hc-link:hover{text-decoration-color:var(--ink)}
+}
+@media(prefers-reduced-motion:reduce){.hc-card,.hc-link{transition:none}}

@@ -90,7 +90,8 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
   { id: 'aml',        order: 7, name: '꼭 알아야 하는 자금세탁방지법',          option: '자금세탁방지 교육',        classkey: '404905', thumb: '/images/legal/aml.jpg',        lawKey: null,
     kind: 'industry', kindNote: '금융', sessions: 12, short: '자금세탁방지',
     detail: {
-      audience: ['금융소비자보호법 및 관련 규정을 숙지해야 하는 금융기관 종사자', '금융상품 판매 및 소비자 응대 업무를 수행하는 관련 부서 임직원', '금융소비자 권익 보호 및 분쟁 예방에 대한 지식이 필요한 전 임직원'],
+      // 소개서 p.15 학습대상 오기재 추정(금융소비자보호 문구), 요청자 확인 대기
+      audience: ['금융기관 종사자'],
       goals: ['불법자금의 세탁을 적발하고 예방하기 위한 자금세탁방지법의 자세한 내용 파악 및 최신 법규의 규제 사항에 대한 발빠른 파악과 대응', '사례를 통한 자금세탁방지법의 활용 범위와 사례 분석 및 실생활 반영'],
       outline: null,
       instructor: { name: '정지열', bio: '자금세탁방지전문가(CAMS) 자격 보유' },

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import '@/styles/home.css';
 import '@/styles/csr.css';
+import '@/styles/home-campaign.css';
 import Nav from '@/components/common/Nav';
 import RevealInit from '@/components/common/RevealInit';
 import HeroCarousel from '@/components/sections/home/HeroCarousel';
+import CampaignBand from '@/components/home/CampaignBand';
 import HomePillars from '@/components/sections/home/HomePillars';
 import HomeStats from '@/components/sections/home/HomeStats';
 import HomeManifesto from '@/components/sections/home/HomeManifesto';
@@ -13,6 +15,7 @@ import HomeReferences from '@/components/sections/home/HomeReferences';
 // 8/4 홈 노출 보류, 진입은 푸터로 일원화 — 담당자 확정
 // import CsrHomeBand from '@/components/csr/CsrHomeBand';
 import { INTRO, CERTS } from '@/data/home';
+import { LEGAL_SEASON, HUB_COPY } from '@/data/legalHub';
 
 export const metadata: Metadata = {
   title: 'KEESS | KG에듀원 기업교육 · 진단으로 설계하고, 효과로 증명합니다',
@@ -27,7 +30,9 @@ export default function HomePage() {
       <RevealInit />
 
       <div id="main" tabIndex={-1} />
-      <HeroCarousel />
+      {/* 법정필수교육 노출 B안(LB1·LB2) — 시즌 플래그가 꺼지면 기존 홈과 동일 */}
+      <HeroCarousel notice={LEGAL_SEASON.on ? { ...HUB_COPY.notice, gaId: 'home-notice-legal' } : undefined} />
+      {LEGAL_SEASON.on && <CampaignBand />}
 
       {/* 인트로 — 조직을 먼저 진단 */}
       <section className="section intro">

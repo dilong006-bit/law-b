@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Img from '@/components/common/Img';
 import { HERO_SLIDES } from '@/data/home';
+import HeroNotice, { type HeroNoticeData } from '@/components/home/HeroNotice';
 
 const DUR = 6000;
 
-export default function HeroCarousel() {
+/** notice: 히어로 공지 알약 (legal-B LB1). 지정 시에만 렌더 — 미지정이면 히어로 마크업이 기존과 100% 같다 */
+export default function HeroCarousel({ notice }: { notice?: HeroNoticeData } = {}) {
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(true);
   const rmRef = useRef(false);
@@ -82,13 +84,15 @@ export default function HeroCarousel() {
 
   return (
     <section
-      className="hero"
+      className={notice ? 'hero has-notice' : 'hero'}
       id="hero"
       aria-roledescription="carousel"
       aria-label="주요 소식"
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
     >
+      {/* 공지 알약 — 슬라이드 밖 단일 요소. 슬라이드 전환과 무관하게 같은 자리에 고정된다 */}
+      {notice && <HeroNotice notice={notice} />}
       <div className="hero-track">
         {HERO_SLIDES.map((s, k) => (
           <div
