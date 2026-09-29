@@ -6,7 +6,10 @@ import { HUB_COPY } from '@/data/legalHub';
 import { diagnose, type DiagAnswer } from '@/lib/legal/diagnose';
 import { usePick } from '@/lib/legal/pick';
 import BlockHead from './BlockHead';
+import { CourseIcon } from './CourseIcon';
+import DiagSummary from './DiagSummary';
 import { LgIcon } from './icons';
+import KindBadge from './KindBadge';
 
 const D = HUB_COPY.diagnose;
 const GROUPS = ['mandatory', 'recommended', 'industry'] as const;
@@ -16,6 +19,7 @@ const GROUPS = ['mandatory', 'recommended', 'industry'] as const;
  * 5+7 행(문항 | 결과), 두 칸 높이 맞춤. 결과는 처음부터 공통 추천을 보여 주고 답할 때마다 갱신한다.
  * 새로 추가된 과정 칩만 240ms 강조(reduced-motion 즉시). '추천 과정 모두 담기' 가 블록 유일 1차 버튼.
  * 모두 담기 상태는 선택 상태에서 파생 — 추천 과정이 모두 담겨 있으면 '담았습니다' 문구, 누르면 라인업으로 이동.
+ * upgrade-03 LB41: 문항 라벨 아이콘 20, 결과 상단 요약(추천 N 과정 + 구분 막대), 그룹 제목은 개수 포함 KindBadge(범례 겸용 D26), 칩 앞 과정 아이콘 16.
  */
 export default function Diagnose() {
   const [a, setA] = useState<DiagAnswer>({});
@@ -52,7 +56,7 @@ export default function Diagnose() {
         <div className="lg-c5 lg-box lg-diag-q" data-height-owner>
           {D.q.map((q) => (
             <fieldset className="lg-q" key={q.key}>
-              <legend id={`lg-q-${q.key}`}>{q.label}</legend>
+              <legend id={`lg-q-${q.key}`} className="lg-q-label"><LgIcon name={D.qIcons[q.key]} size={20} />{q.label}</legend>
               <div className="lg-chips" role="radiogroup" aria-labelledby={`lg-q-${q.key}`}>
                 {q.options.map(([v, label]) => (
                   <label className="lg-chip" key={v}>
@@ -74,19 +78,20 @@ export default function Diagnose() {
 
         <div className="lg-c7 lg-box lg-diag-r" aria-live="polite" data-ga-id={result.complete ? 'legal-diag-done' : undefined}>
           <div className="lg-diag-res">
+            <DiagSummary counts={{ mandatory: result.mandatory.length, recommended: result.recommended.length, industry: result.industry.length }} />
             {GROUPS.filter((g) => result[g].length > 0).map((g) => (
               <div className="lg-diag-group" key={g}>
-                <h4>{D.groups[g]}</h4>
+                <h4 className="lg-diag-gh"><KindBadge kind={g} label={D.groups[g]} count={result[g].length} /></h4>
                 <ul>
                   {result[g].map((id) => {
                     const isNew = fresh.ids.has(id);
-                    return <li className={`lg-rchip${isNew ? ' is-new' : ''}`} key={isNew ? `${id}-${fresh.gen}` : id}>{courseById(id)!.short}</li>;
+                    return <li className={`lg-rchip${isNew ? ' is-new' : ''}`} key={isNew ? `${id}-${fresh.gen}` : id}><CourseIcon id={id} size={16} />{courseById(id)!.short}</li>;
                   })}
                 </ul>
               </div>
             ))}
             {result.smallNote && <p className="lg-diag-small">{D.smallNote}</p>}
-            <p className="lg-diag-note"><LgIcon name="clipboard-check" size={16} /> <span>{result.complete ? D.note : D.defaultNote}</span></p>
+            <div className="lg-diag-note"><LgIcon name="clipboard-check" size={16} /> <span>{result.complete ? D.note : D.defaultNote}</span></div>
           </div>
           <div className="lg-box-foot">
             <button type="button" className="btn btn-ink lg-diag-add" onClick={onAdd} data-ga-id="legal-diag-addall">

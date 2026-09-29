@@ -2,6 +2,8 @@
 // 기준: ref/legal/TECHSPEC_KEESS_26827_legal-B_v1.0.md §3-2 (확정본, 문구 수정 금지)
 // 과정 데이터는 data/legal.ts(LEGAL_COURSES), 법령 근거·대상·주기는 lawOf(lawKey)(AX5.laws) 를 쓴다.
 
+import type { LgIconName } from '@/lib/legal/iconData';
+
 export const LEGAL_SEASON = { on: true } as const; // 홈 히어로 법정 슬라이드 표시 플래그 (off 면 홈이 B안 착수 전과 동일)
 
 export const HUB_COPY = {
@@ -24,7 +26,15 @@ export const HUB_COPY = {
     kicker: 'Compliance',
     title: ['필수 기준은 정확하게, 콘텐츠는 ', '매년 새롭게'],
     // upgrade-01 LB21: 리드 교체, season·tabs 제거 → 빠른 실행 3개
-    lead: '2026년 법정필수교육 7개 과정을 확인하고 바로 상담을 신청하세요.',
+    // upgrade-03 LB46: 리드 다이어트(TECHSPEC §5-3 초안), '7개 과정'은 수치 스트립이 대신
+    lead: '과정 확인부터 상담까지 한 곳에서',
+    // upgrade-03 LB45 수치 스트립 (사실 확인 값만: 과정 7 · 진단 3문항 · 도입 4단계 · 영업일 1일 내 연락 = 빠른 상담 약속과 같은 근거)
+    stats: [
+      { num: '7', label: '과정' },
+      { num: '3', label: '문항 진단' },
+      { num: '4', label: '단계 도입' },
+      { num: '1일', label: '내 연락' },
+    ],
     quick: [
       { label: '필요 과정 찾기', href: '#mandatory-diagnose', gaId: 'legal_quick_find' },
       { label: '과정 보기', href: '#mandatory-courses', gaId: 'legal_quick_courses' },
@@ -35,14 +45,18 @@ export const HUB_COPY = {
     // upgrade-01 LB22: kicker·sub·defaultNote 추가, empty 제거(결과 패널은 처음부터 공통 추천)
     kicker: '필요 과정 찾기',
     title: '우리 회사에 필요한 과정 찾기',
-    sub: '3가지 질문에 답하면 추천 과정이 바로 바뀝니다.',
-    defaultNote: '공통 추천입니다. 3가지 질문에 답하면 우리 회사 기준으로 바뀝니다.',
+    // upgrade-03 LB46: 리드 §5-3 초안, 기본 안내는 리드와 같은 뜻이라 한 문장으로
+    sub: '답하는 즉시 추천 과정이 바뀝니다',
+    defaultNote: '공통 추천입니다.',
     q: [
       { key: 'size', label: '상시 근로자 수', options: [['lt10','10인 미만'],['10to49','10~49인'],['gte50','50인 이상']] },
       { key: 'pension', label: '퇴직연금 도입', options: [['yes','도입함'],['no','도입 안 함'],['unknown','잘 모름']] },
       { key: 'industry', label: '업종', options: [['finance','금융'],['public','공공기관'],['general','일반 기업']] },
     ],
     groups: { mandatory: '법정 의무', recommended: '권고', industry: '업종별 권장' },
+    // upgrade-03 LB41: 문항 라벨 아이콘 · 결과 요약 (추천 N 과정 + 구분 막대, 범례는 그룹 제목 배지가 겸함 D26)
+    qIcons: { size: 'users', pension: 'piggy-bank', industry: 'building-2' } as Record<string, LgIconName>,
+    summary: { pre: '추천', post: '과정', bar: (parts: string[]) => parts.join(', ') },
     smallNote: '사업장 규모에 따라 교육 방식이 달라질 수 있습니다.',
     note: '참고용 결과입니다. 정확한 대상은 상담 시 확인해 드립니다.',
     addAll: '추천 과정 모두 담기',
@@ -52,21 +66,27 @@ export const HUB_COPY = {
     // upgrade-01 LB23: kicker·sub·customTile·detailConsult 추가, 제목 교체
     kicker: '과정 라인업',
     title: '2026 법정필수교육 7개 과정',
-    sub: '과정을 담아 두면 상담 신청 시 그대로 전달됩니다.',
+    sub: '담은 과정은 상담에 그대로 전달됩니다', // upgrade-03 LB46 §5-3 초안
     customTile: {
       title: '찾는 과정이 없나요?',
       desc: '기업 상황에 맞춰 과정을 구성해 드립니다.',
       cta: '맞춤 구성 상담', gaId: 'legal_course_custom_consult',
+      icon: 'puzzle' as LgIconName, // upgrade-03 LB42 아이콘 타일
     },
     detailConsult: '이 과정으로 상담',
     filters: [['all','전체'],['mandatory','법정 의무'],['recommended','권고'],['industry','업종별']],
     addMandatory: '법정 의무 과정 한 번에 담기',
     kindLabel: { mandatory: '법정 의무', recommended: '권고', industry: '업종별' },
+    // upgrade-03 D22: 구분 배지 아이콘 (의무 shield-check / 권고 lightbulb / 업종별 briefcase)
+    kindIcons: { mandatory: 'shield-check', recommended: 'lightbulb', industry: 'briefcase' } as Record<'mandatory' | 'recommended' | 'industry', LgIconName>,
+    sessionsIcon: 'circle-play' as LgIconName,
     detail: '자세히 보기', preview: '맛보기', pick: '담기', picked: '담음',
-    previewNote: '맛보기는 새 창에서 열립니다. 연결된 페이지의 \'맛보기 강의\' 버튼으로 재생됩니다.',
+    // upgrade-03 LB46: previewNote 삭제 (맛보기 링크의 새 창 아이콘·aria-label 과 중복)
     sessionsUnit: '차시',
     // ── 단계 6 추가 (기술명세서 §3-2 에 없던 상세 패널 라벨. 문구는 PRD LB7·기술명세서 §6-5 표기 그대로)
     detailLabels: { audience: '이런 분께', goals: '학습 목표', outline: '주요 학습 내용', instructor: '강사', law: '법적 근거' },
+    // upgrade-03 LB42: 상세 소제목 아이콘
+    detailIcons: { audience: 'users', goals: 'target', outline: 'list-checks', instructor: 'user-round', law: 'scale' } as Record<'audience' | 'goals' | 'outline' | 'instructor' | 'law', LgIconName>,
     previewFull: '맛보기 보기',
     prev: '이전 과정', next: '다음 과정', close: '닫기',
   },
@@ -85,9 +105,13 @@ export const HUB_COPY = {
   diff: {
     title: 'KG에듀원 법정교육이 다른 점',
     current: '현재 시리즈',
+    // upgrade-03 LB43: 비교표 행 라벨 아이콘(AX5.diff 행 순서) · KG 열 표시
+    rowIcons: ['clapperboard', 'pen-line', 'refresh-cw', 'sparkles', 'settings-2'] as LgIconName[],
+    kgMark: 'circle-check' as LgIconName,
     cards: [
-      { key: 'series', title: '매년 새로운 시리즈', desc: '해마다 새로 제작해 반복 수강의 지루함을 줄입니다.' },
-      { key: 'story', title: '몰입형 스토리 콘텐츠', desc: '법정 필수 내용을 이야기 속에서 자연스럽게 익힙니다.', more: '비교표 보기', less: '비교표 닫기' },
+      // upgrade-03 LB46: 설명에서 제목 반복 제거 (매년 새로 제작 / 이야기)
+      { key: 'series', title: '매년 새로운 시리즈', desc: '반복 수강의 지루함을 줄입니다.' },
+      { key: 'story', title: '몰입형 스토리 콘텐츠', desc: '법정 필수 내용을 자연스럽게 익힙니다.', more: '비교표 보기', less: '비교표 닫기' },
       { key: 'ops', title: '전담 운영 지원', items: ['전담 운영자 정·부 2명 지정', '월 1회 이상 방문 관리'] },
     ],
   },
@@ -97,10 +121,11 @@ export const HUB_COPY = {
     kicker: '도입 절차',
     title: '신청부터 운영까지 4단계',
     steps: [
-      { key: 'pick', label: '과정 선택', desc: '진단이나 과정 카드에서 필요한 과정을 담습니다.' },
-      { key: 'apply', label: '상담 신청', desc: '담은 과정 그대로 빠른 상담을 신청합니다.' },
-      { key: 'fix', label: '구성 확정', desc: '담당자가 인원·일정·운영 방식을 함께 정합니다.' },
-      { key: 'run', label: '교육 운영', desc: '전담 운영자가 학습 기간 동안 운영을 지원합니다.' },
+      // upgrade-03 LB46: 설명 20자 이내로 단축(사실 범위 유지). 10/1 미팅에서 최종 확정
+      { key: 'pick', label: '과정 선택', desc: '진단·과정 카드에서 과정을 담습니다' },
+      { key: 'apply', label: '상담 신청', desc: '담은 과정으로 상담을 신청합니다' },
+      { key: 'fix', label: '구성 확정', desc: '인원·일정·운영 방식을 함께 정합니다' },
+      { key: 'run', label: '교육 운영', desc: '전담 운영자가 운영을 지원합니다' },
     ],
     cta: { label: '빠른 상담 신청', gaId: 'legal_process_consult' },
   },
@@ -109,7 +134,7 @@ export const HUB_COPY = {
     id: 'mandatory-resources',
     kicker: '자료',
     title: '카드뉴스와 과정소개서',
-    lead: '짧게 훑어보고, 자세한 내용은 과정소개서로 받아보세요.',
+    // upgrade-03 LB46: 리드 생략 (목차 제목 '카드뉴스로 먼저 보기' 가 역할을 대신)
     cardNewsLabel: '법정교육 카드뉴스',
     storyTitle: '카드뉴스로 먼저 보기',
     counter: (i: number, n: number) => `${i} / ${n}`,
@@ -135,7 +160,7 @@ export const HUB_COPY = {
       { icon: 'users', text: '담은 과정 기준으로 인원·일정에 맞춘 운영 방식을 안내합니다' },
     ],
     pickedTitle: (n: number) => `담은 과정 ${n}개`,
-    pickedEmpty: '아직 담은 과정이 없습니다.',
+    // upgrade-03 LB46: 빈 상태 문구 삭제 — '담은 과정 0개' 제목과 같은 뜻
     addCommon: '공통 추천 4과정 담기',
     remove: '빼기',
     photo: { src: 'https://images.unsplash.com/photo-1668092548064-730e05fd0324', alt: '' },

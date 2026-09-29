@@ -1,6 +1,7 @@
 // 법정필수교육 노출 A안 (/legal) — 데이터·카피 단일 원본
 // 기준: ref/legal/TECHSPEC_KEESS_26827_legal-A_v1.0.md §2 (카피 확정본, 변경 금지)
 // AX5(법정 기준·근거)는 data/content.ts 에서 import 하여 값 재기입 금지.
+import { COURSE_ICON, type LgIconName } from '@/lib/legal/iconData';
 
 import { AX5 } from '@/data/content';
 
@@ -23,6 +24,7 @@ export interface LegalCourse {
   kindNote?: string;      // 업종별 표기 보조 (예: '금융', '공공·기업')
   sessions: number;       // 차시 (소개서 '학습차시')
   short: string;          // 카드 제목용 짧은 이름
+  icon: LgIconName;       // 과정 아이덴티티 아이콘 (upgrade-03 LB40). 값은 lib/legal/iconData COURSE_ICON (후보 중 선택 결과)
   detail: {
     audience: string[];       // 이런 분께 (소개서 '학습대상')
     goals: string[];          // 학습 목표 (소개서 '학습목표', 명사형 개조식으로만 다듬음)
@@ -34,7 +36,7 @@ export interface LegalCourse {
 export const LEGAL_COURSES: readonly LegalCourse[] = [
   // 소개서 p.11
   { id: 'harassment', order: 1, name: '법정헌터스 직장 내 괴롭힘 예방 교육편', option: '직장 내 괴롭힘 예방 교육', classkey: '403888', thumb: '/images/legal/harassment.jpg', lawKey: '직장 내 괴롭힘 예방',
-    kind: 'recommended', sessions: 2, short: '직장 내 괴롭힘 예방',
+    kind: 'recommended', sessions: 2, short: '직장 내 괴롭힘 예방', icon: COURSE_ICON.harassment,
     detail: {
       audience: ['직장 내 괴롭힘에 대한 학습과 대응방안이 필요한 직장인', '직장 내 괴롭힘 예방교육 실시가 필요한 사업주'],
       goals: ['직장 내 고충발생 원인 및 대응 필요성 설명', '직장 내 괴롭힘 구제절차 설명'],
@@ -43,7 +45,7 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
     } },
   // 소개서 p.9 (주요 학습 내용은 장애인 과정 내용이 잘못 들어가 있어 null, 수정본 수령 시 추가)
   { id: 'sexual',     order: 2, name: '법정헌터스 성희롱 예방 교육편',         option: '성희롱 예방 교육',         classkey: '403886', thumb: '/images/legal/sexual.jpg',     lawKey: '성희롱 예방',
-    kind: 'mandatory', sessions: 2, short: '성희롱 예방',
+    kind: 'mandatory', sessions: 2, short: '성희롱 예방', icon: COURSE_ICON.sexual,
     detail: {
       audience: ['성희롱에 대한 학습과 예방이 필요한 직장인', '성희롱 예방교육 실시가 필요한 사업주'],
       goals: ['직장 내 성희롱 관련 법령과 개념 설명', '직장 내 성희롱 성립요건과 유형 설명', '직장 내 성희롱 발생 시 고충상담 및 구제절차 설명'],
@@ -52,7 +54,7 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
     } },
   // 소개서 p.10
   { id: 'disability', order: 3, name: '법정헌터스 장애인 인식개선 교육편',     option: '장애인 인식개선 교육',     classkey: '403887', thumb: '/images/legal/disability.jpg', lawKey: '장애인 인식개선',
-    kind: 'mandatory', sessions: 2, short: '장애인 인식개선',
+    kind: 'mandatory', sessions: 2, short: '장애인 인식개선', icon: COURSE_ICON.disability,
     detail: {
       audience: ['장애인 인식개선을 통해 행복한 직장을 만들고자 하는 직장인', '장애인 인식개선 교육 실시가 필요한 사업주'],
       goals: ['장애인에 대한 올바른 이해를 통한 장애에 대한 편견과 인식 개선', '장애 유형별 특성 이해 및 함께 일하기 위한 에티켓 숙지'],
@@ -61,7 +63,7 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
     } },
   // 소개서 p.12
   { id: 'ethics',     order: 4, name: '법정헌터스 윤리경영 교육편',            option: '윤리경영 교육',            classkey: '403890', thumb: '/images/legal/ethics.jpg',     lawKey: null,
-    kind: 'industry', kindNote: '공공·기업', sessions: 2, short: '윤리경영',
+    kind: 'industry', kindNote: '공공·기업', sessions: 2, short: '윤리경영', icon: COURSE_ICON.ethics,
     detail: {
       audience: ['공기업, 공공기관, 기업체 임직원', '윤리경영이 필요한 모든 기업체 임직원'],
       goals: ['기업 생존 전략과 사회·제도의 진화 설명', '윤리경영의 발달 단계 및 내재화 방법 설명'],
@@ -70,7 +72,7 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
     } },
   // 소개서 p.13
   { id: 'pension',    order: 5, name: '법정헌터스 퇴직연금가입자 교육편',      option: '퇴직연금 가입자 교육',     classkey: '403889', thumb: '/images/legal/pension.jpg',    lawKey: '퇴직연금',
-    kind: 'mandatory', sessions: 3, short: '퇴직연금 가입자',
+    kind: 'mandatory', sessions: 3, short: '퇴직연금 가입자', icon: COURSE_ICON.pension,
     detail: {
       audience: ['퇴직연금제도에 대한 학습이 필요한 직장인', '퇴직연금 교육의 실시가 필요한 사업주'],
       goals: ['퇴직연금제도의 도입배경 이해 및 퇴직급여의 종류 설명', '퇴직연금제도가 사용자와 근로자에게 주는 이익 이해 및 퇴직연금의 적절한 운용'],
@@ -79,7 +81,7 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
     } },
   // 소개서 p.14
   { id: 'privacy',    order: 6, name: '[김경식×with.선] 개인정보보호 및 정보보안교육', option: '개인정보보호 및 정보보안 교육', classkey: '404463', thumb: '/images/legal/privacy.jpg', lawKey: '개인정보보호',
-    kind: 'recommended', sessions: 4, short: '개인정보보호·정보보안',
+    kind: 'recommended', sessions: 4, short: '개인정보보호·정보보안', icon: COURSE_ICON.privacy,
     detail: {
       audience: ['다양한 사이버 공격의 위험성을 알고 개인정보보호를 실천해야 하는 임직원', '정보보안 관련 법령이 아닌 실제 업무 시 적용할 수 있는 개인정보보호 실천법이 필요한 임직원'],
       goals: ['개인정보의 정의와 보호 필요성, 그리고 유출 피해의 심각성 인식', '개인정보보호법의 핵심 조항과 보호 원칙 이해 및 실제 업무 적용'],
@@ -88,7 +90,7 @@ export const LEGAL_COURSES: readonly LegalCourse[] = [
     } },
   // 소개서 p.15 (주요 학습 내용은 원문에 없어 null)
   { id: 'aml',        order: 7, name: '꼭 알아야 하는 자금세탁방지법',          option: '자금세탁방지 교육',        classkey: '404905', thumb: '/images/legal/aml.jpg',        lawKey: null,
-    kind: 'industry', kindNote: '금융', sessions: 12, short: '자금세탁방지',
+    kind: 'industry', kindNote: '금융', sessions: 12, short: '자금세탁방지', icon: COURSE_ICON.aml,
     detail: {
       // 소개서 p.15 학습대상 오기재 추정(금융소비자보호 문구), 요청자 확인 대기
       audience: ['금융기관 종사자'],

@@ -81,7 +81,7 @@ export default function CardNewsStory() {
 
   return (
     <div className="lg-block lg-anchor" id={R.id}>
-      <BlockHead kicker={R.kicker} title={R.title} lead={R.lead} />
+      <BlockHead kicker={R.kicker} title={R.title} />
       <div className="lg-row lg-story" data-balance-row data-pair="media-nav">
         <div className="lg-c4 lg-story-media" data-height-owner>
           <div className="lg-cn" role="region" aria-roledescription="carousel" aria-label={R.cardNewsLabel}>

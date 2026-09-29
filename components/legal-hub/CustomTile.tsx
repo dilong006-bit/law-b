@@ -2,6 +2,7 @@
 
 import { HUB_COPY } from '@/data/legalHub';
 import { CONSULT_HASH, onConsultClick } from '@/lib/legal/goConsult';
+import { LgIcon } from './icons';
 
 const T = HUB_COPY.lineup.customTile;
 
@@ -13,6 +14,7 @@ const T = HUB_COPY.lineup.customTile;
 export default function CustomTile({ span }: { span: number }) {
   return (
     <div className={`lg-tile lg-box is-accent${span >= 2 ? ' is-wide' : ''}`} style={{ gridColumn: `span ${span}` }}>
+      <span className="lg-ico-tile"><LgIcon name={T.icon} size={24} /></span>
       <div className="lg-tile-copy">
         <h3 className="lg-tile-title">{T.title}</h3>
         <p className="lg-tile-desc">{T.desc}</p>

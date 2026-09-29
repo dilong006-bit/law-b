@@ -127,7 +127,7 @@ export default function CourseLineup() {
         </div>
         <button type="button" className="btn btn-line-dark lg-addmand" onClick={() => pick.addMany(MANDATORY_IDS)}>{L.addMandatory}</button>
       </div>
-      <p className="lg-note">{L.previewNote}</p>
+      {/* upgrade-03 LB46: 맛보기 새 창 안내 문구 삭제 — 링크의 새 창 아이콘·aria-label(새 창)과 같은 뜻 */}
 
       <div className="lg-grid">
         {visible.map((c, i) => (

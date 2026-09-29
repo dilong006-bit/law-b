@@ -22,7 +22,7 @@ export default function Process() {
       <ol className="lg-row lg-steps" data-balance-row data-pair="peer">
         {P.steps.map((s) => (
           <li className="lg-c3 lg-box lg-step" key={s.key}>
-            <span className="lg-step-ico"><LgIcon name={ICON[s.key]} size={24} /></span>
+            <span className="lg-ico-tile"><LgIcon name={ICON[s.key]} size={24} /></span>
             <strong className="lg-step-label">{s.label}</strong>
             <p className="lg-step-desc">{s.desc}</p>
           </li>

@@ -30,7 +30,7 @@ export default function StandardAndDiff() {
       <div className="lg-row lg-diffc" data-balance-row data-pair="peer">
         {F.cards.map((c) => (
           <article className="lg-c4 lg-box lg-diffcard" key={c.key}>
-            <span className="lg-diffcard-ic"><LgIcon name={ICON[c.key]} size={22} /></span>
+            <span className="lg-ico-tile"><LgIcon name={ICON[c.key]} size={24} /></span>
             <h5 className="lg-diffcard-t">{c.title}</h5>
             {'desc' in c && <p className="lg-diffcard-d">{c.desc}</p>}
             {c.key === 'series' && (
@@ -64,16 +64,22 @@ export default function StandardAndDiff() {
         <div className="difftable">
           <table>
             <thead><tr><th scope="col">{hKey}</th><th scope="col">{hGen}</th><th scope="col">{hOwn}</th></tr></thead>
-            <tbody>{AX5.diff.map((r) => <tr key={r[0]}><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td></tr>)}</tbody>
+            <tbody>{AX5.diff.map((r, i) => (
+              <tr key={r[0]}>
+                <td><span className="lg-diff-rl"><LgIcon name={F.rowIcons[i]} size={20} />{r[0]}</span></td>
+                <td>{r[1]}</td>
+                <td><span className="lg-diff-kg"><LgIcon name={F.kgMark} size={18} />{r[2]}</span></td>
+              </tr>
+            ))}</tbody>
           </table>
         </div>
         <ul className="lg-diff-m">
-          {AX5.diff.map((r) => (
+          {AX5.diff.map((r, i) => (
             <li key={r[0]}>
-              <p className="lg-diff-t">{r[0]}</p>
+              <h5 className="lg-diff-t"><LgIcon name={F.rowIcons[i]} size={20} />{r[0]}</h5>
               <dl>
                 <div><dt>{hGen}</dt><dd>{r[1]}</dd></div>
-                <div className="own"><dt>{hOwn}</dt><dd>{r[2]}</dd></div>
+                <div className="own"><dt>{hOwn}</dt><dd><span className="lg-diff-kg"><LgIcon name={F.kgMark} size={18} />{r[2]}</span></dd></div>
               </dl>
             </li>
           ))}

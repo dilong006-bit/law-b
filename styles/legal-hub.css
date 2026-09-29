@@ -79,6 +79,8 @@
 .lg-quick ul{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--lg-gap-card)}
 .lg-quick-a{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;text-align:center;word-break:keep-all}
 .lg-quick-a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+/* 빠른 실행 칸이 스트립 높이로 늘어나면 버튼 줄은 세로 가운데 (upgrade-03 D25) */
+.lg-quick{display:flex;flex-direction:column;justify-content:center}
 @media(max-width:560px){.lg-quick ul{grid-template-columns:1fr}}
 
 /* ── LB22 필요 과정 진단 (5+7, 두 칸 높이 맞춤) ────────────────────────── */
@@ -87,6 +89,8 @@
 @media(max-width:560px){.lg-diag-q,.lg-diag-r{padding:20px}}
 .lg-q{border:none;padding:0;margin:0;min-width:0}
 .lg-q legend{padding:0;margin-bottom:10px;font-size:14px;font-weight:800;color:var(--ink)}
+.lg-q-label{display:flex;align-items:center;gap:8px}
+.lg-q-label .lg-ico{color:var(--muted)}
 .lg-chips{display:flex;flex-wrap:wrap;gap:8px}
 .lg-chip{position:relative;cursor:pointer}
 .lg-chip span{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:999px;
@@ -98,8 +102,9 @@
 @keyframes lg-rin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .lg-diag-group+.lg-diag-group{margin-top:16px}
 .lg-diag-group h4{font-size:13px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.lg-diag-gh{display:flex}
 .lg-diag-group ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
-.lg-rchip{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;background:var(--surface);
+.lg-rchip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:999px;background:var(--surface);
   font-size:14px;font-weight:600;word-break:keep-all}
 /* 새로 추가된 과정만 240ms 강조 — P4 옅은 면(기존 18%)에서 기본 면으로 */
 .lg-rchip.is-new{animation:lg-rnew .24s var(--ease) both}
@@ -122,7 +127,6 @@
 .lg-filter-in .lg-chip span{white-space:nowrap}
 .lg-addmand{min-height:44px;flex:none}
 @media(max-width:640px){.lg-tools{flex-direction:column;align-items:stretch}.lg-addmand{width:100%}}
-.lg-note{margin-top:10px;font-size:13px;color:var(--muted);line-height:1.6;word-break:keep-all}
 
 .lg-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--lg-gap-card);margin-top:20px}
 @media(max-width:1040px){.lg-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -134,6 +138,7 @@
 .lg-tile-cta{display:flex;align-items:center;justify-content:center;min-height:44px;width:100%;text-align:center}
 .lg-tile-cta:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .lg-tile.is-wide{flex-direction:row;align-items:center;justify-content:space-between;gap:24px}
+.lg-tile.is-wide>.lg-tile-copy{flex:1;min-width:0}
 .lg-tile.is-wide>.lg-box-foot{margin-top:0;flex:none}
 .lg-tile.is-wide .lg-tile-cta{width:auto;padding:0 22px}
 
@@ -153,17 +158,20 @@
 .lg-card-body{padding:14px 16px 12px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
 .lg-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* 구분 배지 — 글자는 --ink/--muted 만(진한 P4 글자 금지), 색 + 문구로 구분 */
-.lg-kind{display:inline-flex;align-items:center;font-size:12px;font-weight:800;line-height:1;border-radius:999px;padding:5px 10px;color:var(--ink);white-space:nowrap}
+.lg-kind{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;font-size:12px;font-weight:800;line-height:1;border-radius:999px;padding:3px 10px 3px 8px;color:var(--ink);white-space:nowrap}
+.lg-kind-n{margin-left:2px;font-variant-numeric:tabular-nums}
 .lg-kind.k-mandatory{background:color-mix(in srgb,var(--p4) 10%,#fff)}
 .lg-kind.k-recommended{background:var(--surface)}
-.lg-kind.k-industry{background:#fff;border:1px solid var(--line);color:var(--muted);padding:4px 9px}
-.lg-sess{font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.lg-kind.k-industry{background:#fff;border:1px solid var(--line);color:var(--muted);padding:2px 9px 2px 7px}
+.lg-sess{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.lg-sess b{font-weight:800;color:var(--ink)}
 .lg-card-h{margin-top:2px}
 .lg-card-title{display:flex;align-items:center;width:100%;min-height:44px;padding:0;border:0;background:none;text-align:left;
   font:inherit;font-size:16px;font-weight:800;line-height:1.4;color:var(--ink);word-break:keep-all;cursor:pointer}
 .lg-card-title:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
-.lg-card-sub{font-size:13px;color:var(--muted);line-height:1.5;word-break:keep-all}
 .lg-card-acts{margin-top:auto;padding-top:4px;display:flex;flex-wrap:wrap;align-items:center;gap:0 16px}
+/* 맛보기 링크는 아이콘을 뺀 뒤(upgrade-03 I8) 글자 폭이 36px — 터치 44px 확보 */
+.lg-card-acts .lg-link{min-width:44px;justify-content:center}
 .lg-link{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0;border:0;background:none;font:inherit;
   font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);
   text-underline-offset:5px;transition:text-decoration-color .2s var(--ease)}
@@ -200,12 +208,15 @@
 .lg-dthumb{flex:none;width:120px;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--surface)}
 .lg-dthumb img{width:100%;height:100%;object-fit:cover;display:block}
 .lg-dhead-t{min-width:0}
-.lg-dtitle{margin-top:8px;font-size:20px;font-weight:800;line-height:1.35;letter-spacing:-.02em;word-break:keep-all}
+.lg-dtitle{margin-top:8px;display:flex;align-items:center;gap:8px;font-size:20px;font-weight:800;line-height:1.35;letter-spacing:-.02em;word-break:keep-all}
 .lg-dbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;margin-top:22px}
 @media(max-width:880px){.lg-dbody{grid-template-columns:1fr}}
 .lg-dcol{min-width:0}
 .lg-dsec{padding:16px 0;border-top:1px solid var(--line)}
 .lg-dsec h4{font-size:13px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.lg-dt-h{display:flex;align-items:center;gap:6px}
+/* 학습 목표 목록 간격 한 단계 위 (6 → 10, 기존 값) */
+.lg-dgoals{gap:10px}
 .lg-dlist{list-style:none;display:grid;gap:6px}
 .lg-dlist li{position:relative;padding-left:14px;font-size:14.5px;line-height:1.6;word-break:keep-all}
 .lg-dlist li::before{content:"";position:absolute;left:0;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--p4)}
@@ -282,6 +293,7 @@
 .lg-tray-list ul{list-style:none}
 .lg-tray-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;border-top:1px solid var(--line);font-size:14.5px;font-weight:600;word-break:keep-all}
 .lg-tray-list li:first-child{border-top:none}
+.lg-tray-nm{display:inline-flex;align-items:center;gap:6px}
 .lg-tray-rm{flex:none;display:inline-flex;align-items:center;gap:4px;min-width:44px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;
   font:inherit;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer}
 .lg-tray-rm:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -317,6 +329,8 @@
 .lg-law-m li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow-1)}
 .lg-law-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .lg-law-mh h4{font-size:15px;font-weight:800;word-break:keep-all}
+.lg-law-nm{display:flex;align-items:center;gap:8px}
+.lg-law-nm .lg-ico,.lg-rchip .lg-ico,.lg-tray-nm .lg-ico{color:var(--muted)}
 .lg-law-m dl{margin-top:10px;display:grid;gap:6px}
 .lg-law-m dl>div{display:flex;gap:10px;font-size:13.5px;line-height:1.5}
 .lg-law-m dt{flex:none;min-width:34px;color:var(--muted);font-weight:700}
@@ -337,7 +351,6 @@
 /* ── LB24 KG에듀원 차이 카드 3장 (4+4+4, peer) + 비교표 펼치기 ─────────── */
 .lg-diff-h{margin:var(--lg-gap-head) 0 var(--lg-gap-card)}
 .lg-diffcard{padding:24px;gap:10px}
-.lg-diffcard-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff)}
 .lg-diffcard-t{margin-top:6px;font-size:17px;font-weight:800;line-height:1.4;word-break:keep-all}
 .lg-diffcard-d{font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
 /* 미니 타임라인: 기존 .timeline/.tnode 재사용. P4 면 흰 글자 금지 → 현재 배지 글자 --ink */
@@ -360,7 +373,11 @@
   .lg-diff-m{display:grid;gap:10px}
 }
 .lg-diff-m li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-1)}
-.lg-diff-t{font-size:14.5px;font-weight:800}
+.lg-diff-t{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:800}
+.lg-diff-t .lg-ico{color:var(--muted)}
+/* 비교표 행 라벨 아이콘 20(--muted) · KG 열 circle-check 18(--ink) + 굵은 글자. 일반 열은 아이콘 없음 */
+.lg-diff-rl,.lg-diff-kg{display:flex;align-items:center;gap:8px} /* 블록 flex — inline-flex 기준선 여백으로 행이 늘지 않게 (행 높이 ±2px) */
+.lg-diff-kg{gap:6px;font-weight:800;color:var(--ink)}
 .lg-diff-m dl{margin-top:8px;display:grid;gap:6px}
 .lg-diff-m dl>div{display:flex;gap:10px;font-size:13.5px;line-height:1.5;padding:6px 8px;margin:0 -8px;border-radius:8px}
 .lg-diff-m dt{flex:none;min-width:84px;color:var(--muted);font-weight:700}
@@ -371,15 +388,14 @@
 /* ── LB35 도입 절차 4단계 (peer, 숫자 없음) ─────────────────────────── */
 .lg-steps{list-style:none;padding:0;margin:0}
 .lg-step{position:relative;padding:24px;gap:8px}
-.lg-step-ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff)}
 .lg-step-label{margin-top:8px;font-size:17px;font-weight:800;line-height:1.4}
 .lg-step-desc{font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
 /* 연결선: 1041 이상 카드 사이 가로선(카드 간격 폭), 560 이하 좌측 세로선. 561~1040 없음 */
 .lg-step:not(:last-child)::after{content:"";position:absolute;background:var(--line)}
-.lg-step:not(:last-child)::after{top:48px;right:calc(-1 * var(--lg-gap-card));width:var(--lg-gap-card);height:1px}
+.lg-step:not(:last-child)::after{top:44px;right:calc(-1 * var(--lg-gap-card));width:var(--lg-gap-card);height:1px}
 @media(max-width:1040px){.lg-step:not(:last-child)::after{display:none}}
 @media(max-width:560px){
-  .lg-step:not(:last-child)::after{display:block;top:auto;right:auto;left:48px;bottom:calc(-1 * var(--lg-gap-card));width:1px;height:var(--lg-gap-card)}
+  .lg-step:not(:last-child)::after{display:block;top:auto;right:auto;left:44px;bottom:calc(-1 * var(--lg-gap-card));width:1px;height:var(--lg-gap-card)}
 }
 .lg-steps-foot{margin-top:var(--lg-gap-head);display:flex;justify-content:center}
 .lg-steps-cta{min-height:48px;padding:0 28px;font-size:15px}
@@ -494,7 +510,7 @@
 .lg-consult-ph{font-size:14px;font-weight:800}
 .lg-consult-picked ul{list-style:none;margin-top:8px;border-top:1px solid rgba(255,255,255,.3)}
 .lg-consult-picked li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;border-bottom:1px solid rgba(255,255,255,.3)}
-.lg-consult-name{font-size:14.5px;font-weight:700;word-break:keep-all}
+.lg-consult-name{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;word-break:keep-all}
 .lg-consult-rm{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;padding:0 6px;
   border:0;background:none;color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;border-radius:999px}
 .lg-consult-rm:focus-visible,.lg-consult-add:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -512,3 +528,32 @@
   .lg-consult-picked li{flex:none;gap:2px;min-height:44px;padding-left:14px;border:1px solid rgba(255,255,255,.3);border-radius:999px}
   .lg-consult-rm-t{display:none}
 }
+
+/* ══ upgrade-03 시각 고도화 (LB40~LB46, TECHSPEC upgrade-03 §4) ══════════════ */
+/* 아이콘 타일 (D21·I5): 40×40, 라운드 12(기존 .lg-step-ico 값), 배경 P4 8%(D5 is-accent), 아이콘 --ink. 절차·차이 카드·맞춤 타일에만 */
+.lg-ico-tile{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--p4) 8%,#fff);color:var(--ink)}
+/* 맞춤 구성 타일은 자체 면이 is-accent(P4 8%)라 같은 색 타일이 묻힌다 → 흰 면(기존 #fff) */
+.lg-box.is-accent .lg-ico-tile{background:#fff}
+
+/* LB45 수치 스트립 (D25): 1041 이상 빠른 실행 옆 4열 / 1040 이하 리드 아래(order) / 560 이하 4칸 한 줄 */
+.lg-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.lg-stat{padding:14px 16px;min-width:0}
+.lg-stat+.lg-stat{border-left:1px solid var(--line)}
+/* 숫자 32 = 허브 h2 1440 계산값, 라벨 13 */
+.lg-stat-num{font-size:32px;font-weight:800;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums}
+.lg-stat-label{margin:4px 0 0;font-size:13px;color:var(--muted);white-space:nowrap}
+@media(max-width:1040px){.lg-head-row>.lg-stats{order:-1;grid-column:span 12}}
+/* 560 이하: 숫자 22(허브 h2 390 계산값), 라벨 12, 칸 여백 좁힘 — 한 줄 유지 */
+@media(max-width:560px){.lg-stat{padding:12px 8px;text-align:center}.lg-stat-num{font-size:22px}.lg-stat-label{font-size:12px}}
+
+/* LB41 진단 요약: 추천 N 과정 + 구분 막대 8px (의무 P4 / 권고 P4 45% / 업종별 --line) */
+.lg-dg-sum{margin-bottom:16px}
+.lg-dg-total{display:flex;align-items:baseline;font-size:14px;font-weight:700;color:var(--ink)}
+.lg-dg-n{font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;margin:0 4px}
+.lg-dg-bar{display:flex;height:8px;border-radius:999px;overflow:hidden;margin-top:10px;background:var(--surface)}
+.lg-dg-bar span{flex-basis:0;min-width:0;transition:flex-grow .24s var(--ease)}
+.lg-dg-bar span.is-sep{border-left:3px solid #fff}
+.seg--mandatory{background:var(--p4)}
+.seg--recommended{background:color-mix(in srgb,var(--p4) 45%,#fff)}
+.seg--industry{background:var(--line)}
+@media(prefers-reduced-motion:reduce){.lg-dg-bar span{transition:none}}

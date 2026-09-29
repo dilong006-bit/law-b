@@ -6,6 +6,7 @@ import { courseById } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { goConsult } from '@/lib/legal/goConsult';
 import { usePick } from '@/lib/legal/pick';
+import { CourseIcon } from './CourseIcon';
 import { LgIcon } from './icons';
 
 const T = HUB_COPY.tray;
@@ -82,7 +83,7 @@ export default function PickTray() {
             const c = courseById(id)!;
             return (
               <li key={id}>
-                <span>{c.short}</span>
+                <span className="lg-tray-nm"><CourseIcon id={id} size={16} />{c.short}</span>
                 <button type="button" className="lg-tray-rm" onClick={() => remove(id)} aria-label={`${c.short} ${T.remove}`} data-ga-id={`legal-pick-${id}`}>
                   <LgIcon name="minus" size={16} /> {T.remove}
                 </button>

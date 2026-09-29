@@ -6,6 +6,7 @@ import { HUB_COPY } from '@/data/legalHub';
 import { COMMON_PICK } from '@/lib/legal/diagnose';
 import type { LgIconName } from '@/lib/legal/iconData';
 import { usePick } from '@/lib/legal/pick';
+import { CourseIcon } from './CourseIcon';
 import { LgIcon } from './icons';
 import LgPhoto from './LgPhoto';
 
@@ -55,7 +56,7 @@ export default function ConsultSummary() {
                 const c = courseById(id)!;
                 return (
                   <li key={id}>
-                    <span className="lg-consult-name">{c.short}</span>
+                    <span className="lg-consult-name"><CourseIcon id={id} size={16} />{c.short}</span>
                     <button
                       type="button"
                       className="lg-consult-rm"
@@ -71,7 +72,6 @@ export default function ConsultSummary() {
             </ul>
           ) : (
             <div className="lg-consult-empty">
-              <p>{I.pickedEmpty}</p>
               <button type="button" className="btn btn-glass lg-consult-add" onClick={() => addMany([...COMMON_PICK])} data-ga-id="legal_consult_add_common">
                 <LgIcon name="plus" size={16} /> {I.addCommon}
               </button>

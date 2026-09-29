@@ -1,6 +1,7 @@
 import { LEGAL_COURSES, lawOf } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
-import { kindText } from './CourseCard';
+import { CourseIcon } from './CourseIcon';
+import KindBadge from './KindBadge';
 
 const W = HUB_COPY.law;
 
@@ -15,6 +16,7 @@ const ROWS = LEGAL_COURSES.map((c) => {
  * 구분은 과정 kind(괴롭힘 = 권고), 근거·대상·주기는 lawOf(AX5.laws), 근거 없는 과정은 '상담 시 안내'.
  * 881 이상 5열 / 880 이하 대상·주기 합친 4열 / 640 이하 과정별 카드 — CSS 로 하나만 보인다.
  * upgrade-01 LB24: 블록 래퍼·제목은 StandardAndDiff 가 가진다(이 컴포넌트는 표 본문만).
+ * upgrade-03 LB44: 교육명 앞 과정 아이콘 18, 구분은 공용 KindBadge (셀 문구 불변).
  */
 export default function LawTable() {
   const [cEdu, cKind, cBasis, cTarget, cCycle] = W.cols;
@@ -35,8 +37,8 @@ export default function LawTable() {
           <tbody>
             {ROWS.map(({ c, basis, target, cycle, known }) => (
               <tr key={c.id} className={known ? undefined : 'unk'}>
-                <th scope="row">{c.short}</th>
-                <td><span className={`lg-kind k-${c.kind}`}>{kindText(c)}</span></td>
+                <th scope="row"><span className="lg-law-nm"><CourseIcon id={c.id} size={18} />{c.short}</span></th>
+                <td><KindBadge kind={c.kind} note={c.kindNote} /></td>
                 <td>{basis}</td>
                 <td className="lg-law-sep">{target}</td>
                 <td className="lg-law-sep">{cycle}</td>
@@ -49,7 +51,7 @@ export default function LawTable() {
       <ul className="lg-law-m">
         {ROWS.map(({ c, basis, target, cycle, known }) => (
           <li key={c.id} className={known ? undefined : 'unk'}>
-            <div className="lg-law-mh"><h4>{c.short}</h4><span className={`lg-kind k-${c.kind}`}>{kindText(c)}</span></div>
+            <div className="lg-law-mh"><h4 className="lg-law-nm"><CourseIcon id={c.id} size={18} />{c.short}</h4><KindBadge kind={c.kind} note={c.kindNote} /></div>
             <dl>
               <div><dt>{cBasis}</dt><dd>{basis}</dd></div>
               <div><dt>{cTarget}</dt><dd>{target}</dd></div>

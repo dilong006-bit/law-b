@@ -30,7 +30,7 @@ export default function BrochureCard() {
         <ul className="lg-brochure-inc">
           {B.includes.map((t) => <li key={t}><LgIcon name="check" size={16} /> {t}</li>)}
         </ul>
-        <p className="lg-brochure-meta"><LgIcon name="file-text" size={16} /> {B.meta}</p>
+        <div className="lg-brochure-meta"><LgIcon name="file-text" size={16} /> {B.meta}</div>
         <div className="lg-box-foot">
           <button type="button" className="btn btn-ink lg-brochure-cta" onClick={open} data-ga-id="legal_brochure_open">
             <LgIcon name="download" size={18} /> {B.cta}

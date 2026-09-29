@@ -1,10 +1,11 @@
 'use client';
 
 import Img from '@/components/common/Img';
-import { lawOf, previewUrl, type LegalCourse } from '@/data/legal';
+import { previewUrl, type LegalCourse } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { usePick } from '@/lib/legal/pick';
 import { LgIcon } from './icons';
+import KindBadge from './KindBadge';
 
 const L = HUB_COPY.lineup;
 
@@ -20,7 +21,6 @@ export default function CourseCard({ course, open, detailId, onToggle }: {
 }) {
   const pick = usePick();
   const picked = pick.has(course.id);
-  const law = lawOf(course.lawKey);
 
   return (
     <article className="lg-card" data-picked={picked ? 'true' : undefined}>
@@ -41,15 +41,15 @@ export default function CourseCard({ course, open, detailId, onToggle }: {
       </div>
       <div className="lg-card-body">
         <div className="lg-meta">
-          <span className={`lg-kind k-${course.kind}`}>{kindText(course)}</span>
-          <span className="lg-sess">{course.sessions}{L.sessionsUnit}</span>
+          <KindBadge kind={course.kind} note={course.kindNote} />
+          <span className="lg-sess"><LgIcon name={L.sessionsIcon} size={16} /><b>{course.sessions}</b>{L.sessionsUnit}</span>
         </div>
         <h3 className="lg-card-h">
           <button type="button" className="lg-card-title" aria-expanded={open} aria-controls={detailId} onClick={onToggle}>
             {course.short}
           </button>
         </h3>
-        {law && <p className="lg-card-sub">{HUB_COPY.law.cols[3]} {law.대상} · {law.주기}</p>}
+        {/* upgrade-03 LB46: '대상 · 주기' 줄 삭제 — 법정 표·상세 '이런 분께' 와 중복 */}
         <div className="lg-card-acts">
           <button type="button" className="lg-link" aria-expanded={open} aria-controls={detailId} onClick={onToggle} data-ga-id={`legal-detail-${course.id}`}>
             {L.detail}
@@ -62,7 +62,8 @@ export default function CourseCard({ course, open, detailId, onToggle }: {
             aria-label={`${course.name} ${L.preview} (새 창)`}
             data-ga-id={`legal-preview-${course.id}`}
           >
-            {L.preview} <LgIcon name="external-link" size={14} />
+            {/* upgrade-03 I8: 카드 맛보기 링크의 새 창 아이콘 제거(화면당 아이콘 ≤ 24). 새 창 안내는 aria-label, 상세 '맛보기 보기' 버튼에는 아이콘 유지 */}
+            {L.preview}
           </a>
         </div>
       </div>

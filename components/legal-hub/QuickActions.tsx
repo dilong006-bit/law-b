@@ -2,6 +2,7 @@ import { HUB_COPY } from '@/data/legalHub';
 import { LgIcon } from './icons';
 import type { LgIconName } from '@/lib/legal/iconData';
 import { onConsultClick } from '@/lib/legal/goConsult';
+import HubStats from './HubStats';
 
 /** 빠른 실행 아이콘 (TECHSPEC upgrade-02 §3-3): 필요 과정 찾기 / 과정 보기 / 빠른 상담 */
 const QUICK_ICONS: LgIconName[] = ['search-check', 'layout-grid', 'message-circle'];
@@ -13,7 +14,8 @@ const QUICK_ICONS: LgIconName[] = ['search-check', 'layout-grid', 'message-circl
  */
 export default function QuickActions() {
   return (
-    <div className="lg-row">
+    // upgrade-03 D25: 빠른 실행 8열 ↔ 수치 스트립 4열 짝(peer). 1040 이하는 스트립이 CSS order 로 리드 바로 아래로 올라간다
+    <div className="lg-row lg-head-row" data-balance-row data-pair="peer">
       <nav className="lg-c8 lg-quick" aria-label="법정필수교육 바로가기">
         <ul>
           {HUB_COPY.head.quick.map((q, i) => (
@@ -23,6 +25,7 @@ export default function QuickActions() {
           ))}
         </ul>
       </nav>
+      <HubStats />
     </div>
   );
 }

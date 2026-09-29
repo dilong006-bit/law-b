@@ -4,11 +4,13 @@ import Img from '@/components/common/Img';
 import { lawOf, previewUrl, type LegalCourse } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { usePick } from '@/lib/legal/pick';
-import { kindText } from './CourseCard';
+import { CourseIcon } from './CourseIcon';
 import { LgIcon } from './icons';
+import KindBadge from './KindBadge';
 
 const L = HUB_COPY.lineup;
 const DL = L.detailLabels;
+const DI = L.detailIcons;
 
 /**
  * 과정 상세 (legal-B LB7). 인라인(761 이상)과 바텀시트(760 이하)가 같은 내용을 쓴다.
@@ -36,38 +38,38 @@ export default function CourseDetail({ course, titleId, prev, next, onGo, onClos
         <div className="lg-dthumb"><Img src={course.thumb} /></div>
         <div className="lg-dhead-t">
           <div className="lg-meta">
-            <span className={`lg-kind k-${course.kind}`}>{kindText(course)}</span>
-            <span className="lg-sess">{course.sessions}{L.sessionsUnit}</span>
+            <KindBadge kind={course.kind} note={course.kindNote} />
+            <span className="lg-sess"><LgIcon name={L.sessionsIcon} size={16} /><b>{course.sessions}</b>{L.sessionsUnit}</span>
           </div>
-          <h3 id={titleId} className="lg-dtitle">{course.name}</h3>
+          <h3 id={titleId} className="lg-dtitle"><CourseIcon id={course.id} size={20} />{course.name}</h3>
         </div>
       </div>
 
       <div className="lg-dbody">
         <div className="lg-dcol">
           <section className="lg-dsec">
-            <h4>{DL.audience}</h4>
+            <h4 className="lg-dt-h"><LgIcon name={DI.audience} size={20} />{DL.audience}</h4>
             <ul className="lg-dlist">{d.audience.map((t) => <li key={t}>{t}</li>)}</ul>
           </section>
           <section className="lg-dsec">
-            <h4>{DL.goals}</h4>
-            <ul className="lg-dlist">{d.goals.map((t) => <li key={t}>{t}</li>)}</ul>
+            <h4 className="lg-dt-h"><LgIcon name={DI.goals} size={20} />{DL.goals}</h4>
+            <ul className="lg-dlist lg-dgoals">{d.goals.map((t) => <li key={t}>{t}</li>)}</ul>
           </section>
           {d.outline && (
             <section className="lg-dsec">
-              <h4>{DL.outline}</h4>
+              <h4 className="lg-dt-h"><LgIcon name={DI.outline} size={20} />{DL.outline}</h4>
               <ol className="lg-doutline">{d.outline.map((t) => <li key={t}>{t}</li>)}</ol>
             </section>
           )}
         </div>
         <div className="lg-dcol">
           <section className="lg-dsec">
-            <h4>{DL.instructor}</h4>
+            <h4 className="lg-dt-h"><LgIcon name={DI.instructor} size={20} />{DL.instructor}</h4>
             <p className="lg-dinst"><b>{d.instructor.name}</b> · {d.instructor.bio}</p>
           </section>
           {law && (
             <section className="lg-dsec">
-              <h4>{DL.law}</h4>
+              <h4 className="lg-dt-h"><LgIcon name={DI.law} size={20} />{DL.law}</h4>
               <dl className="lg-dlaw">
                 <div><dt>{HUB_COPY.law.cols[2]}</dt><dd>{law.근거}</dd></div>
                 <div><dt>{HUB_COPY.law.cols[3]}</dt><dd>{law.대상}</dd></div>
