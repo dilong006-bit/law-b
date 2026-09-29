@@ -13,6 +13,7 @@ import { saveBlob } from '@/lib/download/saveBlob';
 import { canUseBlobDownload } from '@/lib/download/canUseBlobDownload';
 
 import { LEGAL_COPY } from '@/data/legal';
+import { HUB_COPY } from '@/data/legalHub';
 
 /**
  * 다운로드 자산 (기술명세서 legal-A §7 LF6).
@@ -37,15 +38,26 @@ const DOWNLOAD_ASSETS = {
     FILE_URL: '/downloads/KG에듀원_2026_법정필수교육_과정소개서.pdf' as string | null,
     FILE_NAME: 'KG에듀원_2026_법정필수교육_과정소개서.pdf',
     FILE_SIZE_LABEL: '약 6.7MB',
-    title: LEGAL_COPY.resources.brochureTitle,
+    // B안 카피(legal-B §3-2 HUB_COPY.resources.brochure)
+    title: HUB_COPY.resources.brochure.title,
     mb: 'PDF · 약 6.7MB',
-    submit: LEGAL_COPY.resources.brochureCta,
+    submit: HUB_COPY.resources.brochure.cta,
     gaId: 'legal-brochure-submit' as string | undefined,
   },
 } as const;
 
+/**
+ * 다운로드 선택 옵션 (legal-B §6-9 LB11). 미지정이면 기존 동작 100% 동일.
+ * - onLeadSubmitted: 리드 전송 성공 시 입력값 전달(법정 허브가 문의 폼 자동 채움에 쓴다)
+ * - next: 성공 화면에 후속 링크 1개. 지정 시 자동 닫힘을 걸지 않는다(링크를 누를 시간을 준다)
+ */
+export type DownloadOpts = {
+  onLeadSubmitted?: (lead: { company: string; name: string; email: string }) => void;
+  next?: { label: string; href: string };
+};
+
 // openDownload 인자는 unknown 도 받는다 — 기존 호출부 onClick={openDownload} 가 이벤트를 넘겨도 타입·동작이 그대로다.
-interface Ctx { openConsult: (axis?: string) => void; openDownload: (asset?: DownloadAsset | React.SyntheticEvent) => void }
+interface Ctx { openConsult: (axis?: string) => void; openDownload: (asset?: DownloadAsset | React.SyntheticEvent, opts?: DownloadOpts) => void }
 const ModalCtx = createContext<Ctx>({ openConsult: () => {}, openDownload: () => {} });
 export const useContentModal = () => useContext(ModalCtx);
 
@@ -128,7 +140,7 @@ const HAS_DL_OPTIN = CONSENT_TEXTS.download.optional !== null;
 
 const S = DOWNLOAD_MODAL.steps;
 
-function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => void; asset: DownloadAsset }) {
+function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: () => void; asset: DownloadAsset; opts?: DownloadOpts }) {
   const A = DOWNLOAD_ASSETS[asset];
   const pending = A.FILE_URL === null;
   const [v, setV] = useState({ name: '', org: '', mail: '' });
@@ -188,6 +200,8 @@ function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => 
     if (step !== 'done') return;
     // 안내만 남는 자산(pending)은 자동으로 닫지 않는다 — 읽기 전에 사라지면 안내가 전달되지 않는다.
     if (pending) return;
+    // 후속 링크가 있으면 자동으로 닫지 않는다 — 링크를 누르기 전에 사라지면 안 된다.
+    if (opts?.next) return;
     closeTimer.current = window.setTimeout(() => { closeTimer.current = null; onClose(); },
       direct ? DC.AUTO_CLOSE_MS_DIRECT : DC.AUTO_CLOSE_MS);
     // 사용자가 손을 대면 타이머를 해제하고 재개하지 않는다(§5-2).
@@ -202,7 +216,7 @@ function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => 
       dialog?.removeEventListener('focusin', cancel);
       dialog?.removeEventListener('click', cancel);
     };
-  }, [step, direct, pending, onClose, clearAutoClose]);
+  }, [step, direct, pending, opts?.next, onClose, clearAutoClose]);
 
   const onProgress = useCallback((recv: number, tot: number) => {
     const now = performance.now();
@@ -276,9 +290,22 @@ function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => 
     // 리드 전송이 성공한 뒤에만 다운로드 단계로 들어간다(§7). 실패하면 폼 단계에 머문다.
     const sent = await submitLead(payload);
     if (!sent) return;
+    opts?.onLeadSubmitted?.({ company: v.org.trim(), name: v.name.trim(), email: v.mail.trim() });
     // 파일이 아직 없는 자산은 다운로드 단계를 건너뛰고 안내 화면으로 간다.
     if (pending) { setLive(LEGAL_COPY.resources.brochurePendingTitle); setStep('done'); return; }
     void startDownload();
+  }
+
+  /** 후속 링크 — 모달을 닫고(스크롤 잠금 복원이 끝난 뒤) 대상 앵커로 이동한다 */
+  function goNext(e: React.MouseEvent, href: string) {
+    e.preventDefault();
+    onClose();
+    window.setTimeout(() => {
+      const to = document.querySelector<HTMLElement>(href);
+      if (!to) return;
+      const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      to.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' });
+    }, 60);
   }
 
   function cancelDownload() {
@@ -350,8 +377,13 @@ function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => 
               <h3>{pending ? LEGAL_COPY.resources.brochurePendingTitle : direct ? DOWNLOAD_MODAL.okTitle : S.doneTitle}</h3>
               <p className="lead" style={{ margin: '0 auto 14px' }}>{pending ? LEGAL_COPY.resources.brochurePendingMsg : direct ? DOWNLOAD_MODAL.okMsg : S.doneMsg}</p>
               {!pending && <p className="dl-hint">{S.doneHint}</p>}
-              {!pending && !reduce && <div className="dl-count" aria-hidden="true"><i style={{ animationDuration: `${autoCloseMs}ms` }} /></div>}
-              <div className="dl-acts"><button className="btn-line-dark" type="button" onClick={onClose}>{S.close}</button></div>
+              {!pending && !opts?.next && !reduce && <div className="dl-count" aria-hidden="true"><i style={{ animationDuration: `${autoCloseMs}ms` }} /></div>}
+              <div className="dl-acts">
+                {opts?.next && (
+                  <a className="btn btn-ink" href={opts.next.href} onClick={(e) => goNext(e, opts.next!.href)}>{opts.next.label}</a>
+                )}
+                <button className="btn-line-dark" type="button" onClick={onClose}>{S.close}</button>
+              </div>
               {!pending && <a className="dl-text" href={A.FILE_URL as string} download={A.FILE_NAME}>{S.fallback}</a>}
             </>
           )}
@@ -376,7 +408,7 @@ function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => 
 
 export default function ContentModalProvider({ children }: { children: React.ReactNode }) {
   const [consult, setConsult] = useState<{ open: boolean; axis?: string }>({ open: false });
-  const [dl, setDl] = useState<{ open: boolean; asset: DownloadAsset }>({ open: false, asset: 'courseList' });
+  const [dl, setDl] = useState<{ open: boolean; asset: DownloadAsset; opts?: DownloadOpts }>({ open: false, asset: 'courseList' });
   const openConsult = (axis?: string) => setConsult({ open: true, axis });
   // 자동 닫힘 타이머가 매 렌더마다 리셋되지 않도록 참조를 고정한다.
   const closeDl = useCallback(() => setDl((s) => ({ ...s, open: false })), []);
@@ -384,13 +416,13 @@ export default function ContentModalProvider({ children }: { children: React.Rea
 
   return (
     // 기존 호출부 onClick={openDownload} 는 클릭 이벤트를 넘긴다 — 자산 id 문자열이 아니면 기본값(courseList)으로 둔다.
-    <ModalCtx.Provider value={{ openConsult, openDownload: (a?: DownloadAsset | React.SyntheticEvent) => setDl({ open: true, asset: typeof a === 'string' && a in DOWNLOAD_ASSETS ? a : 'courseList' }) }}>
+    <ModalCtx.Provider value={{ openConsult, openDownload: (a?: DownloadAsset | React.SyntheticEvent, opts?: DownloadOpts) => setDl({ open: true, asset: typeof a === 'string' && a in DOWNLOAD_ASSETS ? a : 'courseList', opts }) }}>
       {children}
       <Modal open={consult.open} onClose={() => setConsult({ open: false })} labelledBy="c-title" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcChat /></span><span>{CONSULT_MODAL.title}</span><span className="mb">{CONSULT_MODAL.mb}</span></span>} maxWidth={480}>
         <ConsultBody axis={consult.axis} onClose={() => setConsult({ open: false })} />
       </Modal>
       <Modal open={dl.open} onClose={closeDl} labelledBy="d-title" describedBy="dl-desc" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcSheet /></span><span>{dlAsset.title}</span><span className="mb">{dlAsset.mb}</span></span>} maxWidth={480}>
-        <DownloadBody open={dl.open} onClose={closeDl} asset={dl.asset} />
+        <DownloadBody open={dl.open} onClose={closeDl} asset={dl.asset} opts={dl.opts} />
       </Modal>
     </ModalCtx.Provider>
   );

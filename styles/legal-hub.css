@@ -149,7 +149,8 @@
 .lg-pick{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;
   background:#fff;border:1px solid var(--line);color:var(--ink);box-shadow:var(--shadow-1);cursor:pointer;
   transition:background .24s var(--ease),border-color .24s var(--ease),color .24s var(--ease)}
-.lg-pick[aria-pressed="true"]{background:var(--p4);border-color:var(--p4);color:#fff}
+/* P4 면 위 아이콘은 --ink (흰 아이콘 2.59:1 → ink 약 7:1) */
+.lg-pick[aria-pressed="true"]{background:var(--p4);border-color:var(--p4);color:var(--ink)}
 .lg-pick:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .lg-card-body{padding:14px 16px 12px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
 .lg-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -297,3 +298,84 @@
   .lg-card,.lg-pick,.lg-dslot,.lg-dclip .lg-detail,.lg-sheet,.lg-sheet.open,.lg-tray,.lg-tray.show,.lg-tray-chev{transition:none}
   .lg-tray-n{animation:none}
 }
+
+/* ── LB8 법정 기준 ──────────────────────────────────────────────────── */
+/* 표 값은 기존 .difftable 과 같다(라운드 16, 패딩 13/16, 13.5px). 가로 스크롤 없이 열을 줄인다 */
+.lg-law{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.lg-law table{width:100%;border-collapse:collapse}
+.lg-law th,.lg-law td{padding:13px 16px;font-size:13.5px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line);word-break:keep-all}
+.lg-law thead th{background:var(--surface);font-weight:800}
+.lg-law tbody th{font-weight:700;color:var(--ink)}
+.lg-law tbody tr:last-child>*{border-bottom:none}
+.lg-law tr.unk td:not(:nth-child(2)){color:var(--muted)}
+.lg-law-mix{display:none}
+@media(max-width:880px){.lg-law .lg-law-sep{display:none}.lg-law .lg-law-mix{display:table-cell}}
+.lg-law-m{display:none;list-style:none}
+@media(max-width:640px){
+  .lg-law{display:none}
+  .lg-law-m{display:grid;gap:10px}
+}
+.lg-law-m li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow-1)}
+.lg-law-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lg-law-mh h4{font-size:15px;font-weight:800;word-break:keep-all}
+.lg-law-m dl{margin-top:10px;display:grid;gap:6px}
+.lg-law-m dl>div{display:flex;gap:10px;font-size:13.5px;line-height:1.5}
+.lg-law-m dt{flex:none;min-width:34px;color:var(--muted);font-weight:700}
+.lg-law-m dd{word-break:keep-all}
+.lg-law-m li.unk dd{color:var(--muted)}
+.lg-law-basis{margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.lg-law-notes{margin-top:6px;list-style:none;display:grid;gap:2px}
+.lg-law-notes li{position:relative;padding-left:12px;font-size:13px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.lg-law-notes li::before{content:"";position:absolute;left:0;top:.72em;width:4px;height:4px;border-radius:50%;background:var(--muted)}
+
+/* ── LB9 운영 지원 — 열 수는 표시 항목 수(n1~n4)로 정한다 ──────────────── */
+.lg-ops{list-style:none;display:grid;gap:14px;grid-template-columns:1fr}
+.lg-ops.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lg-ops.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.lg-ops.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:880px){.lg-ops.n3,.lg-ops.n4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.lg-ops.n2,.lg-ops.n3,.lg-ops.n4{grid-template-columns:1fr}}
+.lg-op{display:flex;align-items:flex-start;gap:14px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow-1);min-width:0}
+.lg-op-ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff)}
+.lg-op-t{font-size:16px;font-weight:800;line-height:1.4;word-break:keep-all}
+.lg-op-d{margin-top:4px;font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
+
+/* ── LB10 차별점·시리즈 — 기존 .timeline·.difftable 재사용, 허브 범위에서만 보정 ── */
+.lg-subh{font-size:14px;font-weight:800;color:var(--ink);margin:24px 0 14px}
+.lg-diff .substep+.lg-subh{margin-top:0}
+/* P4 면 위 흰 글자·P4 틴트 위 진한 P4 글자 금지(대비 기준) — 허브 안에서만 --ink 로 */
+.lg-diff .tnode .bn{color:var(--ink)}
+.lg-diff .difftable thead th:last-child{color:var(--ink)}
+.lg-diff .difftable tbody td:last-child{color:var(--ink)}
+.lg-diff-m{display:none;list-style:none}
+@media(max-width:640px){
+  .lg-diff .difftable{display:none}
+  .lg-diff-m{display:grid;gap:10px}
+}
+.lg-diff-m li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-1)}
+.lg-diff-t{font-size:14.5px;font-weight:800}
+.lg-diff-m dl{margin-top:8px;display:grid;gap:6px}
+.lg-diff-m dl>div{display:flex;gap:10px;font-size:13.5px;line-height:1.5;padding:6px 8px;margin:0 -8px;border-radius:8px}
+.lg-diff-m dt{flex:none;min-width:84px;color:var(--muted);font-weight:700}
+.lg-diff-m dd{word-break:keep-all}
+.lg-diff-m .own{background:color-mix(in srgb,var(--p4) 7%,#fff)}
+.lg-diff-m .own dd{font-weight:800}
+
+/* ── LB11 자료 ─────────────────────────────────────────────────────── */
+.lg-res{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:40px;align-items:start}
+@media(max-width:880px){.lg-res{grid-template-columns:1fr}.lg-res>*{max-width:480px;width:100%;margin:0 auto}}
+.lg-res .lg-news{max-width:none}
+/* 이식본 점 버튼(22×44)을 허브에서는 44×44 로 — 4장이라 한 줄에 들어간다 */
+.lg-res .lg-news-dot{width:44px}
+.lg-bro{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 24px;box-shadow:var(--shadow-1)}
+.lg-bro h4{font-size:18px;font-weight:800;line-height:1.4;word-break:keep-all}
+.lg-bro p{margin-top:10px;font-size:14.5px;color:var(--muted);line-height:1.7;word-break:keep-all}
+.lg-bro-cta{margin-top:20px;min-height:48px;padding:0 24px;font-size:15px}
+.lg-bro-cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:640px){.lg-bro-cta{width:100%}}
+
+/* ── LB12 실무 FAQ (답변 확정 전 비표시) ────────────────────────────── */
+.lg-faq ul{list-style:none;border-top:1px solid var(--line)}
+.lg-faq li{border-bottom:1px solid var(--line)}
+.lg-faq summary{min-height:52px;display:flex;align-items:center;font-size:15px;font-weight:700;cursor:pointer;word-break:keep-all}
+.lg-faq p{padding:0 0 16px;font-size:14.5px;color:var(--muted);line-height:1.7;word-break:keep-all}

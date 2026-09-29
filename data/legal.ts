@@ -160,6 +160,10 @@ export const LEGAL_COPY = {
   contentLink: '법정필수교육 과정·미리보기 전체 보기',
 } as const;
 
-// 카드뉴스 (재제작본 수령 시 src만 '/images/legal/cardnews-0N.jpg' 로 교체, 1080×1350)
-export const LEGAL_CARDNEWS: { src: string | null; alt: string }[] =
-  Array.from({ length: 7 }, (_, i) => ({ src: null, alt: `법정교육 카드뉴스 ${i + 1} / 7` }));
+// 카드뉴스 4장 (디자이너 요청 확정본, 1080×1350). 재제작본 수령 시 src 만 '/images/legal/cardnews-01.jpg' ~ '04.jpg' 로 교체
+export const LEGAL_CARDNEWS: { src: string | null; alt: string }[] = [
+  { src: null, alt: '법정교육, 우리 회사는 몇 개나 끝냈나요?' },
+  { src: null, alt: '교육만 열면 끝일까요?' },
+  { src: null, alt: '2026년 최신 법정필수교육, KG에듀원이 한 곳에 모았습니다' },
+  { src: null, alt: '올해 법정교육, 지금 KG에듀원에서 점검하세요' },
+];

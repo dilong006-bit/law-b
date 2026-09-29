@@ -7,6 +7,8 @@ interface LegalCardNewsProps {
   slides: { src: string | null; alt: string }[];
   /** 자동 전환 간격 (기본 5초) */
   intervalMs?: number;
+  /** 자동 전환 여부 (선택, 기본 true = 기존 동작). 법정 허브 자료 블록은 false(사용자가 읽는 영역) */
+  autoplay?: boolean;
 }
 
 /** 스와이프로 인정하는 최소 가로 이동 */
@@ -24,7 +26,7 @@ const IcNext = () => (
  * 자동 전환은 '화면에 보이고, 탭이 활성이고, 사용자가 손을 대지 않은' 동안에만 돈다.
  * 이미지 재제작본이 오면 slides 의 src 만 채우면 되고 이 컴포넌트는 바뀌지 않는다.
  */
-export default function LegalCardNews({ slides, intervalMs = 5000 }: LegalCardNewsProps) {
+export default function LegalCardNews({ slides, intervalMs = 5000, autoplay = true }: LegalCardNewsProps) {
   const [i, setI] = useState(0);
   const [visible, setVisible] = useState(false);
   const [held, setHeld] = useState(false);
@@ -59,13 +61,13 @@ export default function LegalCardNews({ slides, intervalMs = 5000 }: LegalCardNe
 
   // 자동 전환 — 모션 저감·비가시·조작 중·탭 비활성에서는 타이머 자체를 걸지 않는다
   useEffect(() => {
-    if (reduce || !visible || held || n < 2) return;
+    if (!autoplay || reduce || !visible || held || n < 2) return;
     if (typeof document !== 'undefined' && document.hidden) return;
     const t = window.setInterval(() => setI((p) => (p + 1) % n), intervalMs);
     const onVis = () => { if (document.hidden) window.clearInterval(t); };
     document.addEventListener('visibilitychange', onVis);
     return () => { window.clearInterval(t); document.removeEventListener('visibilitychange', onVis); };
-  }, [reduce, visible, held, n, intervalMs]);
+  }, [autoplay, reduce, visible, held, n, intervalMs]);
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowLeft') { e.preventDefault(); go(i - 1); }
