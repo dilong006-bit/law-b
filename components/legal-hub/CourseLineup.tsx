@@ -8,6 +8,8 @@ import { usePick } from '@/lib/legal/pick';
 import { useModal } from '@/lib/useModal';
 import CourseCard from './CourseCard';
 import CourseDetail from './CourseDetail';
+import CustomTile from './CustomTile';
+import BlockHead from './BlockHead';
 import { IcClose } from './icons';
 import { useEdgeFade } from './useEdgeFade';
 
@@ -89,17 +91,35 @@ export default function CourseLineup() {
   };
   const changeFilter = (f: Filter) => { setFilter(f); setOpenId(null); };
 
+  /** 문의 영역으로 이동 (goConsult 연결은 커밋 13). 시트에서는 닫힘·스크롤 복원이 끝난 뒤 이동한다 */
+  const toInquiry = () => {
+    const to = document.getElementById('mandatory-inquiry');
+    if (!to) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    to.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  };
+  /** 상세의 '이 과정으로 상담': 해당 과정을 담고(이미 담았으면 유지) 문의 영역으로 */
+  const consultWith = (c: LegalCourse) => {
+    pick.addMany([c.id]);
+    if (sheet) { closeDetail(); window.setTimeout(toInquiry, 60); }
+    else toInquiry();
+  };
+
   const sheetRef = useModal(sheet && !!openCourse, closeDetail);
   const dragY = useRef<number | null>(null);
 
   // 행 뒤 삽입 위치: 열린 카드가 속한 행의 마지막 카드 인덱스
+  // 맞춤 구성 상담 타일 칸 수 — 마지막 행을 꽉 채운다(필터·열 수가 바뀌면 다시 계산)
+  const rem = visible.length % cols;
+  const tileSpan = rem === 0 ? cols : cols - rem;
+
   const insertAfter = openIndex < 0 ? -1 : Math.min(Math.floor(openIndex / cols) * cols + cols - 1, visible.length - 1);
   const detailId = (id: string) => `lg-detail-${id}`;
   const titleId = (id: string) => `lg-detail-title-${id}`;
 
   return (
     <div className="lg-block lg-anchor" id="mandatory-courses">
-      <h3 className="substep">{L.title}</h3>
+      <BlockHead kicker={L.kicker} title={L.title} lead={L.sub} />
       <div className="lg-tools">
         <div className="subnav-in lg-filter-in" ref={filterRef} data-fade="none" role="radiogroup" aria-label={L.title}>
           {L.filters.map(([v, label]) => (
@@ -127,12 +147,14 @@ export default function CourseLineup() {
                     next={next}
                     onGo={(t: LegalCourse) => setOpenId(t.id)}
                     onClose={closeInline}
+                    onConsult={() => consultWith(openCourse)}
                   />
                 </div>
               </div>
             )}
           </Fragment>
         ))}
+        <CustomTile span={tileSpan} />
       </div>
 
       {/* 760 이하 바텀시트 — body 로 포털(조상 transform 과 무관하게 뷰포트 기준 고정) */}
@@ -156,7 +178,7 @@ export default function CourseLineup() {
             <button type="button" className="lg-sheet-close" onClick={closeDetail} aria-label={L.close} data-autofocus><IcClose /></button>
             <div className="lg-sheet-body">
               {openCourse && (
-                <CourseDetail course={openCourse} titleId={titleId(openCourse.id)} prev={prev} next={next} onGo={(t: LegalCourse) => setOpenId(t.id)} />
+                <CourseDetail course={openCourse} titleId={titleId(openCourse.id)} prev={prev} next={next} onGo={(t: LegalCourse) => setOpenId(t.id)} onConsult={() => consultWith(openCourse)} />
               )}
             </div>
           </div>

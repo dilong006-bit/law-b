@@ -15,10 +15,12 @@ const DL = L.detailLabels;
  * 교육비는 데이터에 없다. outline 이 null 이면 '주요 학습 내용' 섹션 자체를 그리지 않는다.
  * onClose: 인라인에서만 넘긴다(시트는 자체 닫기 버튼을 가진다).
  */
-export default function CourseDetail({ course, titleId, prev, next, onGo, onClose }: {
+export default function CourseDetail({ course, titleId, prev, next, onGo, onClose, onConsult }: {
   course: LegalCourse; titleId: string;
   prev: LegalCourse | null; next: LegalCourse | null;
   onGo: (c: LegalCourse) => void; onClose?: () => void;
+  /** '이 과정으로 상담' (upgrade-01 LB23): 담기 + 문의 영역 이동 */
+  onConsult?: () => void;
 }) {
   const pick = usePick();
   const picked = pick.has(course.id);
@@ -81,6 +83,11 @@ export default function CourseDetail({ course, titleId, prev, next, onGo, onClos
           <button type="button" className="btn btn-ink lg-dpick" aria-pressed={picked} onClick={() => pick.toggle(course.id)} data-ga-id={`legal-pick-${course.id}`}>
             {picked ? L.picked : L.pick}
           </button>
+          {onConsult && (
+            <button type="button" className="btn btn-line-dark lg-dconsult" onClick={onConsult} data-ga-id="legal_detail_consult">
+              {L.detailConsult}
+            </button>
+          )}
           <a
             className="btn btn-line-dark lg-dprev-link"
             href={previewUrl(course.classkey)}

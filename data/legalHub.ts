@@ -23,24 +23,25 @@ export const HUB_COPY = {
   head: {
     kicker: 'Compliance',
     title: ['필수 기준은 정확하게, 콘텐츠는 ', '매년 새롭게'],
-    lead: '2026년 법정필수교육 7개 과정을 진단부터 문의까지 한 곳에서 준비하세요.',
-    season: '연내 이수 일정을 함께 계획해 드립니다.',
-    tabs: [
-      { id: 'mandatory-diagnose', label: '필요 과정 진단' },
-      { id: 'mandatory-courses', label: '과정 보기' },
-      { id: 'mandatory-law', label: '법정 기준' },
-      { id: 'mandatory-inquiry', label: '도입 문의' },
+    // upgrade-01 LB21: 리드 교체, season·tabs 제거 → 빠른 실행 3개
+    lead: '2026년 법정필수교육 7개 과정을 확인하고 바로 상담을 신청하세요.',
+    quick: [
+      { label: '필요 과정 찾기', href: '#mandatory-diagnose', gaId: 'legal_quick_find' },
+      { label: '과정 보기', href: '#mandatory-courses', gaId: 'legal_quick_courses' },
+      { label: '빠른 상담', href: '#mandatory-inquiry', gaId: 'legal_quick_consult', consult: true },
     ],
   },
   diagnose: {
+    // upgrade-01 LB22: kicker·sub·defaultNote 추가, empty 제거(결과 패널은 처음부터 공통 추천)
+    kicker: '필요 과정 찾기',
     title: '우리 회사에 필요한 과정 찾기',
-    sub: '3가지만 선택하면 추천 과정을 보여 드립니다.',
+    sub: '3가지 질문에 답하면 추천 과정이 바로 바뀝니다.',
+    defaultNote: '공통 추천입니다. 3가지 질문에 답하면 우리 회사 기준으로 바뀝니다.',
     q: [
       { key: 'size', label: '상시 근로자 수', options: [['lt10','10인 미만'],['10to49','10~49인'],['gte50','50인 이상']] },
       { key: 'pension', label: '퇴직연금 도입', options: [['yes','도입함'],['no','도입 안 함'],['unknown','잘 모름']] },
       { key: 'industry', label: '업종', options: [['finance','금융'],['public','공공기관'],['general','일반 기업']] },
     ],
-    empty: '3개 항목을 선택하면 추천 과정이 표시됩니다.',
     groups: { mandatory: '법정 의무', recommended: '권고', industry: '업종별 권장' },
     smallNote: '사업장 규모에 따라 교육 방식이 달라질 수 있습니다.',
     note: '참고용 결과입니다. 정확한 대상은 상담 시 확인해 드립니다.',
@@ -48,7 +49,16 @@ export const HUB_COPY = {
     added: '담았습니다 · 선택 과정 보기',
   },
   lineup: {
-    title: '2026 법정필수교육 과정',
+    // upgrade-01 LB23: kicker·sub·customTile·detailConsult 추가, 제목 교체
+    kicker: '과정 라인업',
+    title: '2026 법정필수교육 7개 과정',
+    sub: '과정을 담아 두면 상담 신청 시 그대로 전달됩니다.',
+    customTile: {
+      title: '찾는 과정이 없나요?',
+      desc: '기업 상황에 맞춰 과정을 구성해 드립니다.',
+      cta: '맞춤 구성 상담', gaId: 'legal_course_custom_consult',
+    },
+    detailConsult: '이 과정으로 상담',
     filters: [['all','전체'],['mandatory','법정 의무'],['recommended','권고'],['industry','업종별']],
     addMandatory: '법정 의무 과정 한 번에 담기',
     kindLabel: { mandatory: '법정 의무', recommended: '권고', industry: '업종별' },
