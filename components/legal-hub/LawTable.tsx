@@ -14,12 +14,12 @@ const ROWS = LEGAL_COURSES.map((c) => {
  * 법정 기준 (legal-B LB8). 과태료 열 없음.
  * 구분은 과정 kind(괴롭힘 = 권고), 근거·대상·주기는 lawOf(AX5.laws), 근거 없는 과정은 '상담 시 안내'.
  * 881 이상 5열 / 880 이하 대상·주기 합친 4열 / 640 이하 과정별 카드 — CSS 로 하나만 보인다.
+ * upgrade-01 LB24: 블록 래퍼·제목은 StandardAndDiff 가 가진다(이 컴포넌트는 표 본문만).
  */
 export default function LawTable() {
   const [cEdu, cKind, cBasis, cTarget, cCycle] = W.cols;
   return (
-    <div className="lg-block lg-anchor" id="mandatory-law">
-      <h3 className="substep">{W.title}</h3>
+    <>
       <div className="lg-law">
         <table>
           <thead>
@@ -62,6 +62,6 @@ export default function LawTable() {
       <ul className="lg-law-notes">
         {W.notes.map((n) => <li key={n}>{n}</li>)}
       </ul>
-    </div>
+    </>
   );
 }

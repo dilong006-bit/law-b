@@ -1,10 +1,19 @@
-/** 법정 허브 인라인 아이콘 — 1.5 stroke, 텍스트색 상속, 장식(aria-hidden) */
-const P = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true };
+import { LG_ICONS, type LgIconName } from '@/lib/legal/iconData';
 
-export const IcPlus = () => <svg {...P} width="18" height="18"><path d="M12 5v14M5 12h14" /></svg>;
-export const IcCheck = () => <svg {...P} width="18" height="18" strokeWidth={2.25}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>;
-export const IcExternal = () => <svg {...P} width="14" height="14"><path d="M9 5h10v10M19 5L6 18" /></svg>;
-export const IcClose = () => <svg {...P} width="15" height="15" strokeWidth={2}><path d="M6 6l12 12M18 6L6 18" /></svg>;
-export const IcChevL = () => <svg {...P} width="16" height="16"><path d="M15 6l-6 6 6 6" /></svg>;
-export const IcChevR = () => <svg {...P} width="16" height="16"><path d="M9 6l6 6-6 6" /></svg>;
-export const IcChevUp = () => <svg {...P} width="16" height="16"><path d="M6 15l6-6 6 6" /></svg>;
+/**
+ * 법정 허브 아이콘 (legal-B upgrade-02 D10, TECHSPEC upgrade-02 §3-2).
+ * Iconify Lucide 단일 세트에서 빌드 전에 추출한 SVG body(lib/legal/iconData.ts)만 쓴다 — 런타임 외부 요청 없음.
+ * 24px 격자, stroke 1.5, currentColor. label 이 없으면 장식(aria-hidden).
+ */
+export function LgIcon({ name, size = 20, label, className }: { name: LgIconName; size?: number; label?: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      className={`lg-ico${className ? ' ' + className : ''}`}
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true, focusable: 'false' })}
+      dangerouslySetInnerHTML={{ __html: LG_ICONS[name] }}
+    />
+  );
+}

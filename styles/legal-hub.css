@@ -9,37 +9,6 @@
 .lg-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
-/* ── 이식: 카드뉴스 (LegalCardNews) ─────────────────────────────────── */
-.lg-news{width:100%;max-width:480px}
-/* 비율 박스 — 이미지가 늦게 와도 높이가 변하지 않는다(로딩 흔들림 0) */
-.lg-news-view{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:var(--r);
-  background:var(--surface);touch-action:pan-y}
-.lg-news-view:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.lg-news-track{display:flex;height:100%;transition:transform .45s var(--ease)}
-.lg-news-slide{flex:0 0 100%;height:100%}
-.lg-news-slide img{width:100%;height:100%;object-fit:cover;display:block}
-.lg-news-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  border:1px dashed var(--line);border-radius:var(--r);background:#fff}
-.lg-news-ph .n{font-size:15px;font-weight:800;color:var(--muted)}
-.lg-news-ph .t{font-size:12.5px;color:var(--muted)}
-.lg-news-ctrl{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px}
-.lg-news-arrow{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;
-  border:1px solid var(--line);background:#fff;border-radius:999px;color:var(--ink);cursor:pointer;
-  transition:border-color .2s var(--ease),transform .2s var(--ease)}
-.lg-news-arrow svg{width:18px;height:18px}
-.lg-news-dots{display:flex;align-items:center;gap:2px}
-/* 점은 6px 로 보이되 탭 영역은 44px — 히트 영역만 넓히고 레이아웃은 그대로 둔다 */
-.lg-news-dot{width:22px;height:44px;padding:0;border:none;background:none;cursor:pointer;position:relative}
-.lg-news-dot::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:7px;height:7px;border-radius:50%;background:var(--line);transition:background .2s var(--ease)}
-.lg-news-dot.on::after{background:var(--p4)}
-.lg-news-dot:focus-visible{outline:2px solid var(--ink);outline-offset:-6px;border-radius:8px}
-@media (hover:hover) and (pointer:fine){
-  .lg-news-arrow:hover{border-color:var(--p4);transform:translateY(-2px)}
-  .lg-news-dot:hover::after{background:color-mix(in srgb,var(--p4) 55%,#fff)}
-}
-@media(prefers-reduced-motion:reduce){.lg-news-track{transition:none}}
-
 /* ── 이식: 희망과정 필드 (LegalCourseField) ─────────────────────────── */
 .lg-course-fs{border:none;padding:0;margin:0;min-width:0}
 .lg-course-fs legend{padding:0;font-size:14px;font-weight:700;color:#2f2f37}
@@ -137,6 +106,8 @@
 @keyframes lg-rnew{from{background:color-mix(in srgb,var(--p4) 18%,#fff);transform:translateY(4px)}to{background:var(--surface);transform:none}}
 .lg-diag-small,.lg-diag-note{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.6;word-break:keep-all}
 .lg-diag-small+.lg-diag-note{margin-top:4px}
+.lg-diag-note{display:flex;align-items:flex-start;gap:6px}
+.lg-diag-note .lg-ico{margin-top:2px}
 .lg-diag-r>.lg-box-foot{padding-top:18px}
 .lg-diag-add{min-height:48px;padding:0 24px;font-size:15px}
 .lg-diag-add:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
@@ -301,8 +272,7 @@
 .lg-tray-n{flex:none;font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums;animation:lg-rin .24s var(--ease) both}
 .lg-tray-n::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--p4);margin-right:8px;vertical-align:1px}
 .lg-tray-names{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;color:rgba(255,255,255,.72)}
-.lg-tray-chev{flex:none;display:inline-flex;color:rgba(255,255,255,.72);transition:transform .24s var(--ease)}
-.lg-tray-sum[aria-expanded="true"] .lg-tray-chev{transform:rotate(180deg)}
+.lg-tray-chev{flex:none;display:inline-flex;color:rgba(255,255,255,.72)}
 .lg-tray-cta{flex:none;min-height:44px;padding:0 22px;background:#fff;color:var(--ink);font-size:15px;font-weight:700}
 @media (hover:hover) and (pointer:fine){.lg-tray-cta:hover{transform:translateY(-2px)}}
 .lg-tray-cta:active{transform:scale(.98)}
@@ -312,7 +282,7 @@
 .lg-tray-list ul{list-style:none}
 .lg-tray-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;border-top:1px solid var(--line);font-size:14.5px;font-weight:600;word-break:keep-all}
 .lg-tray-list li:first-child{border-top:none}
-.lg-tray-rm{flex:none;min-width:44px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;
+.lg-tray-rm{flex:none;display:inline-flex;align-items:center;gap:4px;min-width:44px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;
   font:inherit;font-size:13.5px;font-weight:700;color:var(--muted);cursor:pointer}
 .lg-tray-rm:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){.lg-tray-rm:hover{border-color:var(--ink);color:var(--ink)}}
@@ -357,28 +327,36 @@
 .lg-law-notes li{position:relative;padding-left:12px;font-size:13px;color:var(--muted);line-height:1.6;word-break:keep-all}
 .lg-law-notes li::before{content:"";position:absolute;left:0;top:.72em;width:4px;height:4px;border-radius:50%;background:var(--muted)}
 
-/* ── LB9 운영 지원 — 열 수는 표시 항목 수(n1~n4)로 정한다 ──────────────── */
-.lg-ops{list-style:none;display:grid;gap:14px;grid-template-columns:1fr}
-.lg-ops.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.lg-ops.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.lg-ops.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media(max-width:880px){.lg-ops.n3,.lg-ops.n4{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.lg-ops.n2,.lg-ops.n3,.lg-ops.n4{grid-template-columns:1fr}}
-.lg-op{display:flex;align-items:flex-start;gap:14px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow-1);min-width:0}
-.lg-op-ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff)}
-.lg-op-t{font-size:16px;font-weight:800;line-height:1.4;word-break:keep-all}
-.lg-op-d{margin-top:4px;font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
+/* ── LB38 아이콘 (Iconify Lucide, lib/legal/iconData.ts) ────────────── */
+.lg-ico{flex:none;display:inline-block;vertical-align:middle;color:currentColor}
 
-/* ── LB10 차별점·시리즈 — 기존 .timeline·.difftable 재사용, 허브 범위에서만 보정 ── */
-.lg-subh{font-size:14px;font-weight:800;color:var(--ink);margin:24px 0 14px}
-.lg-diff .substep+.lg-subh{margin-top:0}
-/* P4 면 위 흰 글자·P4 틴트 위 진한 P4 글자 금지(대비 기준) — 허브 안에서만 --ink 로 */
-.lg-diff .tnode .bn{color:var(--ink)}
-.lg-diff .difftable thead th:last-child{color:var(--ink)}
-.lg-diff .difftable tbody td:last-child{color:var(--ink)}
+/* ── LB39 사진 공용 (LgPhoto): 비율 선점, 실패 시 --surface 면만 ─────── */
+.lg-photo{position:relative;overflow:hidden;background:var(--surface)}
+.lg-photo img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* ── LB24 KG에듀원 차이 카드 3장 (4+4+4, peer) + 비교표 펼치기 ─────────── */
+.lg-diff-h{margin:var(--lg-gap-head) 0 var(--lg-gap-card)}
+.lg-diffcard{padding:24px;gap:10px}
+.lg-diffcard-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff)}
+.lg-diffcard-t{margin-top:6px;font-size:17px;font-weight:800;line-height:1.4;word-break:keep-all}
+.lg-diffcard-d{font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
+/* 미니 타임라인: 기존 .timeline/.tnode 재사용. P4 면 흰 글자 금지 → 현재 배지 글자 --ink */
+.lg-mini-tl{margin-top:auto;padding-top:14px}
+.lg-mini-tl .tnode .nm{font-size:13px}
+.lg-mini-tl .tnode .bn{color:var(--ink)}
+@media(max-width:520px){.lg-mini-tl{flex-direction:row;gap:6px}.lg-mini-tl .tnode::before{display:block}}
+.lg-diffcard-list{list-style:none;display:grid;gap:10px;margin-top:4px}
+.lg-diffcard-list li{display:flex;align-items:flex-start;gap:8px;font-size:15px;font-weight:700;line-height:1.5;word-break:keep-all}
+.lg-diffcard-list .lg-ico{margin-top:2px}
+.lg-diff-toggle{display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.lg-diff-toggle:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.lg-diff-panel{margin-top:var(--lg-gap-card)}
+/* 비교표: 허브 안에서만 P4 면 흰 글자·P4 틴트 위 진한 P4 글자 → --ink */
+.lg-diff-panel .difftable thead th:last-child{color:var(--ink)}
+.lg-diff-panel .difftable tbody td:last-child{color:var(--ink)}
 .lg-diff-m{display:none;list-style:none}
 @media(max-width:640px){
-  .lg-diff .difftable{display:none}
+  .lg-diff-panel .difftable{display:none}
   .lg-diff-m{display:grid;gap:10px}
 }
 .lg-diff-m li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-1)}
@@ -390,18 +368,101 @@
 .lg-diff-m .own{background:color-mix(in srgb,var(--p4) 7%,#fff)}
 .lg-diff-m .own dd{font-weight:800}
 
-/* ── LB11 자료 ─────────────────────────────────────────────────────── */
-.lg-res{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:40px;align-items:start}
-@media(max-width:880px){.lg-res{grid-template-columns:1fr}.lg-res>*{max-width:480px;width:100%;margin:0 auto}}
-.lg-res .lg-news{max-width:none}
-/* 이식본 점 버튼(22×44)을 허브에서는 44×44 로 — 4장이라 한 줄에 들어간다 */
-.lg-res .lg-news-dot{width:44px}
-.lg-bro{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 24px;box-shadow:var(--shadow-1)}
-.lg-bro h4{font-size:18px;font-weight:800;line-height:1.4;word-break:keep-all}
-.lg-bro p{margin-top:10px;font-size:14.5px;color:var(--muted);line-height:1.7;word-break:keep-all}
-.lg-bro-cta{margin-top:20px;min-height:48px;padding:0 24px;font-size:15px}
-.lg-bro-cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-@media(max-width:640px){.lg-bro-cta{width:100%}}
+/* ── LB35 도입 절차 4단계 (peer, 숫자 없음) ─────────────────────────── */
+.lg-steps{list-style:none;padding:0;margin:0}
+.lg-step{position:relative;padding:24px;gap:8px}
+.lg-step-ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff)}
+.lg-step-label{margin-top:8px;font-size:17px;font-weight:800;line-height:1.4}
+.lg-step-desc{font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
+/* 연결선: 1041 이상 카드 사이 가로선(카드 간격 폭), 560 이하 좌측 세로선. 561~1040 없음 */
+.lg-step:not(:last-child)::after{content:"";position:absolute;background:var(--line)}
+.lg-step:not(:last-child)::after{top:48px;right:calc(-1 * var(--lg-gap-card));width:var(--lg-gap-card);height:1px}
+@media(max-width:1040px){.lg-step:not(:last-child)::after{display:none}}
+@media(max-width:560px){
+  .lg-step:not(:last-child)::after{display:block;top:auto;right:auto;left:48px;bottom:calc(-1 * var(--lg-gap-card));width:1px;height:var(--lg-gap-card)}
+}
+.lg-steps-foot{margin-top:var(--lg-gap-head);display:flex;justify-content:center}
+.lg-steps-cta{min-height:48px;padding:0 28px;font-size:15px}
+.lg-steps-cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:560px){.lg-steps-cta{width:100%}}
+
+/* ── LB32 카드뉴스 스토리 (4+8, media-nav, 좌 뷰어가 높이 결정자) ────── */
+.lg-story{align-items:stretch}
+.lg-story-media{display:flex;flex-direction:column;gap:12px;min-width:0}
+.lg-cn{display:flex;flex-direction:column;gap:12px}
+.lg-cn-track{list-style:none;margin:0;padding:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;-ms-overflow-style:none;border-radius:var(--r)}
+.lg-cn-track::-webkit-scrollbar{display:none}
+.lg-cn-slide{flex:0 0 100%;scroll-snap-align:start}
+.lg-cn-open{position:relative;display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-1)}
+.lg-cn-open:disabled{cursor:default}
+.lg-cn-open:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
+.lg-cn-open .lg-photo{border-radius:var(--r)}
+.lg-cn-zoom{position:absolute;right:10px;bottom:10px;width:32px;height:32px;border-radius:999px;display:grid;place-items:center;background:#fff;color:var(--ink);box-shadow:var(--shadow-1)}
+.lg-cn-ctrl{display:flex;align-items:center;justify-content:center;gap:4px}
+.lg-cn-btn{width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;background:none;border-radius:999px;color:var(--ink);cursor:pointer}
+.lg-cn-btn:disabled{color:var(--muted);opacity:.45;cursor:default}
+.lg-cn-btn:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.lg-cn-count{min-width:48px;text-align:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.lg-cn-cap{display:none;text-align:center;font-size:15px;font-weight:700;line-height:1.5;word-break:keep-all}
+@media (hover:hover) and (pointer:fine){
+  .lg-cn-btn:not(:disabled):hover{background:var(--surface)}
+  .lg-cn-open:not(:disabled) .lg-photo img{transition:transform .24s var(--ease)}
+  .lg-cn-open:not(:disabled):hover .lg-photo img{transform:scale(1.02)}
+}
+.lg-story-side{display:flex;flex-direction:column;gap:var(--lg-gap-card);min-width:0}
+.lg-toc{display:grid;grid-auto-rows:1fr;gap:8px;flex:1;margin:0;padding:0;list-style:none}
+.lg-toc-item{display:flex;flex-direction:column;justify-content:center;width:100%;height:100%;min-height:44px;text-align:left;cursor:pointer;
+  padding:10px 16px;border:1px solid var(--line);border-left-width:3px;border-radius:0 var(--r) var(--r) 0;background:#fff;font:inherit;
+  transition:border-color .24s var(--ease)}
+.lg-toc-item[aria-current="true"]{border-left-color:var(--p4)}
+.lg-toc-item .t{font-size:15px;font-weight:700;color:var(--muted);line-height:1.45;word-break:keep-all}
+.lg-toc-item[aria-current="true"] .t{color:var(--ink);font-weight:800}
+.lg-toc-item .s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5;word-break:keep-all}
+.lg-toc-item:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.lg-toc-item:hover .t{color:var(--ink)}}
+/* 880 이하: 목차 숨김, 뷰어 최대 480 가운데, 86% 피크 + 캡션 */
+/* 881~1040: 5+7. 요약 줄은 유지(명세는 숨김이나, 숨기면 늘어난 항목 안이 절반 이상 비어 우측 채움 기준 미달 — 보고) */
+@media(max-width:1040px){
+  .lg-story>.lg-c4{grid-column:span 5}.lg-story>.lg-c8{grid-column:span 7}
+}
+@media(max-width:880px){
+  .lg-story>.lg-c4,.lg-story>.lg-c8{grid-column:span 12}
+  .lg-story-media{max-width:480px;width:100%;margin-inline:auto}
+  .lg-toc-h,.lg-toc{display:none}
+  .lg-cn-track{gap:12px;border-radius:0}
+  .lg-cn-slide{flex-basis:86%}
+  .lg-cn-cap{display:block}
+}
+
+/* ── LB33 과정소개서 컴팩트 카드 ──────────────────────────────────── */
+.lg-brochure{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding:18px}
+/* 표지: 소개서 PDF 1쪽(가로 16:9 원본 비율) */
+.lg-brochure-cover{width:144px;border-radius:8px;box-shadow:var(--shadow-2)}
+.lg-brochure-body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lg-brochure-title{font-size:16px;font-weight:800;line-height:1.4;word-break:keep-all}
+.lg-brochure-inc{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.lg-brochure-inc li{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 10px;border-radius:999px;background:var(--surface);font-size:13px;font-weight:600}
+.lg-brochure-meta{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.lg-brochure-body>.lg-box-foot{margin-top:4px}
+.lg-brochure-cta{min-height:48px;padding:0 22px;font-size:15px}
+.lg-brochure-cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:880px){.lg-brochure-cover{width:112px}}
+@media(max-width:560px){.lg-brochure{grid-template-columns:1fr}.lg-brochure-cover{width:100%;max-width:240px}.lg-brochure-cta{width:100%}}
+
+/* ── LB32 카드뉴스 확대 보기 (useModal) ───────────────────────────── */
+.lg-lb-dim{position:fixed;inset:0;z-index:110;background:rgba(20,20,26,.4)}
+.lg-lb{position:fixed;z-index:111;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90vw,560px);max-height:96dvh;
+  display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;background:#fff;border-radius:22px;box-shadow:var(--shadow-3)}
+.lg-lb-fig{width:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.lg-lb-img{width:min(100%,calc(86dvh * .8));border-radius:12px;animation:lg-lbfade .2s var(--ease)}
+@keyframes lg-lbfade{from{opacity:0}to{opacity:1}}
+.lg-lb-cap{font-size:15px;font-weight:700;text-align:center;word-break:keep-all}
+.lg-lb-close{position:absolute;top:-14px;right:-14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);
+  display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-2)}
+.lg-lb-close:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media(max-width:560px){.lg-lb-close{top:6px;right:6px}}
+@media(prefers-reduced-motion:reduce){.lg-lb-img{animation:none}.lg-toc-item,.lg-cn-open .lg-photo img{transition:none}}
 
 /* ── LB12 실무 FAQ (답변 확정 전 비표시) ────────────────────────────── */
 .lg-faq ul{list-style:none;border-top:1px solid var(--line)}

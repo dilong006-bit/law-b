@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { courseById } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { usePick } from '@/lib/legal/pick';
-import { IcChevUp } from './icons';
+import { LgIcon } from './icons';
 
 const T = HUB_COPY.tray;
 /** 가상 키보드를 올리는 입력만 숨김 대상 — 진단·필터 라디오, 체크박스는 제외 */
@@ -91,7 +91,7 @@ export default function PickTray() {
               <li key={id}>
                 <span>{c.short}</span>
                 <button type="button" className="lg-tray-rm" onClick={() => remove(id)} aria-label={`${c.short} ${T.remove}`} data-ga-id={`legal-pick-${id}`}>
-                  {T.remove}
+                  <LgIcon name="minus" size={16} /> {T.remove}
                 </button>
               </li>
             );
@@ -101,7 +101,7 @@ export default function PickTray() {
       <button type="button" className="lg-tray-sum" aria-expanded={listOpen} aria-controls="lg-tray-list" onClick={() => setListOpen((o) => !o)}>
         <span className="lg-tray-n" key={picked.length}>{T.count(picked.length)}</span>
         <span className="lg-tray-names">{summary}</span>
-        <span className="lg-tray-chev" aria-hidden="true"><IcChevUp /></span>
+        <span className="lg-tray-chev" aria-hidden="true"><LgIcon name={listOpen ? 'chevron-down' : 'chevron-up'} size={16} /></span>
       </button>
       {/* 법정 문의로 이동 — 희망과정은 선택 상태와 이미 동기화돼 있다 */}
       <button type="button" className="btn lg-tray-cta" onClick={goInquiry} data-ga-id="legal-tray-inquiry">

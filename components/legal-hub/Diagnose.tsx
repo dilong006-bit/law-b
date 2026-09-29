@@ -6,6 +6,7 @@ import { HUB_COPY } from '@/data/legalHub';
 import { diagnose, type DiagAnswer } from '@/lib/legal/diagnose';
 import { usePick } from '@/lib/legal/pick';
 import BlockHead from './BlockHead';
+import { LgIcon } from './icons';
 
 const D = HUB_COPY.diagnose;
 const GROUPS = ['mandatory', 'recommended', 'industry'] as const;
@@ -85,7 +86,7 @@ export default function Diagnose() {
               </div>
             ))}
             {result.smallNote && <p className="lg-diag-small">{D.smallNote}</p>}
-            <p className="lg-diag-note">{result.complete ? D.note : D.defaultNote}</p>
+            <p className="lg-diag-note"><LgIcon name="clipboard-check" size={16} /> <span>{result.complete ? D.note : D.defaultNote}</span></p>
           </div>
           <div className="lg-box-foot">
             <button type="button" className="btn btn-ink lg-diag-add" onClick={onAdd} data-ga-id="legal-diag-addall">

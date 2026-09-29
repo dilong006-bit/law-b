@@ -6,10 +6,9 @@ import HubHead from './HubHead';
 import Diagnose from './Diagnose';
 import CourseLineup from './CourseLineup';
 import PickTray from './PickTray';
-import LawTable from './LawTable';
-import OpsSupport from './OpsSupport';
-import Difference from './Difference';
-import Resources from './Resources';
+import StandardAndDiff from './StandardAndDiff';
+import Process from './Process';
+import CardNewsStory from './CardNewsStory';
 import HubFaq from './HubFaq';
 import HubInquiry from './HubInquiry';
 
@@ -21,23 +20,22 @@ function PickAnnouncer() {
 
 /**
  * /content#mandatory 법정 허브 (legal-B §6-2). 기존 #ax5 섹션 자리를 대체한다.
- * 블록 순서(§6-2): 헤더·탭(LB4) → 진단(LB5) → 라인업·상세(LB6·7) → 법정 기준(LB8) → 운영 지원(LB9)
- * → 차별점(LB10) → 자료(LB11) → (FAQ 비표시, LB12) → 문의(LB14). 선택 바(LB13)는 공통.
+ * 블록 순서(upgrade-03 §3): 헤더·빠른 실행 → 진단 → 과정 7 + 맞춤 타일 → 법정 기준·차이 → 도입 절차
+ * → 자료(카드뉴스 스토리·소개서) → (FAQ 비표시) → 빠른 상담. 선택 바(LB13)는 공통.
  */
-export default function LegalHub({ icon }: { icon: () => JSX.Element }) {
+export default function LegalHub() {
   return (
     <section className="section lg-hub" id="mandatory" aria-labelledby="mandatory-title">
       {/* 기존 #ax5 딥링크 호환 — 섹션 상단에 두어 예전 #ax5 섹션과 같은 위치에 착지한다 */}
       <span id="ax5" className="lg-ax5" aria-hidden="true" />
       <PickProvider>
         <div className="wrap">
-          <HubHead icon={icon} />
+          <HubHead />
           <Diagnose />
           <CourseLineup />
-          <LawTable />
-          <OpsSupport />
-          <Difference />
-          <Resources />
+          <StandardAndDiff />
+          <Process />
+          <CardNewsStory />
           {/* LB12 실무 FAQ — 답변 확정 전 블록 전체 비표시 (질문만 노출 금지) */}
           {HUB_COPY.faq.show && <HubFaq />}
         </div>

@@ -6,7 +6,7 @@
 | **상위 문서** | PRD_KEESS_26827_legal-B_v1.0_upgrade-02.md (LB32~LB39) |
 | **기준 명세** | TECHSPEC v1.0 + TECHSPEC upgrade-01 (§13 결정 D1~D9 포함). 이 문서에 없는 내용은 기준 명세 그대로 |
 | **전략 근거** | KEESS_26827_법정필수_B안_UIUX전략_upgrade-03_260929.md |
-| **기준 커밋** | law-b main ea106b1 (커밋 11 반영 후에는 그 커밋) |
+| **기준 커밋** | law-b main e0e783b (커밋 11 보완 반영) |
 | **작성일** | 2026-09-29 |
 
 ---

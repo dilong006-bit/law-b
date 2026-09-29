@@ -5,7 +5,7 @@ import { lawOf, previewUrl, type LegalCourse } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { usePick } from '@/lib/legal/pick';
 import { kindText } from './CourseCard';
-import { IcChevL, IcChevR, IcClose, IcExternal } from './icons';
+import { LgIcon } from './icons';
 
 const L = HUB_COPY.lineup;
 const DL = L.detailLabels;
@@ -30,7 +30,7 @@ export default function CourseDetail({ course, titleId, prev, next, onGo, onClos
   return (
     <div className="lg-detail">
       {onClose && (
-        <button type="button" className="lg-dclose" onClick={onClose} aria-label={L.close}><IcClose /></button>
+        <button type="button" className="lg-dclose" onClick={onClose} aria-label={L.close}><LgIcon name="x" size={16} /></button>
       )}
       <div className="lg-dhead">
         <div className="lg-dthumb"><Img src={course.thumb} /></div>
@@ -96,15 +96,15 @@ export default function CourseDetail({ course, titleId, prev, next, onGo, onClos
             aria-label={`${course.name} ${L.preview} (새 창)`}
             data-ga-id={`legal-preview-${course.id}`}
           >
-            {L.previewFull} <IcExternal />
+            {L.previewFull} <LgIcon name="external-link" size={14} />
           </a>
         </div>
         <div className="lg-dnav">
           <button type="button" className="lg-dnav-btn" disabled={!prev} onClick={() => prev && onGo(prev)} aria-label={prev ? `${L.prev}: ${prev.short}` : L.prev}>
-            <IcChevL /> {L.prev}
+            <LgIcon name="chevron-left" size={16} /> {L.prev}
           </button>
           <button type="button" className="lg-dnav-btn" disabled={!next} onClick={() => next && onGo(next)} aria-label={next ? `${L.next}: ${next.short}` : L.next}>
-            {L.next} <IcChevR />
+            {L.next} <LgIcon name="chevron-right" size={16} />
           </button>
         </div>
       </div>

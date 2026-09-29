@@ -27,7 +27,7 @@
 2. **짝 관계 없는 배치:** 기존 배포본은 카드뉴스와 소개서를 역할 관계 없이 한 행에 둬 높이 차 219%, 빈 공간 41%
 3. **빠른 상담 패널 채움 19%:** 긴 폼 옆 다크 패널이 짧은 문구뿐이라 비어 보임
 4. **도입 절차와 자료가 한 블록:** 주 행동(이해 / 자료 확보)이 달라 블록 헤더 1개로 묶기 어려움
-5. **히어로 2차 버튼 글자 대비 3.13~3.98:** 텍스트 기준 4.5:1 미달 (upgrade-01 지시 오류, D9로 정정)
+5. **히어로 2차 버튼 글자 대비:** 재측정 결과 충족 (글자 6.02~9.53), 코드 변경 없음 (당초 3.13~3.98 은 버튼 전체 영역 측정 오류. 글자는 글리프 영역, 경계는 1px 링으로 측정 — D9)
 
 > "빈 공간은 줄이는 게 아니라 기능으로 채운다."
 
@@ -160,7 +160,7 @@
 - 법정 슬라이드 2차 버튼 글자 대비 4.5:1 이상 (D9)
 - 새 색·새 변형 금지. 기존 버튼 클래스 중 조건을 만족하는 것 적용
 - 1차·2차 버튼 시각 구분 유지
-- 완료 조건: 8개 폭 모두 4.5 이상
+- 완료 조건: 8개 폭 모두 4.5 이상 → 재측정 결과 충족 (글자 6.02~9.53), 코드 변경 없음 (커밋 11 보완 e0e783b)
 
 ### 3-7. LB37 짝 설계 검수 (Must, LB30 확장)
 - 모든 `[data-balance-row]` 에 `data-pair` 속성(관계 유형)과 `data-height-owner`(높이 결정자) 지정
@@ -220,7 +220,7 @@
 
 | 대상 | 변경 |
 |---|---|
-| data/legal.ts `LEGAL_CARDNEWS` | 4개, 필드 `{ src, alt, title, summary }`. src는 Unsplash 핫링크(임시) |
+| data/legal.ts `LEGAL_CARDNEWS` | 4개, 필드 `{ photo, alt, title, summary }`. photo는 Unsplash 핫링크(임시) |
 | data/legalHub.ts `HUB_COPY.resources` | `storyTitle`, `counter`, `open(n)`, `prev`, `next`, brochure `includes`, `meta`, `cover` |
 | data/legalHub.ts `HUB_COPY.inquiry` | `promises[2]`, `pickedTitle(n)`, `pickedEmpty`, `addCommon`, `remove` |
 | public/images/legal/brochure-cover.jpg | 신규 (PDF 1쪽 렌더) |
@@ -229,7 +229,7 @@
 | lib/legal/iconData.ts | 추출 스크립트가 생성하는 사용 아이콘만의 SVG body (커밋 대상) |
 | components/legal-hub/icons.tsx | `LgIcon` 래퍼로 교체 (iconData 기반 인라인 SVG) |
 
-- 최종본(10/12) 교체: `LEGAL_CARDNEWS` 의 src 4개와 title·summary·alt 를 최종 원고로 교체. 컴포넌트 수정 없음
+- 최종본(10/12) 교체: `LEGAL_CARDNEWS` 의 photo 4개와 title·summary·alt 를 최종 원고로 교체. 컴포넌트 수정 없음
 
 ---
 

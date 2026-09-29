@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Img from '@/components/common/Img';
 import { HERO_SLIDES } from '@/data/home';
+import { LgIcon } from '@/components/legal-hub/icons';
 
 const DUR = 6000;
 
@@ -130,7 +131,7 @@ export default function HeroCarousel() {
                     </Link>
                   )}
                 </div>
-                {s.link && <Link className="hs-link" href={s.link.href} data-ga-id={s.link.gaId}>{s.link.label}</Link>}
+                {s.link && <Link className="hs-link" href={s.link.href} data-ga-id={s.link.gaId}>{s.link.label} <LgIcon name="arrow-right" size={16} /></Link>}
                 {s.trust && <p className="hs-trust">{s.trust}</p>}
               </div>
             </div>

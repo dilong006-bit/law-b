@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "test:hero": "playwright test tests/hero-collision.spec.ts"
+    "test:hero": "playwright test tests/hero-collision.spec.ts",
+    "icons:legal": "node scripts/gen-legal-icons.mjs"
   },
   "dependencies": {
     "@firecms/neat": "^1.0.2",
@@ -17,6 +18,8 @@
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.137",
+    "@iconify/utils": "^3.1.7",
     "@playwright/test": "^1.62.1",
     "@types/node": "20.14.10",
     "@types/react": "18.3.3",

@@ -10,7 +10,7 @@ import CourseCard from './CourseCard';
 import CourseDetail from './CourseDetail';
 import CustomTile from './CustomTile';
 import BlockHead from './BlockHead';
-import { IcClose } from './icons';
+import { LgIcon } from './icons';
 import { useEdgeFade } from './useEdgeFade';
 
 const L = HUB_COPY.lineup;
@@ -175,7 +175,7 @@ export default function CourseLineup() {
               onTouchStart={(e) => { dragY.current = e.touches[0].clientY; }}
               onTouchEnd={(e) => { if (dragY.current !== null && e.changedTouches[0].clientY - dragY.current > 60) closeDetail(); dragY.current = null; }}
             ><span /></div>
-            <button type="button" className="lg-sheet-close" onClick={closeDetail} aria-label={L.close} data-autofocus><IcClose /></button>
+            <button type="button" className="lg-sheet-close" onClick={closeDetail} aria-label={L.close} data-autofocus><LgIcon name="x" size={16} /></button>
             <div className="lg-sheet-body">
               {openCourse && (
                 <CourseDetail course={openCourse} titleId={titleId(openCourse.id)} prev={prev} next={next} onGo={(t: LegalCourse) => setOpenId(t.id)} onConsult={() => consultWith(openCourse)} />

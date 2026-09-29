@@ -4,7 +4,7 @@ import Img from '@/components/common/Img';
 import { lawOf, previewUrl, type LegalCourse } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { usePick } from '@/lib/legal/pick';
-import { IcCheck, IcExternal, IcPlus } from './icons';
+import { LgIcon } from './icons';
 
 const L = HUB_COPY.lineup;
 
@@ -36,7 +36,7 @@ export default function CourseCard({ course, open, detailId, onToggle }: {
           onClick={() => pick.toggle(course.id)}
           data-ga-id={`legal-pick-${course.id}`}
         >
-          {picked ? <IcCheck /> : <IcPlus />}
+          <LgIcon name={picked ? 'check' : 'plus'} size={18} />
         </button>
       </div>
       <div className="lg-card-body">
@@ -62,7 +62,7 @@ export default function CourseCard({ course, open, detailId, onToggle }: {
             aria-label={`${course.name} ${L.preview} (새 창)`}
             data-ga-id={`legal-preview-${course.id}`}
           >
-            {L.preview} <IcExternal />
+            {L.preview} <LgIcon name="external-link" size={14} />
           </a>
         </div>
       </div>

@@ -160,10 +160,17 @@ export const LEGAL_COPY = {
   contentLink: '법정필수교육 과정·미리보기 전체 보기',
 } as const;
 
-// 카드뉴스 4장 (디자이너 요청 확정본, 1080×1350). 재제작본 수령 시 src 만 '/images/legal/cardnews-01.jpg' ~ '04.jpg' 로 교체
-export const LEGAL_CARDNEWS: { src: string | null; alt: string }[] = [
-  { src: null, alt: '법정교육, 우리 회사는 몇 개나 끝냈나요?' },
-  { src: null, alt: '교육만 열면 끝일까요?' },
-  { src: null, alt: '2026년 최신 법정필수교육, KG에듀원이 한 곳에 모았습니다' },
-  { src: null, alt: '올해 법정교육, 지금 KG에듀원에서 점검하세요' },
+// 카드뉴스 4장 (legal-B upgrade-02 LB32, TECHSPEC upgrade-02 §2-1)
+// photo: images.unsplash.com 기본 URL(쿼리 없음) — 최종본(10/12) 전 임시 실사, 출처는 ref/legal/ASSET_SOURCES.md
+// 임시 사진은 원고 문구를 담지 않으므로 alt 는 title 과 같게 둔다. 최종본 수령 시 photo(로컬 경로 가능)·alt(최종 문구 전문)·title·summary 교체
+export type LegalCardNews = { photo: string; alt: string; title: string; summary: string };
+export const LEGAL_CARDNEWS: readonly LegalCardNews[] = [
+  { photo: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643', alt: '법정교육, 우리 회사는 몇 개나 끝냈나요?',
+    title: '법정교육, 우리 회사는 몇 개나 끝냈나요?', summary: '매년 챙겨야 할 법정교육을 점검해 보세요' },
+  { photo: 'https://images.unsplash.com/photo-1631557777232-a2632ae3c67d', alt: '교육만 열면 끝일까요?',
+    title: '교육만 열면 끝일까요?', summary: '대상 선정부터 증빙까지 담당자가 챙길 일' },
+  { photo: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8', alt: '2026년 최신 법정필수교육, 한 곳에 모았습니다',
+    title: '2026년 최신 법정필수교육, 한 곳에 모았습니다', summary: '최신 콘텐츠 · 맞춤 구성 · 운영 지원' },
+  { photo: 'https://images.unsplash.com/photo-1577412647305-991150c7d163', alt: '올해 법정교육, 지금 점검하세요',
+    title: '올해 법정교육, 지금 점검하세요', summary: '3가지 질문으로 필요한 과정 확인' },
 ];

@@ -5,7 +5,7 @@
 export const LEGAL_SEASON = { on: true } as const; // 홈 히어로 법정 슬라이드 표시 플래그 (off 면 홈이 B안 착수 전과 동일)
 
 export const HUB_COPY = {
-  // 홈 히어로 법정 슬라이드 (upgrade-01 LB18, TECHSPEC upgrade-01 §2-1). 이미지는 D6 결정: Unsplash 핫링크(ref/legal/IMAGE_SOURCES.md)
+  // 홈 히어로 법정 슬라이드 (upgrade-01 LB18, TECHSPEC upgrade-01 §2-1). 이미지는 D6 결정: Unsplash 핫링크(ref/legal/ASSET_SOURCES.md)
   heroSlide: {
     tag: '2026 법정필수교육',
     title: ['올해 법정교육,', '한 곳에서 준비하세요'],
@@ -71,29 +71,59 @@ export const HUB_COPY = {
     prev: '이전 과정', next: '다음 과정', close: '닫기',
   },
   law: {
-    title: '법정 기준',
+    // upgrade-01 LB24: BlockHead kicker·제목 (표 데이터·기준일·출처·안내 문구는 v1.0 그대로)
+    kicker: '법정 기준',
+    title: '교육별 법적 근거와 대상',
     cols: ['교육', '구분', '근거', '대상', '주기'],
     basis: '2026년 9월 기준 · 출처: 찾기쉬운 생활법령정보, 한국장애인고용공단',
     notes: ['실제 적용 대상은 사업장 여건에 따라 다를 수 있습니다.', '과태료 등 제재 기준은 상담 시 최신 법령으로 안내해 드립니다.'],
     // 단계 7 추가: 근거가 없는 과정의 근거·대상·주기 칸 (기술명세서 §6-6 표기)
     consult: '상담 시 안내',
   },
-  ops: {
-    title: '교육은 저희가 운영하고, 담당자는 결과만 확인하세요',
-    items: [
-      { t: '전담 운영자 정·부 2명 지정', d: '운영 공백 없이 상시 대응합니다.', show: true },
-      { t: '월 1회 이상 방문 관리', d: '의견을 듣고 운영 품질을 점검합니다.', show: true },
-      { t: '이수 현황·수료증 관리', d: '', show: false },  // 요청자 확인 전 비표시
-      { t: '미이수자 학습 독려', d: '', show: false },    // 요청자 확인 전 비표시
+  // upgrade-01 LB24: 운영 지원·차별점 독립 블록을 차이 카드 3장으로 흡수. 운영 항목은 확인된 2개만
+  // current: 기존 ax5 타임라인의 현재 시리즈 표기 그대로
+  diff: {
+    title: 'KG에듀원 법정교육이 다른 점',
+    current: '현재 시리즈',
+    cards: [
+      { key: 'series', title: '매년 새로운 시리즈', desc: '해마다 새로 제작해 반복 수강의 지루함을 줄입니다.' },
+      { key: 'story', title: '몰입형 스토리 콘텐츠', desc: '법정 필수 내용을 이야기 속에서 자연스럽게 익힙니다.', more: '비교표 보기', less: '비교표 닫기' },
+      { key: 'ops', title: '전담 운영 지원', items: ['전담 운영자 정·부 2명 지정', '월 1회 이상 방문 관리'] },
     ],
   },
-  // current: 단계 7 추가 (기존 ax5 타임라인의 현재 시리즈 표기 그대로)
-  diff: { title: '매년 새로운 시리즈, 몰입하는 법정교육', current: '현재 시리즈' },
+  // upgrade-01 LB25 + upgrade-02 LB35: 도입 절차 독립 블록
+  process: {
+    id: 'mandatory-process',
+    kicker: '도입 절차',
+    title: '신청부터 운영까지 4단계',
+    steps: [
+      { key: 'pick', label: '과정 선택', desc: '진단이나 과정 카드에서 필요한 과정을 담습니다.' },
+      { key: 'apply', label: '상담 신청', desc: '담은 과정 그대로 빠른 상담을 신청합니다.' },
+      { key: 'fix', label: '구성 확정', desc: '담당자가 인원·일정·운영 방식을 함께 정합니다.' },
+      { key: 'run', label: '교육 운영', desc: '전담 운영자가 학습 기간 동안 운영을 지원합니다.' },
+    ],
+    cta: { label: '빠른 상담 신청', gaId: 'legal_process_consult' },
+  },
+  // upgrade-02 LB32·LB33: 카드뉴스 스토리 + 소개서 컴팩트 카드
   resources: {
     id: 'mandatory-resources',
+    kicker: '자료',
     title: '카드뉴스와 과정소개서',
-    brochure: { title: '2026 법정필수교육 과정소개서', desc: '과정 구성, 학습 목표, 강사 정보를 PDF로 받아보세요.', cta: '과정소개서 받기', next: '담은 과정으로 도입 문의하기' },
-    cardNewsLabel: '법정교육 카드뉴스', placeholder: '디자인 재제작 예정',
+    lead: '짧게 훑어보고, 자세한 내용은 과정소개서로 받아보세요.',
+    cardNewsLabel: '법정교육 카드뉴스',
+    storyTitle: '카드뉴스로 먼저 보기',
+    counter: (i: number, n: number) => `${i} / ${n}`,
+    prev: '이전 카드', next: '다음 카드',
+    open: (n: number) => `카드뉴스 ${n}번 크게 보기`,
+    close: '닫기',
+    brochure: {
+      title: '2026 법정필수교육 과정소개서',
+      includes: ['과정 구성', '학습 목표', '강사 정보'],
+      meta: 'PDF · 7개 과정',
+      cta: '과정소개서 받기',
+      next: '담은 과정으로 빠른 상담하기',
+      cover: { src: '/images/legal/brochure-cover.jpg', alt: '2026 법정필수교육 과정소개서 표지' },
+    },
   },
   faq: { show: false, items: [] as { q: string; a: string }[] }, // 답변 확정 전 비표시
   inquiry: {

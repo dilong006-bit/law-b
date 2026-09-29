@@ -147,7 +147,7 @@ export default function Sections() {
       </section>
 
       {/* ── 법정 허브 (legal-B, 기존 ax5 대체) ── */}
-      <LegalHub icon={AX_ICONS[4]} />
+      <LegalHub />
 
       {/* ── ax6 제작·파트너 ── */}
       <section className="section" id="ax6">
