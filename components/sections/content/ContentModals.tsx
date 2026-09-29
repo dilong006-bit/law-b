@@ -12,7 +12,40 @@ import { fetchFileWithProgress } from '@/lib/download/fetchWithProgress';
 import { saveBlob } from '@/lib/download/saveBlob';
 import { canUseBlobDownload } from '@/lib/download/canUseBlobDownload';
 
-interface Ctx { openConsult: (axis?: string) => void; openDownload: () => void }
+import { LEGAL_COPY } from '@/data/legal';
+
+/**
+ * 다운로드 자산 (기술명세서 legal-A §7 LF6).
+ * 기본값이 courseList 이므로 /content 의 기존 호출 openDownload() 는 동작·마크업이 그대로다.
+ * FILE_URL 이 null 이면 파일이 아직 없다는 뜻 — 제출 성공 뒤 다운로드 단계를 건너뛰고 안내만 한다.
+ */
+export type DownloadAsset = 'courseList' | 'legalBrochure';
+const DOWNLOAD_ASSETS = {
+  courseList: {
+    kind: '과정리스트',
+    FILE_URL: DC.FILE_URL as string | null,
+    FILE_NAME: DC.FILE_NAME,
+    FILE_SIZE_LABEL: DC.FILE_SIZE_LABEL,
+    title: DOWNLOAD_MODAL.title,
+    mb: DOWNLOAD_MODAL.mb1 + ' · ' + DOWNLOAD_MODAL.mb2,
+    submit: DOWNLOAD_MODAL.submit,
+    gaId: undefined as string | undefined,
+  },
+  legalBrochure: {
+    kind: '법정 과정소개서',
+    // 자산 수령 완료(2026-09-28) — 경로가 채워지면 과정리스트와 같은 다운로드 흐름을 탄다
+    FILE_URL: '/downloads/KG에듀원_2026_법정필수교육_과정소개서.pdf' as string | null,
+    FILE_NAME: 'KG에듀원_2026_법정필수교육_과정소개서.pdf',
+    FILE_SIZE_LABEL: '약 6.7MB',
+    title: LEGAL_COPY.resources.brochureTitle,
+    mb: 'PDF · 약 6.7MB',
+    submit: LEGAL_COPY.resources.brochureCta,
+    gaId: 'legal-brochure-submit' as string | undefined,
+  },
+} as const;
+
+// openDownload 인자는 unknown 도 받는다 — 기존 호출부 onClick={openDownload} 가 이벤트를 넘겨도 타입·동작이 그대로다.
+interface Ctx { openConsult: (axis?: string) => void; openDownload: (asset?: DownloadAsset | React.SyntheticEvent) => void }
 const ModalCtx = createContext<Ctx>({ openConsult: () => {}, openDownload: () => {} });
 export const useContentModal = () => useContext(ModalCtx);
 
@@ -26,12 +59,12 @@ const IcChat = () => (
 );
 
 
-function triggerDL() {
+function triggerDL(href: string, name: string) {
   const a = document.createElement('a');
-  a.href = DOWNLOAD.fileHref;
+  a.href = href;
   // 저장 파일명에 기준월을 실어 보낸다 — 화면에서 뺀 시점 표기가 사는 곳(DF-021-B).
   // 파일명 하드코딩 금지: DOWNLOAD.basisMonth 하나만 고치면 여기까지 따라온다.
-  a.download = downloadFileName;
+  a.download = name;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -95,7 +128,9 @@ const HAS_DL_OPTIN = CONSENT_TEXTS.download.optional !== null;
 
 const S = DOWNLOAD_MODAL.steps;
 
-function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void }) {
+function DownloadBody({ open, onClose, asset }: { open: boolean; onClose: () => void; asset: DownloadAsset }) {
+  const A = DOWNLOAD_ASSETS[asset];
+  const pending = A.FILE_URL === null;
   const [v, setV] = useState({ name: '', org: '', mail: '' });
   const [errs, setErrs] = useState<Record<string, boolean>>({});
   const [agree, setAgree] = useState(false);
@@ -151,6 +186,8 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
   // 자동 닫힘 — 'done' 에서만 건다(§5-1). error·preparing·downloading 에서는 절대 걸지 않는다.
   useEffect(() => {
     if (step !== 'done') return;
+    // 안내만 남는 자산(pending)은 자동으로 닫지 않는다 — 읽기 전에 사라지면 안내가 전달되지 않는다.
+    if (pending) return;
     closeTimer.current = window.setTimeout(() => { closeTimer.current = null; onClose(); },
       direct ? DC.AUTO_CLOSE_MS_DIRECT : DC.AUTO_CLOSE_MS);
     // 사용자가 손을 대면 타이머를 해제하고 재개하지 않는다(§5-2).
@@ -165,7 +202,7 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
       dialog?.removeEventListener('focusin', cancel);
       dialog?.removeEventListener('click', cancel);
     };
-  }, [step, direct, onClose, clearAutoClose]);
+  }, [step, direct, pending, onClose, clearAutoClose]);
 
   const onProgress = useCallback((recv: number, tot: number) => {
     const now = performance.now();
@@ -190,7 +227,7 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
     // 비적합 환경 → directMode: 진행률·완료 감지 없이 직접 링크로 저장(§4)
     if (!canUseBlobDownload()) {
       setDirect(true);
-      triggerDL();
+      triggerDL(A.FILE_URL as string, A.FILE_NAME);
       setLive(DOWNLOAD_MODAL.okTitle);
       setStep('done');
       return;
@@ -204,11 +241,11 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
     // 0.3초 안에 끝나면 스피너를 아예 띄우지 않는다 — 깜빡임 방지(§2-1)
     prepTimer.current = window.setTimeout(() => { prepTimer.current = null; setShowPreparing(true); }, DC.PREPARING_DELAY_MS);
     try {
-      const blob = await fetchFileWithProgress(DC.FILE_URL, ac.signal, onProgress);
+      const blob = await fetchFileWithProgress(A.FILE_URL as string, ac.signal, onProgress);
       clearPrep();
       // 100% → 저장 → 완료. 저장은 즉시 끝나므로 saving 화면은 통상 렌더되지 않는다(§2-3).
       setStep('saving');
-      saveBlob(blob, DC.FILE_NAME);
+      saveBlob(blob, A.FILE_NAME);
       setFails(0);
       setLive(S.doneTitle);
       setStep('done');
@@ -222,7 +259,7 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
     } finally {
       if (abortRef.current === ac) abortRef.current = null;
     }
-  }, [onProgress, clearPrep]);
+  }, [onProgress, clearPrep, A]);
 
   async function submit() {
     const next: Record<string, boolean> = {};
@@ -235,10 +272,12 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
     if (!agree) ok = false;
     if (!ok) return;
     // 제출 payload — 선택 동의는 렌더된 경우에만 포함. 입력값은 분석 도구로 전송하지 않는다.
-    const payload = { ...v, privacy_agreed: true, agreed_at: new Date().toISOString(), ...(HAS_DL_OPTIN ? { marketing_agreed: optIn } : {}) };
+    const payload = { ...v, material: A.kind, privacy_agreed: true, agreed_at: new Date().toISOString(), ...(HAS_DL_OPTIN ? { marketing_agreed: optIn } : {}) };
     // 리드 전송이 성공한 뒤에만 다운로드 단계로 들어간다(§7). 실패하면 폼 단계에 머문다.
     const sent = await submitLead(payload);
     if (!sent) return;
+    // 파일이 아직 없는 자산은 다운로드 단계를 건너뛰고 안내 화면으로 간다.
+    if (pending) { setLive(LEGAL_COPY.resources.brochurePendingTitle); setStep('done'); return; }
     void startDownload();
   }
 
@@ -266,8 +305,8 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
           <div className={fld('org')}><label>회사/기관 <span className="req">*</span></label><input aria-label="회사/기관" placeholder="회사명" value={v.org} onChange={upd('org')} /><span className="err">회사/기관을 입력해 주세요.</span></div>
           <div className={fld('mail')}><label>이메일 <span className="req">*</span></label><input aria-label="이메일" type="email" placeholder="name@company.com" value={v.mail} onChange={upd('mail')} /><span className="err">올바른 이메일을 입력해 주세요.</span></div>
           <ConsentGroup formKey="download" idPrefix="dl-" required={agree} onRequiredChange={(c) => { setAgree(c); if (c) setAgreeErr(false); }} error={agreeErr} optional={optIn} onOptionalChange={setOptIn} />
-          <button className="btn btn-ink" style={{ width: '100%', marginTop: 18 }} onClick={submit} disabled={busy} aria-busy={busy}>
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16" /></svg> {DOWNLOAD_MODAL.submit}
+          <button className="btn btn-ink" style={{ width: '100%', marginTop: 18 }} onClick={submit} disabled={busy} aria-busy={busy} data-ga-id={A.gaId}>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16" /></svg> {A.submit}
           </button>
         </div>
       ) : (
@@ -276,7 +315,7 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
             <>
               <div className="ic" aria-hidden="true"><Loader2 className="dl-spin" /></div>
               <h3>{S.preparingTitle}</h3>
-              <p className="lead">{DC.FILE_SIZE_LABEL} · {S.preparingMsg}</p>
+              <p className="lead">{A.FILE_SIZE_LABEL} · {S.preparingMsg}</p>
               <div className="dl-acts"><button className="dl-text" type="button" onClick={cancelDownload}>{S.cancel}</button></div>
             </>
           )}
@@ -308,12 +347,12 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
           {step === 'done' && (
             <>
               <div className="ic" aria-hidden="true"><Check /></div>
-              <h3>{direct ? DOWNLOAD_MODAL.okTitle : S.doneTitle}</h3>
-              <p className="lead" style={{ margin: '0 auto 14px' }}>{direct ? DOWNLOAD_MODAL.okMsg : S.doneMsg}</p>
-              <p className="dl-hint">{S.doneHint}</p>
-              {!reduce && <div className="dl-count" aria-hidden="true"><i style={{ animationDuration: `${autoCloseMs}ms` }} /></div>}
+              <h3>{pending ? LEGAL_COPY.resources.brochurePendingTitle : direct ? DOWNLOAD_MODAL.okTitle : S.doneTitle}</h3>
+              <p className="lead" style={{ margin: '0 auto 14px' }}>{pending ? LEGAL_COPY.resources.brochurePendingMsg : direct ? DOWNLOAD_MODAL.okMsg : S.doneMsg}</p>
+              {!pending && <p className="dl-hint">{S.doneHint}</p>}
+              {!pending && !reduce && <div className="dl-count" aria-hidden="true"><i style={{ animationDuration: `${autoCloseMs}ms` }} /></div>}
               <div className="dl-acts"><button className="btn-line-dark" type="button" onClick={onClose}>{S.close}</button></div>
-              <a className="dl-text" href={DC.FILE_URL} download={DC.FILE_NAME}>{S.fallback}</a>
+              {!pending && <a className="dl-text" href={A.FILE_URL as string} download={A.FILE_NAME}>{S.fallback}</a>}
             </>
           )}
 
@@ -325,7 +364,7 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
               <p className="lead" style={{ margin: '0 auto 14px' }}>{S.errMsg}</p>
               <div className="dl-acts">
                 {fails < DC.MAX_RETRY && <button className="btn btn-ink" type="button" onClick={() => void startDownload()}>{S.retry}</button>}
-                <a className="btn btn-line-dark" href={DC.FILE_URL} download={DC.FILE_NAME}>{S.direct}</a>
+                <a className="btn btn-line-dark" href={A.FILE_URL as string} download={A.FILE_NAME}>{S.direct}</a>
               </div>
             </>
           )}
@@ -337,19 +376,21 @@ function DownloadBody({ open, onClose }: { open: boolean; onClose: () => void })
 
 export default function ContentModalProvider({ children }: { children: React.ReactNode }) {
   const [consult, setConsult] = useState<{ open: boolean; axis?: string }>({ open: false });
-  const [dl, setDl] = useState(false);
+  const [dl, setDl] = useState<{ open: boolean; asset: DownloadAsset }>({ open: false, asset: 'courseList' });
   const openConsult = (axis?: string) => setConsult({ open: true, axis });
   // 자동 닫힘 타이머가 매 렌더마다 리셋되지 않도록 참조를 고정한다.
-  const closeDl = useCallback(() => setDl(false), []);
+  const closeDl = useCallback(() => setDl((s) => ({ ...s, open: false })), []);
+  const dlAsset = DOWNLOAD_ASSETS[dl.asset];
 
   return (
-    <ModalCtx.Provider value={{ openConsult, openDownload: () => setDl(true) }}>
+    // 기존 호출부 onClick={openDownload} 는 클릭 이벤트를 넘긴다 — 자산 id 문자열이 아니면 기본값(courseList)으로 둔다.
+    <ModalCtx.Provider value={{ openConsult, openDownload: (a?: DownloadAsset | React.SyntheticEvent) => setDl({ open: true, asset: typeof a === 'string' && a in DOWNLOAD_ASSETS ? a : 'courseList' }) }}>
       {children}
       <Modal open={consult.open} onClose={() => setConsult({ open: false })} labelledBy="c-title" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcChat /></span><span>{CONSULT_MODAL.title}</span><span className="mb">{CONSULT_MODAL.mb}</span></span>} maxWidth={480}>
         <ConsultBody axis={consult.axis} onClose={() => setConsult({ open: false })} />
       </Modal>
-      <Modal open={dl} onClose={closeDl} labelledBy="d-title" describedBy="dl-desc" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcSheet /></span><span>{DOWNLOAD_MODAL.title}</span><span className="mb">{DOWNLOAD_MODAL.mb1} · {DOWNLOAD_MODAL.mb2}</span></span>} maxWidth={480}>
-        <DownloadBody open={dl} onClose={closeDl} />
+      <Modal open={dl.open} onClose={closeDl} labelledBy="d-title" describedBy="dl-desc" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcSheet /></span><span>{dlAsset.title}</span><span className="mb">{dlAsset.mb}</span></span>} maxWidth={480}>
+        <DownloadBody open={dl.open} onClose={closeDl} asset={dl.asset} />
       </Modal>
     </ModalCtx.Provider>
   );

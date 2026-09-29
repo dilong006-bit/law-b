@@ -12,6 +12,8 @@ import { useAutoDismissTimer } from '@/hooks/useAutoDismissTimer';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { SUCCESS_AUTO_RESET_MS } from '@/components/common/InquirySuccess';
 import { PREFILL_STRIP } from '@/lib/kium/inquiryBridge';
+import { COURSE_TOKEN_RE, courseToken, type CourseFieldConfig } from '@/lib/legal/courseField';
+import LegalCourseField from '@/components/legal/LegalCourseField';
 
 const ALLOWED = ['zip', 'pdf', 'hwp', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif'];
 const MAX = 10 * 1024 * 1024;
@@ -67,6 +69,14 @@ interface HomeInquiryProps {
   leadSource?: string;
   /** 지정 시 해당 CustomEvent를 구독해 '문의 내용'만 프리필한다(사용자 편집 가능) */
   prefillEventName?: string;
+  /**
+   * 희망과정 선택 필드(LF8). 지정한 페이지에서만 렌더된다 —
+   * 미지정이면 렌더·검증·페이로드가 기존과 100% 같다.
+   * 선택값은 새 수집 필드가 아니라 '문의 내용' 앞 토큰으로 실린다.
+   */
+  courseField?: CourseFieldConfig;
+  /** 좌측 안내 패널 카피 교체 (미지정 시 기존 INQ.side 문구) */
+  panel?: { title: readonly string[]; body: string };
 }
 
 /** 제출 진행 상태 (기술명세서 §1) — idle·submitting 을 거쳐 결과 3종 중 하나로 간다. */
@@ -103,6 +113,8 @@ export default function HomeInquiry({
   presetInterestSubs,
   leadSource,
   prefillEventName,
+  courseField,
+  panel,
 }: HomeInquiryProps = {}) {
   const [v, setV] = useState({
     company: '', name: '', phone: '', position: '',
@@ -117,6 +129,11 @@ export default function HomeInquiry({
   const [consentErr, setConsentErr] = useState(false);
   const [consentOpen, setConsentOpen] = useState<Record<string, boolean>>({});
   const [hp, setHp] = useState('');
+  /** 희망과정 — courseField 가 있을 때만 쓰인다 */
+  const [courseSel, setCourseSel] = useState<Record<string, boolean>>({});
+  const [etcOn, setEtcOn] = useState(false);
+  const [etcText, setEtcText] = useState('');
+  const [courseErr, setCourseErr] = useState<'required' | 'etc' | null>(null);
   const [file, setFile] = useState<File | null>(null);
   // 표시 문자열은 file에서 파생한다 — 별도 상태로 두면 file과 어긋날 여지가 생긴다.
   const [fileErr, setFileErr] = useState('');
@@ -267,7 +284,7 @@ export default function HomeInquiry({
         let message = s.message;
         if (d.text) {
           // 기존 프리필 토큰(관심 과정 / 공개교육 신청)을 제거해 재클릭 시 누적을 막는다
-          for (const re of d.strip ?? PREFILL_STRIP) message = message.replace(re, '');
+          for (const re of [...(d.strip ?? PREFILL_STRIP), COURSE_TOKEN_RE]) message = message.replace(re, '');
           message = (d.text + message).slice(0, INQ_MAX.message);
         }
         return { ...s, message, ...(d.trainees ? { trainees: d.trainees } : {}) };
@@ -278,6 +295,19 @@ export default function HomeInquiry({
   }, [prefillEventName]);
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
+
+  /* 희망과정 — 선택값과 '기타'를 하나의 토큰으로 직렬화한다.
+     토큰이 문의 내용 앞에 붙으므로, 입력 가능 길이는 그만큼 줄어든다(합산 초과 방지). */
+  const coursePicked = courseField ? courseField.options.filter((o) => courseSel[o]) : [];
+  const courseEtc = etcOn ? etcText.trim() : '';
+  const courseTok = courseField ? courseToken(coursePicked, courseEtc) : '';
+  const msgMax = courseField ? Math.max(0, INQ_MAX.message - courseTok.length - 1) : INQ_MAX.message;
+  /** 제출 가능 여부 — 1개 이상 선택, '기타'를 켰으면 내용 필수 */
+  const courseProblem: 'required' | 'etc' | null =
+    !courseField ? null
+      : coursePicked.length === 0 && !etcOn ? 'required'
+        : etcOn && !courseEtc ? 'etc'
+          : null;
 
   /**
    * ★ input.value 초기화가 이 기능의 전부다.
@@ -355,6 +385,9 @@ export default function HomeInquiry({
     } else setLenErr(null);
 
     setErrs(next);
+    // 희망과정 — 기존 필드 다음, 동의 앞 순서로 판정한다(LF8 포커스 순서)
+    setCourseErr(courseProblem);
+    if (courseProblem) ok = false;
     const cBad = !consent;
     setConsentErr(cBad);
     if (cBad) ok = false;
@@ -362,6 +395,9 @@ export default function HomeInquiry({
     if (!ok) {
       const firstBad = over ?? (['company', 'name', 'phone', 'position'] as const).find((k) => next[k]);
       if (firstBad) document.getElementById(FIELD_ID[firstBad])?.focus({ preventScroll: false });
+      else if (courseProblem) {
+        document.getElementById(courseProblem === 'etc' ? 'f-course-etc' : 'f-course-0')?.focus({ preventScroll: false });
+      }
       return;
     }
 
@@ -378,7 +414,8 @@ export default function HomeInquiry({
       interests: INQ.interests
         .filter((o) => interests[o.value])
         .map((o) => (o.value === SUB_PARENT ? mergeGovInterest(o.value, subLabels) : o.value)),
-      message: v.message.trim(),
+      // 희망과정은 새 필드가 아니라 문의 내용 앞 토큰으로 기록한다(수집 항목 수 불변)
+      message: courseField ? `${courseTok}\n${v.message.trim()}`.trim() : v.message.trim(),
       attachment: file,
       agreePrivacy: true,
       agreeMarketing: mktAll,
@@ -412,8 +449,14 @@ export default function HomeInquiry({
         <div className="inq-grid">
           <div className="inq-side r">
             <div>
-              <p className="lead">{INQ.side.lead}</p>
-              <p className="leadsub">{INQ.side.sub}</p>
+              <p className="lead">
+                {panel
+                  ? panel.title.map((t, i) => (
+                    <span key={t}>{i > 0 && <br />}{t}</span>
+                  ))
+                  : INQ.side.lead}
+              </p>
+              <p className="leadsub">{panel ? panel.body : INQ.side.sub}</p>
             </div>
             <div className="trust">
               {INQ.side.trust.map((t, i) => (
@@ -535,10 +578,28 @@ export default function HomeInquiry({
                   </div>
                 </div>
 
+                {/* 8-1 희망과정 (courseField 지정 페이지 전용·필수) */}
+                {courseField && (
+                  <LegalCourseField
+                    config={courseField}
+                    selected={courseSel}
+                    onToggle={(o) => {
+                      // 오류는 입력 즉시 재평가한다 — 고르자마자 빨간 글씨가 사라진다
+                      setCourseSel((p) => ({ ...p, [o]: !p[o] }));
+                      setCourseErr(null);
+                    }}
+                    etcOn={etcOn}
+                    onEtcToggle={(on) => { setEtcOn(on); setCourseErr(null); }}
+                    etcText={etcText}
+                    onEtcText={(t) => { setEtcText(t); setCourseErr(null); }}
+                    error={courseErr}
+                  />
+                )}
+
                 {/* 9 문의 내용 (선택) */}
                 <div className="field">
                   <label htmlFor="f-msg">문의 내용</label>
-                  <textarea id="f-msg" ref={msgRef} name="message" rows={3} maxLength={INQ_MAX.message} value={v.message} onChange={upd('message')}
+                  <textarea id="f-msg" ref={msgRef} name="message" rows={3} maxLength={msgMax} value={v.message} onChange={upd('message')}
                     aria-describedby={risky ? 'f-msg-risky' : undefined}
                     placeholder="도입을 검토 중인 교육 주제와 예상 인원·시기, 해결하고 싶은 조직 과제를 남겨주시면 담당 컨설턴트가 맞춤 상담으로 안내드립니다. (예: 임직원 300명 대상 AX 전환 교육을 3분기 중 검토 중입니다.)" />
                   {/* 사전 안내 — 입력을 막지도, 제출을 잠그지도 않는다(§2-4) */}
@@ -547,8 +608,8 @@ export default function HomeInquiry({
                       {RISKY_HINT[0]}<br />{RISKY_HINT[1]}
                     </span>
                   )}
-                  <div className={`len-count${v.message.length >= INQ_MAX.message ? ' max' : ''}`} aria-live="polite">
-                    {v.message.length}/{INQ_MAX.message}
+                  <div className={`len-count${v.message.length >= msgMax ? ' max' : ''}`} aria-live="polite">
+                    {v.message.length}/{msgMax}
                   </div>
                 </div>
 

@@ -1,0 +1,59 @@
+/* /content#mandatory — 법정필수교육 노출 B안 허브 (기술명세서 legal-B)
+   클래스 접두어 lg-. 색·라운드·그림자·이징은 전부 기존 토큰 경유(신규 토큰 0).
+   브레이크포인트는 Design.md 목록(1040/940/880/820/760/740/720/640/560)만 쓴다.
+   아래 '이식' 블록은 law-A styles/legal.css 에서 LegalCardNews·LegalCourseField 가 쓰는 규칙만
+   그대로 옮긴 것이다(값 수정 금지). */
+
+/* ── 이식: 공통 ─────────────────────────────────────────────────────── */
+/* 시각적 숨김 — styles/csr.css 의 .sr-only, components.css 의 .file-live 와 동일 규칙 */
+.lg-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ── 이식: 카드뉴스 (LegalCardNews) ─────────────────────────────────── */
+.lg-news{width:100%;max-width:480px}
+/* 비율 박스 — 이미지가 늦게 와도 높이가 변하지 않는다(로딩 흔들림 0) */
+.lg-news-view{position:relative;aspect-ratio:4/5;overflow:hidden;border-radius:var(--r);
+  background:var(--surface);touch-action:pan-y}
+.lg-news-view:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.lg-news-track{display:flex;height:100%;transition:transform .45s var(--ease)}
+.lg-news-slide{flex:0 0 100%;height:100%}
+.lg-news-slide img{width:100%;height:100%;object-fit:cover;display:block}
+.lg-news-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  border:1px dashed var(--line);border-radius:var(--r);background:#fff}
+.lg-news-ph .n{font-size:15px;font-weight:800;color:var(--muted)}
+.lg-news-ph .t{font-size:12.5px;color:var(--muted)}
+.lg-news-ctrl{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px}
+.lg-news-arrow{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);background:#fff;border-radius:999px;color:var(--ink);cursor:pointer;
+  transition:border-color .2s var(--ease),transform .2s var(--ease)}
+.lg-news-arrow svg{width:18px;height:18px}
+.lg-news-dots{display:flex;align-items:center;gap:2px}
+/* 점은 6px 로 보이되 탭 영역은 44px — 히트 영역만 넓히고 레이아웃은 그대로 둔다 */
+.lg-news-dot{width:22px;height:44px;padding:0;border:none;background:none;cursor:pointer;position:relative}
+.lg-news-dot::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:7px;height:7px;border-radius:50%;background:var(--line);transition:background .2s var(--ease)}
+.lg-news-dot.on::after{background:var(--p4)}
+.lg-news-dot:focus-visible{outline:2px solid var(--ink);outline-offset:-6px;border-radius:8px}
+@media (hover:hover) and (pointer:fine){
+  .lg-news-arrow:hover{border-color:var(--p4);transform:translateY(-2px)}
+  .lg-news-dot:hover::after{background:color-mix(in srgb,var(--p4) 55%,#fff)}
+}
+@media(prefers-reduced-motion:reduce){.lg-news-track{transition:none}}
+
+/* ── 이식: 희망과정 필드 (LegalCourseField) ─────────────────────────── */
+.lg-course-fs{border:none;padding:0;margin:0;min-width:0}
+.lg-course-fs legend{padding:0;font-size:14px;font-weight:700;color:#2f2f37}
+.lg-course-field{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-top:6px}
+.lg-course-field label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14.5px;
+  cursor:pointer;word-break:keep-all}
+.lg-course-field input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--ink)}
+/* '기타'는 체크박스 오른쪽에 입력칸이 붙는다. 560 이하에서는 아래로 내려가 전체 폭을 쓴다. */
+.lg-course-etc{flex-wrap:wrap}
+.lg-etc-input{flex:1 1 180px;min-width:0;font-size:16px;padding:10px 12px;border:1px solid var(--line);
+  border-radius:12px;background:#fff;color:var(--ink)}
+.lg-etc-input:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.field.invalid .lg-course-fs legend{color:var(--p2)}
+@media(max-width:560px){
+  .lg-course-field{grid-template-columns:1fr}
+  .lg-etc-input{flex:1 1 100%}
+}
