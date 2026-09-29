@@ -46,8 +46,9 @@ export default function Diagnose() {
   return (
     <div className="lg-block lg-anchor" id="mandatory-diagnose">
       <BlockHead kicker={D.kicker} title={D.title} lead={D.sub} />
-      <div className="lg-row" data-balance-row>
-        <div className="lg-c5 lg-box lg-diag-q">
+      {/* 짝 설계(D13): 입력 ↔ 결과, 높이 결정자는 문항 칸 */}
+      <div className="lg-row" data-balance-row data-pair="input-result">
+        <div className="lg-c5 lg-box lg-diag-q" data-height-owner>
           {D.q.map((q) => (
             <fieldset className="lg-q" key={q.key}>
               <legend id={`lg-q-${q.key}`}>{q.label}</legend>

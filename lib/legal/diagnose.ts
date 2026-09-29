@@ -13,6 +13,9 @@ export type DiagResult = {
   smallNote: boolean; complete: boolean;
 };
 
+/** 공통 추천 4과정 (무응답 결과와 같다). 커밋 13 빠른 상담 패널 '공통 추천 4과정 담기' 에서 재사용 */
+export const COMMON_PICK: readonly LegalCourseId[] = ['sexual', 'disability', 'harassment', 'privacy'];
+
 const ORDER = new Map(LEGAL_COURSES.map((c) => [c.id, c.order]));
 /** 그룹 안 순서는 과정 라인업 순서(LEGAL_COURSES.order)를 따른다 */
 const byOrder = (ids: LegalCourseId[]) => [...ids].sort((a, b) => (ORDER.get(a) ?? 0) - (ORDER.get(b) ?? 0));
