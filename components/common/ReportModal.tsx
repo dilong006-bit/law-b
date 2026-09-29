@@ -5,11 +5,14 @@ import { validateField, type ValidatedField } from '@/lib/validation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useModal } from '@/lib/useModal';
 import { REPORT_SEED, REPORT_STATUS, REPORT_MASTER_PW, type ReportRecord } from '@/data/report';
+import { INTEGRITY_COPY, type IntegrityTab } from '@/data/integrity';
+import IntegrityCampaignTab from './IntegrityCampaignTab';
 
 // 세션 내 신규 접수 유지 (v26 window.__keessReports 대응)
 const reports: ReportRecord[] = [...REPORT_SEED];
 
-type Tab = 'info' | 'report' | 'lookup';
+// 청렴훈련 캠페인 탭 추가 (ref/integrity IC2·IC4). 기존 키 'info'·'report'·'lookup' 은 그대로
+type Tab = IntegrityTab;
 
 function genNo() {
   const d = new Date();
@@ -45,6 +48,10 @@ const IcShield = () => (
 const IcReport = () => (
   <svg className="pvi-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-1.6 4L16 12H5"/></svg>
 );
+// 캠페인 탭: Lucide badge-check 형태, 모달 아이콘 규격(stroke 1.8, .pvi-sm)
+const IcBadge = () => (
+  <svg className="pvi-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z"/><path d="m16 9-5.5 5.5L8 12"/></svg>
+);
 const IcSearch = () => (
   <svg className="pvi-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/></svg>
 );
@@ -60,10 +67,11 @@ const emptyForm = {
   ttype: '', course: '', org: '', target: '', title: '', content: '',
 };
 
-export default function ReportModal({ open, onClose, initialTab = 'info' }: ReportModalProps) {
+export default function ReportModal({ open, onClose, initialTab = 'campaign' }: ReportModalProps) {
   const overlayRef = useModal(open, onClose);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [tab, setTabState] = useState<Tab>(initialTab);
+  const reportTabRef = useRef<HTMLButtonElement>(null);
 
   // 신고 접수
   const [form, setForm] = useState({ ...emptyForm });
@@ -131,6 +139,12 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
     setTabState(t);
     if (bodyRef.current) bodyRef.current.scrollTop = 0;
   }, [done, resetReport]);
+
+  /** 캠페인 탭 '신고 접수로 이동' (IC5): 신고 접수 탭 활성 + 본문 맨 위(setTab) + 신고 접수 탭으로 포커스 */
+  const goReport = useCallback(() => {
+    setTab('report');
+    requestAnimationFrame(() => reportTabRef.current?.focus());
+  }, [setTab]);
 
   useEffect(() => {
     if (open) {
@@ -315,18 +329,24 @@ export default function ReportModal({ open, onClose, initialTab = 'info' }: Repo
     >
       <div className="pv-dialog" ref={overlayRef}>
         <div className="pv-head">
-          <h3 id="pv-modal-title">부정훈련 예방 및 신고</h3>
+          <h3 id="pv-modal-title">{INTEGRITY_COPY.modalTitle}</h3>
           <button className="pv-close" type="button" aria-label="닫기" onClick={onClose} data-autofocus>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
         </div>
         <div className="pv-tabs" role="tablist">
+          <button className={`pv-tab${tab === 'campaign' ? ' on' : ''}`} type="button" role="tab" aria-selected={tab === 'campaign'} onClick={() => setTab('campaign')}><IcBadge />{INTEGRITY_COPY.tabLabel}</button>
           <button className={`pv-tab${tab === 'info' ? ' on' : ''}`} type="button" role="tab" aria-selected={tab === 'info'} onClick={() => setTab('info')}><IcShield />예방 안내</button>
-          <button className={`pv-tab${tab === 'report' ? ' on' : ''}`} type="button" role="tab" aria-selected={tab === 'report'} onClick={() => setTab('report')}><IcReport />신고 접수</button>
+          <button ref={reportTabRef} className={`pv-tab${tab === 'report' ? ' on' : ''}`} type="button" role="tab" aria-selected={tab === 'report'} onClick={() => setTab('report')}><IcReport />신고 접수</button>
           <button className={`pv-tab${tab === 'lookup' ? ' on' : ''}`} type="button" role="tab" aria-selected={tab === 'lookup'} onClick={() => setTab('lookup')}><IcSearch />신고 조회</button>
         </div>
 
         <div className="pv-body" ref={bodyRef}>
+          {/* ── 청렴훈련 캠페인 (첫 탭, IC2) ── */}
+          <div className={`pv-pane ic-panel${tab === 'campaign' ? ' on' : ''}`} id="pv-pane-campaign">
+            <IntegrityCampaignTab onReport={goReport} />
+          </div>
+
           {/* ── 예방 안내 ── */}
           <div className={`pv-pane${tab === 'info' ? ' on' : ''}`} id="pv-pane-info">
             <p className="pv-lead">KG에듀원은 부정훈련을 철저히 관리합니다. 부정훈련이 적발되면 진도율·평가점수와 관계없이 미수료 처리되며, 고용보험상의 정부지원을 받을 수 없습니다.</p>

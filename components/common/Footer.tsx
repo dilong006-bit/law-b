@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ReportModal from './ReportModal';
+import { INTEGRITY_COPY, type IntegrityTab } from '@/data/integrity';
 import Modal from './Modal';
 import PrivacyModal from './PrivacyModal';
 import {
@@ -33,10 +34,12 @@ function SnsIcon({ icon }: { icon: 'instagram' | 'facebook' | 'blog' }) {
 
 export default function Footer() {
   const [famOpen, setFamOpen] = useState(false);
-  const [report, setReport] = useState<{ open: boolean; tab: 'info' | 'report' | 'lookup' }>({
+  const [report, setReport] = useState<{ open: boolean; tab: IntegrityTab }>({
     open: false,
-    tab: 'info',
+    tab: 'campaign',
   });
+  /** 부정훈련 모달 열기 (ref/integrity IC4): 인자 없으면 청렴훈련 캠페인 탭, 신고 링크는 'report' */
+  const openIntegrity = (tab: IntegrityTab = 'campaign') => setReport({ open: true, tab });
   const [ismsOpen, setIsmsOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const famRef = useRef<HTMLDivElement>(null);
@@ -110,9 +113,9 @@ export default function Footer() {
                 <span>·</span>
                 <Link href="/csr">KG그룹 사회공헌</Link>
                 <span>·</span>
-                <button className="report-link tap44" type="button" onClick={() => setReport({ open: true, tab: 'info' })}>부정훈련 예방 안내</button>
+                <button className="report-link tap44" type="button" onClick={() => openIntegrity()}>{INTEGRITY_COPY.footer.guide}</button>
                 <span>·</span>
-                <button className="report-link tap44" type="button" onClick={() => setReport({ open: true, tab: 'report' })}>부정훈련 신고</button>
+                <button className="report-link tap44" type="button" onClick={() => openIntegrity('report')}>{INTEGRITY_COPY.footer.report}</button>
                 <button type="button" className="isms-btn" onClick={() => setIsmsOpen(true)} aria-label="정보보호 관리체계(ISMS) 인증서 보기" aria-haspopup="dialog">
                   <Image className="isms-mark" src={ISMS_MARK_SRC} alt="ISMS 정보보호 관리체계 인증" width={116} height={82} />
                 </button>
