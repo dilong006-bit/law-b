@@ -78,11 +78,15 @@ interface HomeInquiryProps {
   /** 좌측 안내 패널 카피 교체 (미지정 시 기존 INQ.side 문구) */
   panel?: { title: readonly string[]; body: string };
   /**
-   * 선택 필드 접기 (legal-B LB14). 지정한 필드를 '추가 정보 (선택)' 접기 영역으로 옮긴다(기본 닫힘).
-   * 접기 안 필드에 오류가 있으면 제출 시 자동으로 열고 해당 필드로 포커스한다. 필수 필드는 접지 않는다.
-   * companySize·trainees 는 한 줄(.frow)이라 둘 중 하나만 지정해도 함께 이동한다. 미지정이면 기존과 동일.
+   * 선택 필드 비표시 (legal-B upgrade-01 §6-7, LB27 짧은 폼). 지정 필드는 렌더하지 않고 payload 값은 기본값
+   * (빈 문자열·null)으로 싣는다 — 키 구성 불변. companySize·trainees 는 한 줄(.frow)이라 둘 다 지정해야 줄이 빠진다.
+   * 미지정이면 렌더·검증·payload 가 기존과 100% 같다.
    */
-  optionalFold?: { label: string; fields: readonly ('companySize' | 'trainees' | 'message' | 'attachment')[] };
+  hiddenFields?: readonly ('companySize' | 'trainees' | 'attachment')[];
+  /** '문의 내용' textarea 줄 수 (미지정 시 기존 3) */
+  messageRows?: number;
+  /** 제출 버튼 측정 id (미지정 시 속성 없음 = 기존 DOM 그대로) */
+  submitGaId?: string;
   /** 자동 채움 (legal-B LB11→LB14). 비어 있는 필드에만 채운다 — 이미 입력한 값은 덮어쓰지 않는다 */
   prefill?: { company?: string; name?: string; email?: string };
   /**
@@ -130,7 +134,9 @@ export default function HomeInquiry({
   prefillEventName,
   courseField,
   panel,
-  optionalFold,
+  hiddenFields,
+  messageRows,
+  submitGaId,
   prefill,
   courseValue,
   onCourseChange,
@@ -244,7 +250,6 @@ export default function HomeInquiry({
     setHp('');
     setStatus('idle');
     lastPayload.current = null;
-    setFoldOpen(false);
     requestAnimationFrame(() => firstFieldRef.current?.focus({ preventScroll: true }));
   }
 
@@ -319,10 +324,8 @@ export default function HomeInquiry({
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
 
-  /* ── optionalFold (지정 시에만) ── */
-  const [foldOpen, setFoldOpen] = useState(false);
-  const foldHas = (k: 'companySize' | 'trainees' | 'message' | 'attachment') => !!optionalFold?.fields.includes(k);
-  const foldSize = foldHas('companySize') || foldHas('trainees');
+  /* ── hiddenFields (지정 시에만) ── */
+  const hidden = (k: 'companySize' | 'trainees' | 'attachment') => !!hiddenFields?.includes(k);
 
   /* ── prefill: 비어 있는 필드에만 채운다. 최신 입력값은 ref 로 읽는다(이펙트 재실행 없이) ── */
   const vRef = useRef(v);
@@ -454,19 +457,10 @@ export default function HomeInquiry({
     if (fileErr) ok = false;
     if (!ok) {
       const firstBad = over ?? (['company', 'name', 'phone', 'position'] as const).find((k) => next[k]);
-      // optionalFold: 접기 안 필드(길이 초과·첨부 오류)에 문제가 있으면 먼저 연다. 미지정이면 foldErr=false → 기존 경로 그대로
-      const foldErr = !!optionalFold && (
-        (over === 'message' && foldHas('message')) ||
-        ((over === 'companySize' || over === 'trainees') && foldSize) ||
-        (!!fileErr && foldHas('attachment'))
-      );
-      const focusFirst = () => {
-        if (firstBad) document.getElementById(FIELD_ID[firstBad])?.focus({ preventScroll: false });
-        else if (courseProblem) {
-          document.getElementById(courseProblem === 'etc' ? 'f-course-etc' : 'f-course-0')?.focus({ preventScroll: false });
-        } else if (foldErr && fileErr) fileboxRef.current?.focus({ preventScroll: false });
-      };
-      if (foldErr) { setFoldOpen(true); requestAnimationFrame(focusFirst); } else focusFirst();
+      if (firstBad) document.getElementById(FIELD_ID[firstBad])?.focus({ preventScroll: false });
+      else if (courseProblem) {
+        document.getElementById(courseProblem === 'etc' ? 'f-course-etc' : 'f-course-0')?.focus({ preventScroll: false });
+      }
       return;
     }
 
@@ -512,29 +506,33 @@ export default function HomeInquiry({
   const half = { flex: '1 1 160px', width: 'auto', minWidth: 0 } as const;
   const risky = hasRiskyInput(v.message);
 
-  /* 선택 필드 블록 — 기본은 기존 위치, optionalFold 지정 시 접기 영역에서 렌더(마크업 동일) */
-  const sizeRow = (
+  /* 선택 필드 블록 — hiddenFields 로 줄·필드 단위 생략 가능(마크업 동일) */
+  const sizeRow = hidden('companySize') && hidden('trainees') ? null : (
     <div className="frow">
-      <div className="field">
-        <label htmlFor="f-csize">회사 규모 <span className="lopt">(임직원 수)</span></label>
-        <select id="f-csize" name="companySize" value={v.companySize} onChange={upd('companySize')}>
-          <option value="">선택</option>
-          {INQ.companySizes.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-      </div>
-      <div className="field">
-        <label htmlFor="f-trainees">예상 교육인원</label>
-        <select id="f-trainees" name="expectedTrainees" value={v.trainees} onChange={upd('trainees')}>
-          <option value="">선택</option>
-          {INQ.trainees.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-      </div>
+      {!hidden('companySize') && (
+        <div className="field">
+          <label htmlFor="f-csize">회사 규모 <span className="lopt">(임직원 수)</span></label>
+          <select id="f-csize" name="companySize" value={v.companySize} onChange={upd('companySize')}>
+            <option value="">선택</option>
+            {INQ.companySizes.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+      )}
+      {!hidden('trainees') && (
+        <div className="field">
+          <label htmlFor="f-trainees">예상 교육인원</label>
+          <select id="f-trainees" name="expectedTrainees" value={v.trainees} onChange={upd('trainees')}>
+            <option value="">선택</option>
+            {INQ.trainees.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+      )}
     </div>
   );
   const msgField = (
     <div className="field">
       <label htmlFor="f-msg">문의 내용</label>
-      <textarea id="f-msg" ref={msgRef} name="message" rows={3} maxLength={msgMax} value={v.message} onChange={upd('message')}
+      <textarea id="f-msg" ref={msgRef} name="message" rows={messageRows ?? 3} maxLength={msgMax} value={v.message} onChange={upd('message')}
         aria-describedby={risky ? 'f-msg-risky' : undefined}
         placeholder="도입을 검토 중인 교육 주제와 예상 인원·시기, 해결하고 싶은 조직 과제를 남겨주시면 담당 컨설턴트가 맞춤 상담으로 안내드립니다. (예: 임직원 300명 대상 AX 전환 교육을 3분기 중 검토 중입니다.)" />
       {/* 사전 안내 — 입력을 막지도, 제출을 잠그지도 않는다(§2-4) */}
@@ -670,8 +668,8 @@ export default function HomeInquiry({
                   <span className="err" aria-live="polite">이메일을 입력해 주세요.</span>
                 </div>
 
-                {/* 6·7 회사 규모 / 예상 교육인원 (별도 필드·선택) — optionalFold 지정 시 접기 영역으로 이동 */}
-                {!foldSize && sizeRow}
+                {/* 6·7 회사 규모 / 예상 교육인원 (별도 필드·선택) — hiddenFields 지정 시 생략 */}
+                {sizeRow}
 
                 {/* 8 관심 영역 (선택·다중 5칩) */}
                 <div className="field">
@@ -730,21 +728,9 @@ export default function HomeInquiry({
                   />
                 )}
 
-                {/* 9 문의 내용 (선택) · 10 첨부파일 (선택·드롭존) — optionalFold 지정 시 접기 영역으로 이동 */}
-                {!foldHas('message') && msgField}
-                {!foldHas('attachment') && fileField}
-
-                {/* 추가 정보 (선택) 접기 — optionalFold 지정 시에만 렌더 */}
-                {optionalFold && (
-                  <details className="inq-fold" open={foldOpen} onToggle={(e) => setFoldOpen((e.currentTarget as HTMLDetailsElement).open)}>
-                    <summary className="inq-fold-sum">{optionalFold.label}</summary>
-                    <div className="inq-fold-body">
-                      {foldSize && sizeRow}
-                      {foldHas('message') && msgField}
-                      {foldHas('attachment') && fileField}
-                    </div>
-                  </details>
-                )}
+                {/* 9 문의 내용 (선택) · 10 첨부파일 (선택·드롭존) — 첨부는 hiddenFields 지정 시 생략 */}
+                {msgField}
+                {!hidden('attachment') && fileField}
 
                 <input className="hp" tabIndex={-1} autoComplete="off" placeholder="website" value={hp} onChange={(e) => setHp(e.target.value)} aria-hidden="true" />
 
@@ -770,7 +756,7 @@ export default function HomeInquiry({
                   </div>
                   <div className="consent-text" style={{ maxHeight: consentOpen.mkt ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>마케팅 정보 수신 동의 (선택)</b></p><p>KG에듀원 KEESS는 「개인정보 보호법」 제22조에 의거하여 마케팅 목적의 개인정보 수집·이용에 대해 별도 동의를 받습니다. 동의를 거부하셔도 서비스 이용이 가능하며, 일부 서비스·혜택 제공이 제한될 수 있습니다.</p><p><b>수집·이용 목적</b><br />① 이메일·SMS(문자)·전화(TM)를 통한 EDM·이벤트 등 마케팅 정보 발송<br />② 모바일 상품권(기프티콘) MMS 발송</p><p><b>수집 항목</b><br />이름, 전화번호, 이메일</p><p><b>보유 및 이용 기간</b><br />① EDM·이벤트 마케팅: 동의일로부터 1년간 (또는 삭제 요청 시 지체 없이 파기)<br />② 모바일 상품권(기프티콘): 상품권 수령 완료 시까지</p><p>상기 이외의 마케팅 목적으로 수집·이용 시 별도 동의를 받습니다.</p></div></div>
                 </div>
-                <button className="btn submit" onClick={submit} disabled={submitting} aria-busy={submitting}>
+                <button className="btn submit" onClick={submit} disabled={submitting} aria-busy={submitting} data-ga-id={submitGaId}>
                   {submitting ? '접수 중…' : '상담 신청'}
                 </button>
               </div>

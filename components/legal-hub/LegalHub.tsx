@@ -21,7 +21,7 @@ function PickAnnouncer() {
 /**
  * /content#mandatory 법정 허브 (legal-B §6-2). 기존 #ax5 섹션 자리를 대체한다.
  * 블록 순서(upgrade-03 §3): 헤더·빠른 실행 → 진단 → 과정 7 + 맞춤 타일 → 법정 기준·차이 → 도입 절차
- * → 자료(카드뉴스 스토리·소개서) → (FAQ 비표시) → 빠른 상담. 선택 바(LB13)는 공통.
+ * → 자료(카드뉴스 스토리·소개서) → (FAQ 비표시) → 빠른 상담(요약 패널 + 짧은 폼). 선택 바(LB28)는 공통.
  */
 export default function LegalHub() {
   return (
@@ -38,8 +38,8 @@ export default function LegalHub() {
           <CardNewsStory />
           {/* LB12 실무 FAQ — 답변 확정 전 블록 전체 비표시 (질문만 노출 금지) */}
           {HUB_COPY.faq.show && <HubFaq />}
+          <HubInquiry />
         </div>
-        <HubInquiry />
         <PickAnnouncer />
         <PickTray />
       </PickProvider>

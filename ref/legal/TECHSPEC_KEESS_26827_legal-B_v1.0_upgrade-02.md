@@ -27,6 +27,9 @@
 | D13 | 같은 행 요소는 짝 관계(`data-pair`)와 높이 결정자(`data-height-owner`)를 명시 |
 | D14 | 긴 폼 옆 패널은 sticky 요약 예외(`data-sticky-summary`) |
 | D15 | 출처 기록 파일명 `ref/legal/ASSET_SOURCES.md` (기존 IMAGE_SOURCES.md 이름 변경 + 아이콘 절 추가) |
+| D16 | 높이 예산 대상 재정의 (커밋 12 보고 후 확정). 예산 H×6 (1440: 4422 / 390: 7434)은 **읽는 블록** 합계(헤더·진단·도입 절차·자료 + 블록 간격)에만 적용. **과업 블록**(과정 그리드, 법정 기준+차이, 빠른 상담)은 예산 제외 — 높이가 과정 수·표 행 수·폼 필드 수로 정해진다. 블록 간격 72px·법정 표 행 여백 유지. 과업 블록은 자체 기준으로 관리: 과정 그리드 마지막 행 빈 칸 0, 법정 표 가독성 유지, 폼은 필수 필드만 |
+| D17 | 블록 상한 900px 도 과업 블록은 제외 (법정 기준+차이 943 허용) |
+| D18 | 대비 측정 표준: 글자는 글자 영역 픽셀(글자를 투명하게 한 배경의 가장 밝은 픽셀 기준), 경계는 1px 테두리 기둥 vs 바로 바깥 띠. upgrade-01 §13-2 방식을 이 문서에도 적용 |
 
 ### 0-3. 상용화 기준 (전 커밋)
 - 콘솔 오류·경고 0, 깨진 이미지 0, CLS 합계 < 0.05 (/content, / 첫 로드)
@@ -331,7 +334,7 @@ div.lg-block#mandatory-inquiry.lg-anchor
         section.lg-consult-picked[aria-live=polite]
           p (pickedTitle(n))
           ul > li (과정명 + button.lg-link 빼기[minus], 44px) … 
-          또는 p(pickedEmpty) + button.btn-line-light (addCommon)
+          또는 p(pickedEmpty) + button.btn.btn-glass.lg-consult-add (addCommon)   ← 커밋 13 정정: .btn-line-light 는 기존 클래스가 아님
     div.lg-c7[data-height-owner] > HomeInquiry (upgrade-01 §6-7 호출값 그대로)
 ```
 
@@ -339,7 +342,8 @@ div.lg-block#mandatory-inquiry.lg-anchor
 ```css
 .lg-consult-panel{position:relative;overflow:hidden;border-radius:var(--r);background:var(--ink);color:#fff}
 .lg-consult-panel .lg-photo{position:absolute;inset:0}
-.lg-consult-veil{position:absolute;inset:0;background:color-mix(in srgb,var(--ink) 86%,transparent)}
+/* 커밋 13 정정: 86% 는 기존 값이 아니다 → 홈 히어로 .hs-scrim 값 그대로 */
+.lg-consult-veil{position:absolute;inset:0;background:linear-gradient(100deg,rgba(12,9,22,.82),rgba(12,9,22,.44) 66%,rgba(12,9,22,.34)),linear-gradient(180deg,rgba(12,9,22,0),rgba(12,9,22,.5))}
 .lg-consult-inner{position:sticky;top:141px;padding:32px}
 .lg-consult-inner.no-sticky{position:static}
 @media(max-width:880px){
@@ -349,11 +353,13 @@ div.lg-block#mandatory-inquiry.lg-anchor
   .lg-consult-picked ul{display:flex;gap:8px;overflow-x:auto}   /* [data-hscroll] */
 }
 ```
-- 오버레이 86% 는 기존 값이 아니면 기존 다크 오버레이 값(히어로 .hs-scrim 등) 중 대비 4.5:1 을 만족하는 값으로 대체하고 보고
+- 오버레이 (커밋 13 확정): 기존 후보 5종(content .hero-scrim, home .hs-scrim, .pv-overlay, .man-scrim, leadership .hv-scrim)을 D18 방식·스크롤 3지점으로 실측, 흰 글자 최저 5.66 인 **home .hs-scrim** 채택
 - sticky 해제: 패널 내부 높이 > `innerHeight - 160` 이면 `.no-sticky` (resize 시 재계산)
 - 빼기 → `pick.remove(id)` → 폼 희망과정·카드·트레이 동기화 (기존 선택 상태)
 - 공통 추천 담기 → `pick.addMany(COMMON_PICK)`
-- 버튼 색: 다크 면 위 보조 버튼은 기존 밝은 테두리 버튼 클래스 사용, 글자 4.5:1 (D9)
+- 버튼 색 (커밋 13 확정): 다크 면 위 보조 버튼은 `btn-glass` + P1·P2 히어로 `.act .btn-glass` 선+투명 변형 값(`background:transparent;border:1.5px solid rgba(255,255,255,.45);backdrop-filter:blur(8px)`). 실측 글자 9.28 이상, 경계 3.17 이상 (기본 btn-glass 는 경계 2.98 로 1지점 미달)
+- 안쪽 여백·묶음 간격 40px(기존 .inq-side padding·.inq-grid gap), 담은 과정 줄 52px(.lg-faq summary) — 과정 3개 기준 패널 ≥ 폼 45% 충족용
+- 패널은 overflow 로 자르지 않는다(자르면 안쪽 sticky 가 풀림). 사진·오버레이에 border-radius:inherit
 
 ---
 
@@ -399,7 +405,7 @@ PickAnnouncer, PickTray
 | CLS | /, /content 첫 로드 layout-shift 합 < 0.05 |
 | 외부 요청 | 요청 도메인 목록에 자체 도메인·images.unsplash.com 외 0 |
 | 콘솔 | 오류·경고 0 |
-| 높이 예산 | 1440 ≤ 4422, 390 ≤ 7434, 블록 ≤ 900 (과정 그리드 예외) |
+| 높이 예산 (D16·D17) | 읽는 블록(헤더·진단·도입 절차·자료 + 간격) 1440 ≤ 4422, 390 ≤ 7434, 읽는 블록 ≤ 900. 과업 블록(과정 그리드·법정 기준+차이·빠른 상담)은 자체 기준 |
 | 기존 | upgrade-01 §10 전 항목, 9폭 가로 스크롤 0, 44px, 금지어 0, 회귀 0 |
 
 - 캡처: `test-results/legal-b/up02/{커밋}/`

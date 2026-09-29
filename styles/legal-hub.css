@@ -447,7 +447,8 @@
 .lg-brochure-body>.lg-box-foot{margin-top:4px}
 .lg-brochure-cta{min-height:48px;padding:0 22px;font-size:15px}
 .lg-brochure-cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-@media(max-width:880px){.lg-brochure-cover{width:112px}}
+/* 컴팩트 카드 표지 최소 폭 128 (커밋 12 판단: 16:9 표지 썸네일이 읽히는 하한) */
+@media(max-width:880px){.lg-brochure-cover{width:128px}}
 @media(max-width:560px){.lg-brochure{grid-template-columns:1fr}.lg-brochure-cover{width:100%;max-width:240px}.lg-brochure-cta{width:100%}}
 
 /* ── LB32 카드뉴스 확대 보기 (useModal) ───────────────────────────── */
@@ -470,19 +471,44 @@
 .lg-faq summary{min-height:52px;display:flex;align-items:center;font-size:15px;font-weight:700;cursor:pointer;word-break:keep-all}
 .lg-faq p{padding:0 0 16px;font-size:14.5px;color:var(--muted);line-height:1.7;word-break:keep-all}
 
-/* ── LB14 법정 문의 (HubInquiry = 공유 폼 HomeInquiry) ───────────────── */
-/* 문의 섹션(.inq)이 자기 상하 여백을 가지므로 허브 하단 여백은 비운다 */
-.lg-hub{padding-bottom:0}
-/* 추가 정보 (선택) 접기 — HomeInquiry optionalFold 지정 시에만 렌더(법정 허브 전용) */
-.inq-fold{margin:6px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.inq-fold-sum{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;
-  list-style:none;font-size:14.5px;font-weight:700;color:var(--ink)}
-.inq-fold-sum::-webkit-details-marker{display:none}
-.inq-fold-sum::after{content:"";flex:none;width:8px;height:8px;margin-right:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);
-  transform:translateY(-2px) rotate(45deg);transition:transform .24s var(--ease)}
-.inq-fold[open]>.inq-fold-sum::after{transform:translateY(2px) rotate(-135deg)}
-.inq-fold-sum:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
-.inq-fold-body{padding:2px 0 10px}
-@media(prefers-reduced-motion:reduce){.inq-fold-sum::after{transition:none}}
-/* 법정 문의 좌측 패널 제목 — 어절 단위 줄바꿈(허브 범위) */
-.lg-inq .inq-side .lead{word-break:keep-all}
+/* ── LB27·LB34 빠른 상담 (HubInquiry = 요약 패널 ConsultSummary + 공유 폼 HomeInquiry) ── */
+/* 공유 폼(section.inq)을 허브 행 안에 넣는다 — 자체 섹션 여백·배경·좌측 패널은 허브 범위에서만 끈다(홈·/kium 불변) */
+.lg-consult .inq{padding:0;background:none}
+.lg-consult .inq>.wrap{max-width:none;padding:0}
+.lg-consult .inq-grid{display:block}
+.lg-consult .inq-side{display:none}
+.lg-consult .form{border-radius:var(--r)}
+/* 요약 패널: 다크 면(허브 유일) + 장식 사진 + 오버레이. overflow 로 자르지 않는다 — 자르면 안쪽 sticky 가 풀린다 */
+.lg-consult-panel{position:relative;border-radius:var(--r);background:var(--ink);color:#fff;min-width:0}
+.lg-consult-panel .lg-photo,.lg-consult-veil{position:absolute;inset:0;border-radius:inherit}
+/* 오버레이 (13-0): 홈 히어로 스크림(home.css .hs-scrim) 값 그대로 — 후보 5종 중 스크롤 3지점 흰 글자 최저 5.66 (D18 실측) */
+.lg-consult-veil{background:linear-gradient(100deg,rgba(12,9,22,.82),rgba(12,9,22,.44) 66%,rgba(12,9,22,.34)),linear-gradient(180deg,rgba(12,9,22,0),rgba(12,9,22,.5))}
+/* 안쪽 여백·묶음 간격 40 = 기존 .inq-side padding / .inq-grid gap, 담은 과정 줄 52 = .lg-faq summary (패널 ≥ 폼 45% 기준) */
+.lg-consult-inner{position:sticky;top:141px;z-index:1;display:flex;flex-direction:column;gap:40px;padding:40px}
+.lg-consult-inner.no-sticky{position:relative}
+/* 제목·약속 글자 값 = 기존 .inq-side .lead / .leadsub (서체는 Pretendard 단일 — 필러 페이지 규칙) */
+.lg-consult-title{font-size:clamp(24px,3vw,32px);font-weight:700;line-height:1.32;word-break:keep-all}
+.lg-consult-promise{list-style:none;display:flex;flex-direction:column;gap:10px}
+.lg-consult-promise li{display:flex;align-items:flex-start;gap:10px;color:rgba(255,255,255,.86);font-size:14.5px;line-height:1.7;word-break:keep-all}
+.lg-consult-promise .lg-ico{margin-top:3px}
+.lg-consult-ph{font-size:14px;font-weight:800}
+.lg-consult-picked ul{list-style:none;margin-top:8px;border-top:1px solid rgba(255,255,255,.3)}
+.lg-consult-picked li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;border-bottom:1px solid rgba(255,255,255,.3)}
+.lg-consult-name{font-size:14.5px;font-weight:700;word-break:keep-all}
+.lg-consult-rm{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;padding:0 6px;
+  border:0;background:none;color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;border-radius:999px}
+.lg-consult-rm:focus-visible,.lg-consult-add:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.lg-consult-empty p{color:rgba(255,255,255,.86);font-size:14.5px;line-height:1.7}
+/* 다크 면 보조 버튼 (13-0): btn-glass + P1·P2 히어로 .act 선+투명 변형 값 그대로 (axai.css·leadership.css) — 글자 9.28+, 경계 3.17+ 실측 */
+.lg-consult-add{margin-top:14px;min-height:44px;background:transparent;border:1.5px solid rgba(255,255,255,.45);backdrop-filter:blur(8px);box-shadow:none}
+@media (hover:hover) and (pointer:fine){.lg-consult-rm:hover{background:rgba(255,255,255,.14)}}
+/* 880 이하: 폼 위 요약 바 — 사진·약속 숨김, 담은 과정은 칩 한 줄 가로 스크롤 */
+@media(max-width:880px){
+  .lg-consult-panel .lg-photo,.lg-consult-veil{display:none}
+  .lg-consult-inner{position:relative;top:auto;gap:14px;padding:18px 20px}
+  .lg-consult-promise{display:none}
+  .lg-consult-picked ul{display:flex;gap:8px;overflow-x:auto;border-top:0;padding-bottom:2px;scrollbar-width:none}
+  .lg-consult-picked ul::-webkit-scrollbar{display:none}
+  .lg-consult-picked li{flex:none;gap:2px;min-height:44px;padding-left:14px;border:1px solid rgba(255,255,255,.3);border-radius:999px}
+  .lg-consult-rm-t{display:none}
+}

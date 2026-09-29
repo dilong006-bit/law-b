@@ -49,15 +49,30 @@
 | 4 | Ugnm0F4e00U | https://unsplash.com/photos/office-workspace-with-rows-of-desks-Ugnm0F4e00U | Petr | 구도는 비슷하나 천장이 어두워 톤이 차가움 |
 | 4 | srTPWPbK0Dg | https://unsplash.com/photos/a-room-with-a-desk-and-a-chair-srTPWPbK0Dg | Musemind UX Agency | 개인 집무실 느낌이라 '조직' 맥락이 약함 |
 
-## 차이 카드 '전담 운영 지원' 사진 (B안 upgrade-02 LB39) — 미적용
+## 차이 카드 '전담 운영 지원' 사진 (B안 upgrade-02 LB39) — 후보만 기록, 미적용 (카드 높이 편차 74.1%)
 
-행 높이 시뮬레이션에서 사진 추가 시 행 높이 +30.1%, 세 카드 높이 편차 74.1% 로 짝 균형 기준을 넘어 적용하지 않았다. 후보만 기록한다.
+행 높이 시뮬레이션에서 사진 추가 시 행 높이 +30.1%, 세 카드 높이 편차 74.1% 로 짝 균형 기준을 넘어 적용하지 않았다(커밋 12 보고 승인, LB39 조건대로 확정). 후보만 기록한다.
 
 | 후보 | 사진 페이지 | 작가 | 평가 |
 |---|---|---|---|
 | VBLHICVh-lI | https://unsplash.com/photos/group-of-people-having-a-meeting-VBLHICVh-lI | Mario Gogh | 원거리·저조도로 얼굴 비식별, 운영 회의 맥락 |
 | HXOllTSwrpM | https://unsplash.com/photos/person-sitting-beside-table-HXOllTSwrpM | Ant Rozetsky | 뒷모습 위주, 자연광 |
 | YI_9SivVt_s | https://unsplash.com/photos/people-sitting-on-chair-in-front-of-computer-YI_9SivVt_s | Israel Andrade | 운영 센터 느낌이나 모니터 화면이 많음 |
+
+## 빠른 상담 패널 배경 (B안 upgrade-02 LB34·LB39, 커밋 13)
+
+- 받은 날짜 2026-09-29, 임시(사내 촬영본으로 교체 가능). 장식 이미지라 alt 빈 값
+- 표시: 1041 이상 다크 패널 전체 cover, 서버 크롭 2:5(세로로 긴 패널) + 오버레이(home.css .hs-scrim 값). 880 이하 숨김
+- 선정 기준: 무료, 얼굴 비식별, 상담·협의 맥락, 히어로·카드뉴스와 같은 원목·자연광 톤
+- 검색어: business meeting table hands / consultation office / meeting notebook discussion / team discussion laptop office
+
+| 후보 | 사진 페이지 | 작가 | 평가 |
+|---|---|---|---|
+| **선정** BJqzjxwQhK8 | https://unsplash.com/photos/a-few-people-working-at-a-table-BJqzjxwQhK8 | sarah b | 책상 위 필기하는 손과 노트, 얼굴 프레임 밖. 원목·자연광 톤이 히어로·카드뉴스와 같음 |
+| nNMBa7Y1Ymk | https://unsplash.com/photos/two-people-sitting-at-a-table-with-laptops-nNMBa7Y1Ymk | Priscilla Du Preez | 두 사람이 노트북을 함께 보는 협의 장면, 얼굴 비식별. 검은 테이블·차가운 톤이라 톤 통일에서 밀림 |
+| 1H1LBKvD7ew | https://unsplash.com/photos/a-man-and-a-woman-sitting-at-a-white-table-1H1LBKvD7ew | Carrie Allen | 정장 차림 서명 장면, 얼굴 비식별. 흰 배경이 밝아 오버레이 위 글자 대비 여유가 적고 계약 느낌이 강함 |
+
+핫링크 기본 URL: https://images.unsplash.com/photo-1668092548064-730e05fd0324 (`data/legalHub.ts` `HUB_COPY.inquiry.photo.src`)
 
 ## 과정소개서 표지 (B안 upgrade-02, 커밋 12, 로컬 파일)
 

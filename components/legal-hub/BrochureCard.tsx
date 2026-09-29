@@ -2,6 +2,7 @@
 
 import { useContentModal } from '@/components/sections/content/ContentModals';
 import { HUB_COPY } from '@/data/legalHub';
+import { CONSULT_HASH, goConsult } from '@/lib/legal/goConsult';
 import { usePick } from '@/lib/legal/pick';
 import { LgIcon } from './icons';
 import LgPhoto from './LgPhoto';
@@ -19,7 +20,7 @@ export default function BrochureCard() {
   const open = () =>
     openDownload('legalBrochure', {
       onLeadSubmitted: (lead) => setPrefill(lead),
-      next: { label: B.next, href: '#mandatory-inquiry' },
+      next: { label: B.next, href: CONSULT_HASH, go: goConsult },
     });
   return (
     <article className="lg-box lg-brochure">

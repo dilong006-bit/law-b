@@ -126,10 +126,19 @@ export const HUB_COPY = {
     },
   },
   faq: { show: false, items: [] as { q: string; a: string }[] }, // 답변 확정 전 비표시
+  // 빠른 상담 (upgrade-02 LB34 패널 + upgrade-01 LB27 짧은 폼). 사진은 장식(alt 빈 값), 출처 ref/legal/ASSET_SOURCES.md
   inquiry: {
+    kicker: '빠른 상담',
     panelTitle: ['매년 받는 법정교육,', 'KG에듀원에서 한 번에 관리하세요'],
-    panelBody: '선택하신 과정을 기준으로 담당자가 영업일 1일 내 연락드립니다.',
-    foldLabel: '추가 정보 (선택)',
+    promises: [
+      { icon: 'clock', text: '영업일 1일 내 담당자가 연락드립니다' },
+      { icon: 'users', text: '담은 과정 기준으로 인원·일정에 맞춘 운영 방식을 안내합니다' },
+    ],
+    pickedTitle: (n: number) => `담은 과정 ${n}개`,
+    pickedEmpty: '아직 담은 과정이 없습니다.',
+    addCommon: '공통 추천 4과정 담기',
+    remove: '빼기',
+    photo: { src: 'https://images.unsplash.com/photo-1668092548064-730e05fd0324', alt: '' },
   },
-  tray: { count: (n: number) => `선택 과정 ${n}개`, more: (n: number) => `외 ${n}`, cta: '문의하기', listTitle: '선택한 과정', remove: '빼기' },
+  tray: { count: (n: number) => `선택 과정 ${n}개`, more: (n: number) => `외 ${n}`, cta: '빠른 상담', listTitle: '선택한 과정', remove: '빼기' },
 } as const;

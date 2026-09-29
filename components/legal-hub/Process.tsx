@@ -1,4 +1,7 @@
+'use client';
+
 import { HUB_COPY } from '@/data/legalHub';
+import { CONSULT_HASH, onConsultClick } from '@/lib/legal/goConsult';
 import type { LgIconName } from '@/lib/legal/iconData';
 import BlockHead from './BlockHead';
 import { LgIcon } from './icons';
@@ -10,7 +13,7 @@ const ICON: Record<string, LgIconName> = { pick: 'list-checks', apply: 'message-
  * 도입 절차 독립 블록 (legal-B upgrade-02 LB35, upgrade-01 LB25).
  * 4단계 카드(짝 관계 peer, 높이 동일) + 연결선. 시각적 숫자 없음(ol 의미만). 블록 1차 버튼 1개.
  * 1041 이상 가로 연결선 / 561~1040 연결선 없음(880 이하 2×2) / 560 이하 세로 타임라인.
- * 1차 버튼은 지금은 #mandatory-inquiry 앵커 이동 — goConsult 연결은 커밋 13.
+ * 1차 버튼은 goConsult — 빠른 상담으로 이동 후 폼 첫 칸 포커스.
  */
 export default function Process() {
   return (
@@ -26,7 +29,7 @@ export default function Process() {
         ))}
       </ol>
       <div className="lg-steps-foot">
-        <a className="btn btn-ink lg-steps-cta" href="#mandatory-inquiry" data-ga-id={P.cta.gaId}>
+        <a className="btn btn-ink lg-steps-cta" href={CONSULT_HASH} onClick={onConsultClick} data-ga-id={P.cta.gaId}>
           {P.cta.label} <LgIcon name="arrow-right" size={18} />
         </a>
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { courseById } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
+import { goConsult } from '@/lib/legal/goConsult';
 import { usePick } from '@/lib/legal/pick';
 import { LgIcon } from './icons';
 
@@ -15,7 +16,7 @@ const isTextEntry = (el: EventTarget | null) =>
   (el instanceof HTMLInputElement && TEXT_INPUT.test(el.type));
 
 /**
- * 선택 바 (legal-B LB13).
+ * 선택 바 (legal-B LB13 → upgrade-01 LB28: CTA '빠른 상담').
  * 표시 조건 4개: 선택 1개 이상 / 허브(#mandatory) 화면 교차 / 문의 자리(#mandatory-inquiry) 비교차 / 텍스트 입력 포커스 아님.
  * 표시 중에는 body.legal-tray-on 으로 맨 위로 버튼을 올리고 인재키움 티저를 숨긴다(components.css).
  */
@@ -66,14 +67,6 @@ export default function PickTray() {
     return () => document.removeEventListener('keydown', onKey);
   }, [listOpen]);
 
-  /** 문의 섹션으로 이동한 뒤 희망과정 첫 체크박스에 포커스(preventScroll). 체크 상태가 바로 보이도록 희망과정 필드를 화면 가운데로 */
-  const goInquiry = () => {
-    const field = document.getElementById('f-course-0')?.closest('.field') ?? document.getElementById('mandatory-inquiry');
-    if (!field) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    field.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-    document.getElementById('f-course-0')?.focus({ preventScroll: true });
-  };
 
   if (!mounted) return null;
 
@@ -103,8 +96,8 @@ export default function PickTray() {
         <span className="lg-tray-names">{summary}</span>
         <span className="lg-tray-chev" aria-hidden="true"><LgIcon name={listOpen ? 'chevron-down' : 'chevron-up'} size={16} /></span>
       </button>
-      {/* 법정 문의로 이동 — 희망과정은 선택 상태와 이미 동기화돼 있다 */}
-      <button type="button" className="btn lg-tray-cta" onClick={goInquiry} data-ga-id="legal-tray-inquiry">
+      {/* 빠른 상담으로 이동(goConsult, 폼 첫 칸 포커스) — 희망과정·요약 패널은 선택 상태와 이미 동기화돼 있다 */}
+      <button type="button" className="btn lg-tray-cta" onClick={goConsult} data-ga-id="legal-tray-inquiry">
         {T.cta}
       </button>
     </div>,

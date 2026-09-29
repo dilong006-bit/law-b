@@ -50,10 +50,11 @@ const DOWNLOAD_ASSETS = {
  * 다운로드 선택 옵션 (legal-B §6-9 LB11). 미지정이면 기존 동작 100% 동일.
  * - onLeadSubmitted: 리드 전송 성공 시 입력값 전달(법정 허브가 문의 폼 자동 채움에 쓴다)
  * - next: 성공 화면에 후속 링크 1개. 지정 시 자동 닫힘을 걸지 않는다(링크를 누를 시간을 준다)
+ *   next.go: 지정 시 모달을 닫은 뒤 앵커 스크롤 대신 호출(법정 허브 goConsult — 폼 첫 칸 포커스)
  */
 export type DownloadOpts = {
   onLeadSubmitted?: (lead: { company: string; name: string; email: string }) => void;
-  next?: { label: string; href: string };
+  next?: { label: string; href: string; go?: () => void };
 };
 
 // openDownload 인자는 unknown 도 받는다 — 기존 호출부 onClick={openDownload} 가 이벤트를 넘겨도 타입·동작이 그대로다.
@@ -300,7 +301,9 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
   function goNext(e: React.MouseEvent, href: string) {
     e.preventDefault();
     onClose();
+    const go = opts?.next?.go;
     window.setTimeout(() => {
+      if (go) { go(); return; }
       const to = document.querySelector<HTMLElement>(href);
       if (!to) return;
       const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

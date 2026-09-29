@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { LEGAL_COURSES, type LegalCourse, type LegalCourseId, type LegalKind } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
+import { goConsult } from '@/lib/legal/goConsult';
 import { usePick } from '@/lib/legal/pick';
 import { useModal } from '@/lib/useModal';
 import CourseCard from './CourseCard';
@@ -91,13 +92,8 @@ export default function CourseLineup() {
   };
   const changeFilter = (f: Filter) => { setFilter(f); setOpenId(null); };
 
-  /** 문의 영역으로 이동 (goConsult 연결은 커밋 13). 시트에서는 닫힘·스크롤 복원이 끝난 뒤 이동한다 */
-  const toInquiry = () => {
-    const to = document.getElementById('mandatory-inquiry');
-    if (!to) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    to.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-  };
+  /** 빠른 상담으로 이동 + 폼 첫 칸 포커스 (goConsult). 시트에서는 닫힘·스크롤 복원이 끝난 뒤 이동한다 */
+  const toInquiry = goConsult;
   /** 상세의 '이 과정으로 상담': 해당 과정을 담고(이미 담았으면 유지) 문의 영역으로 */
   const consultWith = (c: LegalCourse) => {
     pick.addMany([c.id]);
