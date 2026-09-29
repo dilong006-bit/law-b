@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/styles/content.css';
+import '@/styles/legal-hub.css';
 import Nav from '@/components/common/Nav';
 import RevealInit from '@/components/common/RevealInit';
 import ContentModalProvider from '@/components/sections/content/ContentModals';

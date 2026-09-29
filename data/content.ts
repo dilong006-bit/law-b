@@ -16,7 +16,7 @@ export const HERO = {
     { n: '02', t: '어학·글로벌', href: '#ax2' },
     { n: '03', t: 'IT·자격', href: '#ax3' },
     { n: '04', t: '비즈니스·리더십', href: '#ax4' },
-    { n: '05', t: '법정 헌터스', href: '#ax5', law: true },
+    { n: '05', t: '법정 헌터스', href: '#mandatory', law: true, badge: '2026' },
     { n: '06', t: '제작·파트너', href: '#ax6', net: true },
   ],
 };
@@ -28,7 +28,7 @@ export const AXISNAV = [
   { id: 'ax2', label: '어학·글로벌' },
   { id: 'ax3', label: 'IT·자격' },
   { id: 'ax4', label: '비즈니스·리더십' },
-  { id: 'ax5', label: '법정 헌터스' },
+  { id: 'mandatory', label: '법정 헌터스' },
   { id: 'ax6', label: '제작·파트너' },
 ];
 

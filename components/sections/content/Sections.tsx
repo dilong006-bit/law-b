@@ -4,8 +4,10 @@ import Link from 'next/link';
 import SubNav from '@/components/common/SubNav';
 import Img from '@/components/common/Img';
 import { useContentModal } from './ContentModals';
+import AxHead from './AxHead';
+import LegalHub from '@/components/legal-hub/LegalHub';
 import {
-  HERO, AXISNAV, AX1, AX2, AX3, AX4, AX5, AX6, DOWNLOAD, FINAL,
+  HERO, AXISNAV, AX1, AX2, AX3, AX4, AX6, DOWNLOAD, FINAL,
 } from '@/data/content';
 
 const IcGrid = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="5" width="14" height="14" rx="2" /><rect x="9" y="9" width="6" height="6" /></svg>;
@@ -26,20 +28,6 @@ const IcBox = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const JOB_ICONS = [IcGrid, IcTarget, IcSpeaker, IcPeople, IcBars, IcBox];
 const HEX_ICONS = [IcGrid, IcGlobe, IcCode, IcLayers, IcShield, IcCam];
 const AX_ICONS = [IcGrid, IcGlobe, IcCode, IcLayers, IcShield, IcCam];
-
-function AxHead({ kicker, icon: Icon, title, lead, tag, extra }: { no?: string; kicker: string; icon: () => JSX.Element; title: React.ReactNode; lead?: string; tag?: string; extra?: React.ReactNode }) {
-  return (
-    <div className="axhead">
-      <div>
-        <span className="ct-eyebrow r"><Icon /> {kicker}</span>
-        <h2>{title}</h2>
-        {lead && <p className="lead">{lead}</p>}
-      </div>
-      {tag && <span className="axtag">{tag}</span>}
-      {extra}
-    </div>
-  );
-}
 
 export default function Sections() {
   const { openConsult, openDownload } = useContentModal();
@@ -68,6 +56,7 @@ export default function Sections() {
                   return (
                     <a className={`hx${h.law ? ' law' : ''}${h.net ? ' net' : ''}`} href={h.href} key={h.n}>
                       <span className="hx-ic"><Icon /></span><span className="t">{h.t}</span>
+                      {h.badge && <span className="hx-badge">{h.badge}</span>}
                     </a>
                   );
                 })}
@@ -157,35 +146,8 @@ export default function Sections() {
         </div>
       </section>
 
-      {/* ── ax5 법정 ── */}
-      <section className="section" id="ax5">
-        <div className="wrap">
-          <AxHead no={AX5.no} kicker={AX5.kicker} icon={AX_ICONS[4]} title={<>{AX5.titleLead}<span className="hl">{AX5.titleEmph}</span>{AX5.titleTail}</>} lead={AX5.lead} tag={AX5.tag} />
-          <div className="substep">{AX5.seriesSub}</div>
-          <div className="timeline">
-            {AX5.timeline.map((t) => (
-              <div className={`tnode${t.cur ? ' cur' : ''}`} key={t.yr}><div className="dot" /><div className="yr">{t.yr}</div><div className="nm">{t.nm}</div><div className="cc">{t.cc}</div>{t.cur && <div className="bn">현재 시리즈</div>}</div>
-            ))}
-          </div>
-          <div className="substep">{AX5.lawSub}</div>
-          <div className="lawgrid">
-            {AX5.laws.map((l) => (
-              <div className="lawcard" key={l.h3}><span className="must">의무</span><h3>{l.h3}</h3>
-                <div className="frow"><dt>근거</dt><dd>{l.근거}</dd></div>
-                <div className="frow"><dt>대상</dt><dd>{l.대상}</dd></div>
-                <div className="frow"><dt>주기</dt><dd>{l.주기}</dd></div>
-              </div>
-            ))}
-          </div>
-          <div className="substep">{AX5.diffSub}</div>
-          {/* overflow-x:auto로 가로 스크롤을 의도한 3열 비교표 — 모바일 계측(C2) 예외 표식 */}
-          <div className="difftable" data-hscroll>
-            <table><thead><tr>{AX5.diffHead.map((h) => <th key={h}>{h}</th>)}</tr></thead>
-              <tbody>{AX5.diff.map((r) => <tr key={r[0]}><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td></tr>)}</tbody></table>
-          </div>
-          <p className="samplenote">{AX5.note}</p>
-        </div>
-      </section>
+      {/* ── 법정 허브 (legal-B, 기존 ax5 대체) ── */}
+      <LegalHub icon={AX_ICONS[4]} />
 
       {/* ── ax6 제작·파트너 ── */}
       <section className="section" id="ax6">

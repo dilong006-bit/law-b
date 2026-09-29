@@ -30,8 +30,9 @@
 .hc-kium{display:flex;flex-direction:column}
 .hc-kium .hc-acts{margin-top:auto;padding-top:20px}
 
+/* 글자는 --ink(대비 16.8:1). P4 는 배경 틴트와 점으로만 — 진한 P4 글자(#000 22%)는 이 배경에서 3.75:1 로 AA 미달 */
 .hc-badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;letter-spacing:.02em;
-  color:color-mix(in srgb,#000 22%,var(--p4));background:color-mix(in srgb,var(--p4) 10%,#fff);
+  color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff);
   border-radius:999px;padding:5px 12px}
 .hc-badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--p4)}
 .hc-title{margin-top:14px;font-size:clamp(20px,2.3vw,28px);font-weight:800;line-height:1.25;letter-spacing:-.02em;word-break:keep-all}

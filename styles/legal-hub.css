@@ -57,3 +57,70 @@
   .lg-course-field{grid-template-columns:1fr}
   .lg-etc-input{flex:1 1 100%}
 }
+
+/* ══ 법정 허브 (legal-B §6) ════════════════════════════════════════════ */
+
+/* ── LB3 진입: 6축 타일 2026 배지 ─────────────────────────────────── */
+/* 글자는 --ink(대비 16.8:1). 진한 P4 글자(#000 22%)는 P4 10% 배경에서 3.75:1 로 AA 미달이라 쓰지 않는다 */
+.hx.law{position:relative}
+.hx-badge{position:absolute;top:6px;right:6px;font-size:12px;font-weight:800;line-height:1;padding:3px 7px;
+  border-radius:999px;color:var(--ink);background:color-mix(in srgb,var(--p4) 10%,#fff);font-variant-numeric:tabular-nums}
+
+/* ── 허브 골격 ──────────────────────────────────────────────────────── */
+.lg-hub{position:relative}
+/* 허브 제목만 어절 단위 줄바꿈 (다른 축 헤더는 불변) */
+.lg-hub .axhead h2{word-break:keep-all}
+/* 기존 #ax5 딥링크 — 섹션 상단(예전 #ax5 섹션과 같은 자리) */
+.lg-ax5{position:absolute;top:0;left:0;width:1px;height:1px;pointer-events:none}
+/* 허브 내부 앵커: html scroll-padding-top(PC 35 / 720 이하 81)에 더해 nav(72)+subnav(53)+16 아래에 착지 */
+.lg-anchor{scroll-margin-top:calc(72px + 53px + 16px - 35px)}
+@media(max-width:720px){.lg-anchor{scroll-margin-top:calc(72px + 53px + 16px - 81px)}}
+/* 블록 간격 72 / 640 이하 52. 아직 없는 블록 자리(.lg-anchor 단독)는 높이·여백 0 */
+.lg-block{margin-top:72px}
+@media(max-width:640px){.lg-block{margin-top:52px}}
+.lg-block-sub{margin:-4px 0 18px;color:var(--muted);font-size:15px;line-height:1.6;max-width:52ch;word-break:keep-all}
+
+/* ── LB4 허브 헤더 · 내부 탭 ──────────────────────────────────────── */
+.lg-season{display:inline-flex;margin-top:20px;padding:10px 14px;border-radius:12px;
+  background:color-mix(in srgb,var(--p4) 7%,#fff);font-size:14px;font-weight:600;color:var(--ink);word-break:keep-all}
+.lg-tabs{margin-top:16px}
+/* .subnav-in(가로 스크롤·엣지 페이드) 재사용. 포커스 링이 잘리지 않게 4px 여유 */
+.lg-tabs-in{height:auto;gap:8px;padding:4px;margin:0 -4px}
+.lg-tab{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap;
+  scroll-snap-align:start;transition:color .2s var(--ease),border-color .2s var(--ease)}
+.lg-tab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.lg-tab:hover{color:var(--ink);border-color:var(--ink)}}
+
+/* ── LB5 필요 과정 진단 ─────────────────────────────────────────────── */
+.lg-diag{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r);padding:28px;box-shadow:var(--shadow-1)}
+@media(max-width:880px){.lg-diag{grid-template-columns:1fr}}
+@media(max-width:560px){.lg-diag{padding:20px}}
+.lg-diag-q{display:grid;gap:20px;align-content:start;min-width:0}
+.lg-q{border:none;padding:0;margin:0;min-width:0}
+.lg-q legend{padding:0;margin-bottom:10px;font-size:14px;font-weight:800;color:var(--ink)}
+.lg-chips{display:flex;flex-wrap:wrap;gap:8px}
+.lg-chip{position:relative;cursor:pointer}
+.lg-chip span{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:999px;
+  background:#fff;font-size:14.5px;word-break:keep-all;transition:border-color .24s var(--ease),background .24s var(--ease)}
+.lg-chip input:checked+span{border-color:var(--p4);background:color-mix(in srgb,var(--p4) 8%,#fff);font-weight:700}
+.lg-chip input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.lg-chip:hover input:not(:checked)+span{border-color:color-mix(in srgb,var(--p4) 55%,#fff)}}
+
+.lg-diag-r{display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--line);padding-left:24px}
+@media(max-width:880px){.lg-diag-r{border-left:none;padding-left:0;border-top:1px solid var(--line);padding-top:20px}}
+.lg-diag-empty{margin:auto 0;color:var(--muted);font-size:15px;line-height:1.6;word-break:keep-all}
+.lg-diag-res{animation:lg-rin .24s var(--ease) both}
+@keyframes lg-rin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.lg-diag-group+.lg-diag-group{margin-top:16px}
+.lg-diag-group h4{font-size:13px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.lg-diag-group ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.lg-rchip{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;background:var(--surface);
+  font-size:14px;font-weight:600;word-break:keep-all}
+.lg-diag-small,.lg-diag-note{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.lg-diag-small+.lg-diag-note{margin-top:4px}
+.lg-diag-add{margin-top:18px;min-height:48px;padding:0 24px;font-size:15px;align-self:flex-start}
+.lg-diag-add:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:560px){.lg-diag-add{width:100%}}
+@media(prefers-reduced-motion:reduce){.lg-diag-res{animation:none}.lg-chip span,.lg-tab{transition:none}}
