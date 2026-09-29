@@ -275,6 +275,7 @@ export default function HomeInquiry({
    * 값만 넣을 뿐 필드·검증·동의 구조는 그대로이며, 사용자가 자유롭게 편집·삭제할 수 있다.
    * 재클릭 시 앞선 토큰만 교체해 중복 누적을 막는다.
    */
+  const hasCourseField = !!courseField;
   useEffect(() => {
     if (!prefillEventName) return;
     const onPrefill = (e: Event) => {
@@ -284,7 +285,9 @@ export default function HomeInquiry({
         let message = s.message;
         if (d.text) {
           // 기존 프리필 토큰(관심 과정 / 공개교육 신청)을 제거해 재클릭 시 누적을 막는다
-          for (const re of [...(d.strip ?? PREFILL_STRIP), COURSE_TOKEN_RE]) message = message.replace(re, '');
+          // 희망과정 토큰은 courseField 지정 폼에서만 함께 지운다 — 미지정(홈·/kium)은 strip 목록이 기존 그대로다.
+          const strip = d.strip ?? PREFILL_STRIP;
+          for (const re of hasCourseField ? [...strip, COURSE_TOKEN_RE] : strip) message = message.replace(re, '');
           message = (d.text + message).slice(0, INQ_MAX.message);
         }
         return { ...s, message, ...(d.trainees ? { trainees: d.trainees } : {}) };
@@ -292,7 +295,7 @@ export default function HomeInquiry({
     };
     window.addEventListener(prefillEventName, onPrefill);
     return () => window.removeEventListener(prefillEventName, onPrefill);
-  }, [prefillEventName]);
+  }, [prefillEventName, hasCourseField]);
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
 

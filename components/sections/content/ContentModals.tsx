@@ -6,7 +6,7 @@ import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import Modal from '@/components/common/Modal';
 import ConsentGroup from '@/components/common/ConsentGroup';
 import { CONSENT_TEXTS, DOWNLOAD_OPTIN_BANNER } from '@/data/consent';
-import { CONSULT_MODAL, DOWNLOAD_MODAL, DOWNLOAD, downloadFileName } from '@/data/content';
+import { CONSULT_MODAL, DOWNLOAD_MODAL } from '@/data/content';
 import { DOWNLOAD_CONFIG as DC } from '@/lib/download/config';
 import { fetchFileWithProgress } from '@/lib/download/fetchWithProgress';
 import { saveBlob } from '@/lib/download/saveBlob';

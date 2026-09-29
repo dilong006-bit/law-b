@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: 'KEESS · KG에듀원 기업교육',
   description: '진단으로 설계하고, 효과로 증명합니다. KG에듀원 HRD사업본부 기업·기관 교육 도입 채널.',
+  // 시안 저장소(law-b) 전용 — 검색 노출 차단. 운영 이관 시 제거
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
