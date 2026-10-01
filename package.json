@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test:hero": "playwright test tests/hero-collision.spec.ts",
     "icons:legal": "node scripts/gen-legal-icons.mjs",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "test:e2e:fi": "playwright test -c playwright.fi.config.ts"
   },
   "dependencies": {
     "@firecms/neat": "^1.0.2",

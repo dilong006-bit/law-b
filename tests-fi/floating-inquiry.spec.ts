@@ -5,7 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 /**
  * 플로팅 문의 바 E2E (B안 기술명세서 최종 v2.0 §11, 프롬프트 v2.1 6-2·6-3).
- * 실행: npx playwright test -c playwright.fi.config.ts
+ * 실행: npm run test:e2e:fi
  * 스크린샷 qa/floating-inquiry/{page}-{viewport}-{state}.png, 측정값 qa/floating-inquiry/measure/*.json
  */
 
