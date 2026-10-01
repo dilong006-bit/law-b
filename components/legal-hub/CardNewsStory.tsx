@@ -78,6 +78,7 @@ export default function CardNewsStory() {
   };
 
   const cur = LEGAL_CARDNEWS[index];
+  const last = index === N - 1;
 
   return (
     <div className="lg-block lg-anchor" id={R.id}>
@@ -111,6 +112,19 @@ export default function CardNewsStory() {
               <button type="button" className="lg-cn-btn" onClick={() => go(index - 1)} disabled={index === 0} aria-label={R.prev} data-ga-id="legal_cardnews_nav"><LgIcon name="chevron-left" size={18} /></button>
               <span className="lg-cn-count">{R.counter(index + 1, N)}</span>
               <button type="button" className="lg-cn-btn" onClick={() => go(index + 1)} disabled={index === N - 1} aria-label={R.next} data-ga-id="legal_cardnews_nav"><LgIcon name="chevron-right" size={18} /></button>
+            </div>
+            {/* CN-06: 4장 행동 유도를 진단으로 연결. 한 줄 높이는 상시 확보(레이아웃 흔들림 방지), 1~3장은 숨김·포커스 불가.
+                이동은 빠른 실행 '필요 과정 찾기' 와 같은 해시 앵커 (.lg-anchor scroll-margin 이 SubNav 오프셋 반영) */}
+            <div className="lg-cn-next" data-show={last ? 'true' : undefined}>
+              <a
+                href={`#${R.diagnoseId}`}
+                className="lg-link lg-cn-next-link"
+                tabIndex={last ? undefined : -1}
+                aria-hidden={last ? undefined : true}
+                data-ga-id="legal_cardnews_diagnose"
+              >
+                {R.diagnose} <LgIcon name="arrow-right" size={16} />
+              </a>
             </div>
           </div>
           {/* 880 이하 캡션: 현재 장 제목 (목차 대신) */}
