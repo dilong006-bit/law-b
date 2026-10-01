@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import '@/styles/components.css';
+import '@/styles/floating-inquiry.css';
 import { pretendard, gowun } from './fonts';
 import Footer from '@/components/common/Footer';
 import ToTop from '@/components/common/ToTop';
+import FloatingInquiry from '@/components/common/FloatingInquiry';
 import TeaserSnackbar from '@/components/common/TeaserSnackbar';
 
 // OG 이미지(상대경로)의 절대 URL 해석 기준. 정본 도메인 미확정이라 값을 임의로 정하지 않고,
@@ -32,6 +34,7 @@ export default function RootLayout({
         <a href="#main" className="skip-link">본문 바로가기</a>
         {children}
         <Footer />
+        <FloatingInquiry />
         <ToTop />
         <TeaserSnackbar />
       </body>

@@ -1,0 +1,60 @@
+/* ── 플로팅 문의 바 (B안 기술명세서 최종 v2.0 §6, FI-08·FI-12·FI-14) ─────────────
+   z-index 64: lg-tray(65)·티저(78)·모달(120) 아래, to-top(60) 위. 겹칠 상황은 훅이 숨김으로 처리한다.
+   문구는 말줄임·줄바꿈 없이 1줄 (넘치면 데이터 문구를 줄인다). 필러색은 점 1개에만 */
+.fi{position:fixed;left:50%;bottom:20px;z-index:64;width:min(1100px,calc(100% - 48px));
+  transform:translate(-50%,calc(100% + 32px));opacity:0;pointer-events:none;
+  transition:transform .32s var(--ease-out),opacity .2s var(--ease)}
+.fi.is-on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.fi-card{display:flex;align-items:center;gap:16px;height:72px;padding:0 12px 0 24px;
+  background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-3)}
+.fi-dot{flex:none;width:8px;height:8px;border-radius:999px;background:var(--p1)}
+.fi[data-accent="p2"] .fi-dot{background:var(--p2)}
+.fi[data-accent="p3"] .fi-dot{background:var(--p3)}
+.fi[data-accent="p4"] .fi-dot{background:var(--p4)}
+.fi-msg{flex:1;min-width:0;margin:0;display:flex;flex-direction:column;gap:2px;word-break:keep-all;white-space:nowrap;animation:fi-msg .16s var(--ease)}
+@keyframes fi-msg{from{opacity:0}to{opacity:1}}
+.fi-title{font-size:16px;font-weight:700;line-height:1.4;color:var(--ink)}
+.fi-sub{font-size:14px;line-height:1.4;color:var(--muted)}
+.fi-short,.fi-cta-short{display:none}
+.fi-cta{flex:none;display:inline-flex;align-items:center;gap:6px;height:48px;padding:0 24px;border-radius:12px;
+  background:var(--p1);color:#fff;font-size:16px;font-weight:700;text-decoration:none;white-space:nowrap}
+.fi-close{flex:none;width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:999px;background:none;color:var(--muted);cursor:pointer}
+.fi-cta:focus-visible,.fi-close:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){
+  .fi-cta:hover{filter:brightness(1.15)}
+  .fi-close:hover{background:var(--surface);color:var(--ink)}
+}
+@media (max-width:1040px){
+  .fi{bottom:16px}
+  .fi-card{height:64px;padding:0 8px 0 20px}
+  .fi-sub{display:none}
+  .fi-title{font-size:15px}
+  .fi-cta{height:44px;padding:0 18px;font-size:15px}
+}
+@media (max-width:760px){
+  .fi{bottom:calc(12px + env(safe-area-inset-bottom));width:calc(100% - 24px)}
+  .fi-card{height:60px;padding:0 8px 0 4px;gap:8px;border-radius:14px}
+  .fi-close{order:-1;width:44px;height:44px}
+  .fi-dot,.fi-title,.fi-cta-full,.fi-cta-ic{display:none}
+  .fi-short{display:block;font-size:15px;font-weight:700;color:var(--ink)}
+  .fi-cta-short{display:inline}
+  .fi-cta{height:44px;padding:0 14px;font-size:15px}
+}
+@media (max-width:360px){.fi-short{font-size:14px}.fi-cta{padding:0 12px}}
+@media (max-height:479px){.fi{display:none}}
+@media (prefers-reduced-motion:reduce){.fi,.fi-msg{transition:none;animation:none}}
+@media print{.fi{display:none}}
+
+/* 바 노출 중 다른 하단 요소 보정 (body.fi-on). :has() 미지원 브라우저는 컴포넌트가 html 인라인 style 로 같은 값을 준다 */
+body.fi-on .to-top{bottom:calc(20px + 72px + 12px)}
+body.fi-on .toast{bottom:calc(20px + 72px + 12px)}
+html:has(body.fi-on){scroll-padding-bottom:104px}
+@media (max-width:1040px){body.fi-on .to-top,body.fi-on .toast{bottom:calc(16px + 64px + 12px)}}
+@media (max-width:760px){
+  body.fi-on .to-top,body.fi-on .toast{bottom:calc(12px + 60px + 12px + env(safe-area-inset-bottom))}
+  html:has(body.fi-on){scroll-padding-bottom:88px}
+}
+
+/* 바에서 폼으로 이동한 뒤 터치 기기는 폼 제목에 프로그램 포커스를 준다 (키보드 자동 열림 방지).
+   이때만 링을 숨기고 키보드 포커스 링은 그대로 둔다 */
+#inq .inq-side .lead:focus:not(:focus-visible),#inq h2:focus:not(:focus-visible){outline:none}
