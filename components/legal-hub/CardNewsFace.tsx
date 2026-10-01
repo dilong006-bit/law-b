@@ -5,9 +5,9 @@ import CardNewsLogo from './CardNewsLogo';
 import { LgIcon } from './icons';
 import LgPhoto from './LgPhoto';
 
-/** 템플릿별 사진 비율 (기술명세서 §3.4): opening 2:1, problem 1080:562, solution 1080:324, closing 4:5 */
+/** 템플릿별 사진 비율 (기술명세서 §3.4): opening 2:1, problem 1080:562, solution 1080:302 (우하단 여유 확보로 30cqw 에서 28cqw), closing 4:5 */
 const PHOTO_RATIO: Record<CardNewsTemplate, readonly [number, number]> = {
-  opening: [2, 1], problem: [1080, 562], solution: [1080, 324], closing: [4, 5],
+  opening: [2, 1], problem: [1080, 562], solution: [1080, 302], closing: [4, 5],
 };
 const PHOTO_WIDTHS = [360, 540, 720, 1080] as const;
 const LOGO_TONE = { opening: 'ink', problem: 'chip', solution: 'chip', closing: 'white' } as const;

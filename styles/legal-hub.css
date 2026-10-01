@@ -499,8 +499,8 @@
 .cnx--problem .cnx-shade{top:44cqw;height:8cqw;background:linear-gradient(180deg,rgba(255,255,255,0),#fff)}
 .cnx--problem .cnx-txt{top:56cqw}
 .cnx--problem .cnx-body{margin-top:3cqw}
-/* 3장 solution: 상단 사진 0~30, 라벨 > 제목 > 포인트 3행 */
-.cnx--solution .cnx-txt{top:34cqw}
+/* 3장 solution: 상단 사진 0~28 (1080:302, 우하단 비움 여유 확보), 라벨 > 제목 > 포인트 3행 */
+.cnx--solution .cnx-txt{top:32cqw}
 /* 4장 closing: 전면 사진 + 보라 오버레이, 흰 글자, 라벨만 Orange (보라 위 대비 5.48:1) */
 .cnx--closing .cnx-shade{inset:0;background:linear-gradient(180deg,rgba(46,26,107,.80) 0%,rgba(46,26,107,.92) 100%)}
 .cnx--closing .cnx-label{padding:0;background:none;color:var(--p4)}

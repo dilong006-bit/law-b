@@ -22,18 +22,24 @@
 ## 카드뉴스 HTML 카드 사진 4장 + 대체 1장 (26827 카드뉴스 고도화 PRD upgrade-02 §5.1, 2026-10-01)
 
 - 라이선스: Unsplash License (무료, 상업 이용 가능, 표기 의무 없음). 화면에는 출처를 노출하지 않고 `data/legal.ts` `LEGAL_CARDNEWS[].photo.credit/creditUrl` 에 보관
-- 크롭: 템플릿별 비율(opening 2:1, problem 1080:562, solution 1080:324, closing 4:5) + 장별 초점(fp-x, fp-y). `lib/legal/unsplash.ts` 가 `crop=focalpoint` 쿼리와 srcset(360/540/720/1080)을 붙인다
+- 크롭: 템플릿별 비율(opening 2:1, problem 1080:562, solution 1080:302, closing 4:5) + 장별 초점(fp-x, fp-y). `lib/legal/unsplash.ts` 가 `crop=focalpoint` 쿼리와 srcset(360/540/720/1080)을 붙인다
 - 디자이너 최종 JPG(10/12 예정) 수령 시 `image` 필드로 교체. 사진은 HTML 임시본 전용
 
 | 장 | Unsplash 페이지 | 작가 | 핫링크 기본 URL | 초점 (x, y) | 라이선스 |
 |---|---|---|---|---|---|
 | 1 | https://unsplash.com/photos/flRm0z3MEoA | Marissa Grootes | https://images.unsplash.com/photo-1513128034602-7814ccaddd4e | 0.5, 0.55 | Unsplash License |
-| 2 | https://unsplash.com/photos/h0SVizhJyLw | Elen Sher | https://images.unsplash.com/photo-1691934286085-c88039d93dae | 0.45, 0.35 | Unsplash License |
+| 2 | https://unsplash.com/photos/3q4V539j_bw | 2H Media | https://images.unsplash.com/photo-1631557777232-a2632ae3c67d | 0.5, 0.5 | Unsplash License |
 | 3 | https://unsplash.com/photos/nhLPFS1vZWI | alfi fahmi | https://images.unsplash.com/photo-1634790778908-bdaf7700bf06 | 0.55, 0.4 | Unsplash License |
 | 4 | https://unsplash.com/photos/DyFjxmHt3Es | Jose Losada | https://images.unsplash.com/photo-1579487785973-74d2ca7abdd5 | 0.5, 0.5 | Unsplash License |
 | 대체 1 | https://unsplash.com/photos/ame4-J586eM | Melinda Gimpel | https://images.unsplash.com/photo-1551151773-191e586a96d3 | 미정 | Unsplash License |
 
-### 이전 카드뉴스 임시 실사 (upgrade-02 커밋 12, 2026-10-01 교체로 미사용)
+### 제외한 카드뉴스 사진
+
+| 장 | 사진 페이지 | 작가 | 핫링크 기본 URL | 제외 사유 |
+|---|---|---|---|---|
+| 2 | https://unsplash.com/photos/h0SVizhJyLw | Elen Sher | https://images.unsplash.com/photo-1691934286085-c88039d93dae | 타사 로고 노출로 제외 (모니터 화면 MEDESK, 모니터 acer). 2026-10-01 3q4V539j_bw 로 교체 |
+
+### 이전 카드뉴스 임시 실사 (upgrade-02 커밋 12, 2026-10-01 교체로 미사용. 2장 3q4V539j_bw 는 HTML 카드에서 재사용)
 
 | 장 | 사진 페이지 | 작가 | 핫링크 기본 URL |
 |---|---|---|---|

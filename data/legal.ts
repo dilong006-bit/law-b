@@ -211,8 +211,8 @@ export const LEGAL_CARDNEWS: readonly CardNewsItem[] = [
     body: '대상 선정부터 일정, 이수, 증빙까지 HR 담당자가 챙길 일은 많습니다.',
     emphasis: '하나라도 놓치면 과태료 등 기업 리스크로 이어질 수 있습니다.',
     alt: '교육만 열면 끝일까요? 대상 선정부터 일정, 이수, 증빙까지 HR 담당자가 챙길 일은 많습니다. 하나라도 놓치면 과태료 등 기업 리스크로 이어질 수 있습니다.',
-    photo: { src: 'https://images.unsplash.com/photo-1691934286085-c88039d93dae', fpX: 0.45, fpY: 0.35,
-      credit: 'Elen Sher', creditUrl: 'https://unsplash.com/photos/h0SVizhJyLw' },
+    photo: { src: 'https://images.unsplash.com/photo-1631557777232-a2632ae3c67d', fpX: 0.5, fpY: 0.5,
+      credit: '2H Media', creditUrl: 'https://unsplash.com/photos/3q4V539j_bw' },
   },
   {
     id: 'cn3', template: 'solution', label: 'KG에듀원',
