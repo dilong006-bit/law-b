@@ -6,7 +6,7 @@ import { LEGAL_CARDNEWS } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { useModal } from '@/lib/useModal';
 import { LgIcon } from './icons';
-import LgPhoto from './LgPhoto';
+import CardNewsFace from './CardNewsFace';
 
 const R = HUB_COPY.resources;
 
@@ -35,7 +35,7 @@ export default function CardNewsLightbox({ index, onIndex, onClose }: { index: n
       <div className="lg-lb" ref={ref} role="dialog" aria-modal="true" aria-label={R.cardNewsLabel}>
         <button type="button" className="lg-lb-close" onClick={onClose} aria-label={R.close} data-autofocus><LgIcon name="x" size={18} /></button>
         <figure className="lg-lb-fig">
-          <LgPhoto key={index} className="lg-lb-img" src={c.photo.src} alt={c.alt} ratio={[4, 5]} sizes="min(90vw, 560px)" eager />
+          <span key={index} className="lg-lb-img"><CardNewsFace item={c} eager sizes="min(100vw - 32px, 528px)" /></span>
           <figcaption className="lg-lb-cap">{c.title.join(' ')}</figcaption>
         </figure>
         <div className="lg-cn-ctrl lg-lb-ctrl">

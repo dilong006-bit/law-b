@@ -14,6 +14,8 @@ const NAMES = [
   // upgrade-03 (시각 고도화): 구분 배지·진단 문항·과정 카드·상세·맞춤 타일·비교표
   'building-2', 'lightbulb', 'briefcase', 'circle-play', 'target', 'user-round', 'puzzle',
   'pen-line', 'sparkles', 'settings-2', 'circle-check',
+  // 26827 카드뉴스 고도화 (3장 솔루션 포인트, refresh-cw·headset 은 기존 것)
+  'layers',
 ];
 
 // 과정 아이덴티티 아이콘 (upgrade-03 LB40): 후보를 앞에서부터 찾아 Lucide 에 있는 첫 이름을 쓴다. 키는 LegalCourseId

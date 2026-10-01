@@ -451,6 +451,60 @@
   .lg-cn-cap{display:block}
 }
 
+/* ── 26827 HTML 카드뉴스 (기술명세서 v1.0 §3). 1080 원본 = 카드 폭 100cqw, 4:5 이므로 높이 125cqw ──
+   글자 크기는 아래 토큰만 쓴다 (최소 --cnx-min 4.074cqw). 우하단 --cnx-safe 영역은 확대 버튼 자리라 글자·로고 금지.
+   Orange 글자는 closing(보라 배경)에서만, 흰 배경 강조는 Purple 글자 + Orange 바.
+   cqw 는 .cnx 자식에서만 쓴다 (.cnx 자신의 cqw 는 바깥 기준이 된다). 색 리터럴은 명세 §3.3 값 */
+.cnx{--cnx-m:7.407cqw;--cnx-safe:16.667cqw;--cnx-logo-h:3.704cqw;--cnx-title:7.407cqw;--cnx-body:4.444cqw;--cnx-sub:4.815cqw;--cnx-min:4.074cqw;
+  --cnx-cream:#F7F6F4;--cnx-text:#28283A;--cnx-desc:#4A4A5A;
+  container-type:inline-size;aspect-ratio:4/5;position:relative;display:block;width:100%;overflow:hidden;
+  background:#fff;color:var(--p1);text-align:left;word-break:keep-all;overflow-wrap:break-word;font-family:inherit}
+.cnx .lg-photo{border-radius:0}
+.cnx .cnx-photo{position:absolute;left:0;top:0;width:100%;background:linear-gradient(135deg,#E9E4F2,#F7F1EA)}
+.cnx .cnx-jpg{position:absolute;inset:0;width:100%}
+.cnx-shade{position:absolute;left:0;right:0}
+.cnx-logo{position:absolute;left:var(--cnx-m);top:var(--cnx-m);z-index:1;display:block}
+.cnx-logo-w{display:block;font-size:var(--cnx-min);font-weight:800;letter-spacing:-.01em;line-height:var(--cnx-logo-h);white-space:nowrap}
+.cnx-logo--ink{color:var(--p1)}
+.cnx-logo--white{color:#fff}
+/* 사진 위: 흰 칩. 워드마크 글자가 4장 모두 같은 (m, m) 에 오도록 칩 패딩만큼 바깥으로 */
+.cnx-logo--chip{margin:-1.2cqw 0 0 -2.2cqw;padding:1.2cqw 2.2cqw;border-radius:999px;background:rgba(255,255,255,.92);color:var(--p1)}
+.cnx-txt{position:absolute;left:var(--cnx-m);right:var(--cnx-m);display:flex;flex-direction:column;align-items:flex-start}
+.cnx-label{display:inline-flex;align-items:center;gap:1.5cqw;height:6.5cqw;padding:0 2.6cqw;border-radius:999px;background:rgba(245,130,32,.12);
+  color:var(--p1);font-size:var(--cnx-min);font-weight:700;line-height:1;white-space:nowrap}
+.cnx-label::before{content:"";flex:none;width:1.5cqw;height:1.5cqw;border-radius:50%;background:var(--p4)}
+.cnx-title{display:block;margin-top:3cqw;font-size:var(--cnx-title);font-weight:700;line-height:1.3;color:var(--p1)}
+.cnx-txt>:first-child{margin-top:0}
+.cnx-line{display:block}
+.cnx-body{display:block;margin-top:2.2cqw;font-size:var(--cnx-body);font-weight:400;line-height:1.5;color:var(--cnx-text)}
+.cnx-em{display:block;margin-top:3cqw;padding-left:3cqw;border-left:.74cqw solid var(--p4);font-size:var(--cnx-body);font-weight:600;line-height:1.5;color:var(--p1)}
+.cnx-points{display:flex;flex-direction:column;gap:3cqw;margin-top:4cqw}
+.cnx-pt{display:flex;align-items:center;gap:3cqw}
+.cnx-pt-ic{flex:none;width:9cqw;height:9cqw;border-radius:50%;display:grid;place-items:center;background:rgba(46,26,107,.06);color:var(--p4)}
+.cnx-pt-ic svg{width:5cqw;height:5cqw}
+.cnx-pt-tx{display:flex;flex-direction:column;min-width:0}
+.cnx-pt-t{font-size:var(--cnx-sub);font-weight:600;line-height:1.3;color:var(--p1)}
+.cnx-pt-d{font-size:var(--cnx-min);font-weight:400;line-height:1.4;color:var(--cnx-desc);white-space:nowrap}
+.cnx-foot{position:absolute;left:var(--cnx-m);bottom:var(--cnx-m);font-size:var(--cnx-min);font-weight:600;line-height:1.4;color:#fff;white-space:nowrap}
+
+/* 1장 opening: 크림 배경, 상단 글자, 하단 사진 75~125 (2:1) + 상단 경계 배경색 그라데이션 6 */
+.cnx--opening{background:var(--cnx-cream)}
+.cnx--opening .cnx-photo{top:75cqw}
+.cnx--opening .cnx-shade{top:75cqw;height:6cqw;background:linear-gradient(180deg,var(--cnx-cream),rgba(247,246,244,0))}
+.cnx--opening .cnx-txt,.cnx--closing .cnx-txt{top:calc(var(--cnx-m) + var(--cnx-logo-h) + 4cqw)}
+/* 2장 problem: 상단 사진 0~52 + 하단 흰색 그라데이션 8, 흰 배경 글자 */
+.cnx--problem .cnx-shade{top:44cqw;height:8cqw;background:linear-gradient(180deg,rgba(255,255,255,0),#fff)}
+.cnx--problem .cnx-txt{top:56cqw}
+.cnx--problem .cnx-body{margin-top:3cqw}
+/* 3장 solution: 상단 사진 0~30, 라벨 > 제목 > 포인트 3행 */
+.cnx--solution .cnx-txt{top:34cqw}
+/* 4장 closing: 전면 사진 + 보라 오버레이, 흰 글자, 라벨만 Orange (보라 위 대비 5.48:1) */
+.cnx--closing .cnx-shade{inset:0;background:linear-gradient(180deg,rgba(46,26,107,.80) 0%,rgba(46,26,107,.92) 100%)}
+.cnx--closing .cnx-label{padding:0;background:none;color:var(--p4)}
+.cnx--closing .cnx-title{color:#fff}
+.cnx--closing .cnx-body{color:rgba(255,255,255,.88)}
+.lg-cn-open .cnx{border-radius:var(--r)}
+
 /* ── LB33 과정소개서 컴팩트 카드 ──────────────────────────────────── */
 .lg-brochure{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding:18px}
 /* 표지: 소개서 PDF 1쪽(가로 16:9 원본 비율) */
@@ -472,7 +526,7 @@
 .lg-lb{position:fixed;z-index:111;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90vw,560px);max-height:96dvh;
   display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;background:#fff;border-radius:22px;box-shadow:var(--shadow-3)}
 .lg-lb-fig{width:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
-.lg-lb-img{width:min(100%,calc(86dvh * .8));border-radius:12px;animation:lg-lbfade .2s var(--ease)}
+.lg-lb-img{display:block;overflow:hidden;width:min(100%,calc(86dvh * .8));border-radius:12px;animation:lg-lbfade .2s var(--ease)}
 @keyframes lg-lbfade{from{opacity:0}to{opacity:1}}
 .lg-lb-cap{font-size:15px;font-weight:700;text-align:center;word-break:keep-all}
 .lg-lb-close{position:absolute;top:-14px;right:-14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);

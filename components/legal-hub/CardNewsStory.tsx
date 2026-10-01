@@ -6,8 +6,8 @@ import { HUB_COPY } from '@/data/legalHub';
 import BlockHead from './BlockHead';
 import BrochureCard from './BrochureCard';
 import CardNewsLightbox from './CardNewsLightbox';
+import CardNewsFace from './CardNewsFace';
 import { LgIcon } from './icons';
-import LgPhoto from './LgPhoto';
 
 const R = HUB_COPY.resources;
 const N = LEGAL_CARDNEWS.length;
@@ -97,12 +97,10 @@ export default function CardNewsStory() {
                     aria-label={R.open(k + 1)}
                     data-ga-id="legal_cardnews_open"
                   >
-                    <LgPhoto
-                      src={c.photo.src}
-                      alt={c.alt}
-                      ratio={[4, 5]}
-                      sizes="(max-width:880px) 86vw, 367px"
-                      onFail={() => setFailed((f) => f.map((v, j) => (j === k ? true : v)))}
+                    <CardNewsFace
+                      item={c}
+                      eager={k === 0}
+                      onImageFail={() => setFailed((f) => f.map((v, j) => (j === k ? true : v)))}
                     />
                     {!failed[k] && <span className="lg-cn-zoom" aria-hidden="true"><LgIcon name="maximize-2" size={16} /></span>}
                   </button>
