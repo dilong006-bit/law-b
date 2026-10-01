@@ -1,6 +1,7 @@
 'use client';
 
 import { EMAIL_RE } from '@/lib/utils';
+import { useFieldValidation, type FieldRules } from '@/lib/useFieldValidation';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import Modal from '@/components/common/Modal';
@@ -98,20 +99,26 @@ async function submitLead(payload: Record<string, unknown>): Promise<boolean> {
 
 const mb = (bytes: number) => (bytes / 1048576).toFixed(1);
 
-function ConsultBody({ axis, onClose }: { axis?: string; onClose: () => void }) {
+/** 담당자명·회사/기관·이메일 검증 규칙 (문의·다운로드 모달 공용, 26827). true 면 오류 */
+type LeadKey = 'name' | 'org' | 'mail';
+const LEAD_RULES: FieldRules<LeadKey> = {
+  name: (v) => !v.trim(),
+  org: (v) => !v.trim(),
+  mail: (v) => !EMAIL_RE.test(v.trim()),
+};
+
+function ConsultBody({ open, axis, onClose }: { open: boolean; axis?: string; onClose: () => void }) {
   const [v, setV] = useState({ name: '', org: '', mail: '', msg: '' });
-  const [errs, setErrs] = useState<Record<string, boolean>>({});
+  const fv = useFieldValidation(LEAD_RULES, { idPrefix: 'ct-', onValueChange: (k, val) => setV((s) => ({ ...s, [k]: val })) });
+  const { reset } = fv;
   const [agree, setAgree] = useState(false);
   const [agreeErr, setAgreeErr] = useState(false);
   const [done, setDone] = useState(false);
   const upd = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setV((s) => ({ ...s, [k]: e.target.value }));
+  // 닫힐 때 오류 노출 상태만 초기화한다(입력값은 기존 정책대로 유지)
+  useEffect(() => { if (!open) reset(); }, [open, reset]);
   function submit() {
-    const next: Record<string, boolean> = {};
-    let ok = true;
-    (['name', 'org'] as const).forEach((k) => { const bad = !(v[k] || '').trim(); next[k] = bad; if (bad) ok = false; });
-    const eok = EMAIL_RE.test((v.mail || '').trim());
-    next.mail = !eok; if (!eok) ok = false;
-    setErrs(next);
+    let ok = fv.validateAll(v) === null;
     setAgreeErr(!agree);
     if (!agree) ok = false;
     if (!ok) return;
@@ -120,13 +127,13 @@ function ConsultBody({ axis, onClose }: { axis?: string; onClose: () => void }) 
     setDone(true);
   }
   if (done) return <div className="okmsg"><div className="ic">✓</div><h3>{CONSULT_MODAL.successTitle}</h3><p className="lead">{CONSULT_MODAL.successMsg}</p><button className="btn-line-dark" style={{ marginTop: 16 }} onClick={onClose}>닫기</button></div>;
-  const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
+  const fld = (k: LeadKey) => `field${fv.showError(k) ? ' invalid' : ''}`;
   return (
     <div>
       {axis && <div className="ctx">문의 대상: {axis}</div>}
-      <div className={fld('name')}><label>담당자명 <span className="req">*</span></label><input aria-label="담당자명" placeholder="홍길동" value={v.name} onChange={upd('name')} /><span className="err">담당자명을 입력해 주세요.</span></div>
-      <div className={fld('org')}><label>회사/기관 <span className="req">*</span></label><input aria-label="회사/기관" placeholder="회사명" value={v.org} onChange={upd('org')} /><span className="err">회사/기관을 입력해 주세요.</span></div>
-      <div className={fld('mail')}><label>이메일 <span className="req">*</span></label><input aria-label="이메일" type="email" placeholder="name@company.com" value={v.mail} onChange={upd('mail')} /><span className="err">올바른 이메일을 입력해 주세요.</span></div>
+      <div className={fld('name')}><label>담당자명 <span className="req">*</span></label><input aria-label="담당자명" placeholder="홍길동" autoComplete="name" value={v.name} {...fv.bind('name')} /><span className="err" {...fv.errProps('name')}>담당자명을 입력해 주세요.</span></div>
+      <div className={fld('org')}><label>회사/기관 <span className="req">*</span></label><input aria-label="회사/기관" placeholder="회사명" autoComplete="organization" value={v.org} {...fv.bind('org')} /><span className="err" {...fv.errProps('org')}>회사/기관을 입력해 주세요.</span></div>
+      <div className={fld('mail')}><label>이메일 <span className="req">*</span></label><input aria-label="이메일" type="email" inputMode="email" autoComplete="email" placeholder="name@company.com" value={v.mail} {...fv.bind('mail')} /><span className="err" {...fv.errProps('mail')}>올바른 이메일을 입력해 주세요.</span></div>
       <div className="field"><label>필요한 콘텐츠·과제</label><textarea aria-label="필요한 콘텐츠·과제" rows={3} placeholder="예: 전 직원 법정의무 + 실무자 생성형 AI + 기업 맞춤 제작" value={v.msg} onChange={upd('msg')} /></div>
       <ConsentGroup formKey="content" idPrefix="ct-" required={agree} onRequiredChange={(c) => { setAgree(c); if (c) setAgreeErr(false); }} error={agreeErr} />
       <button className="btn btn-ink" style={{ width: '100%', marginTop: 18 }} onClick={submit}>문의 보내기</button>
@@ -145,7 +152,8 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
   const A = DOWNLOAD_ASSETS[asset];
   const pending = A.FILE_URL === null;
   const [v, setV] = useState({ name: '', org: '', mail: '' });
-  const [errs, setErrs] = useState<Record<string, boolean>>({});
+  const fv = useFieldValidation(LEAD_RULES, { idPrefix: 'dl-', onValueChange: (k, val) => setV((s) => ({ ...s, [k]: val })) });
+  const { reset } = fv;
   const [agree, setAgree] = useState(false);
   const [agreeErr, setAgreeErr] = useState(false);
   const [optIn, setOptIn] = useState(false);
@@ -168,8 +176,6 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
   const lastMile = useRef(-1);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const upd = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement>) => setV((s) => ({ ...s, [k]: e.target.value }));
-
   const clearPrep = useCallback(() => {
     if (prepTimer.current !== null) { window.clearTimeout(prepTimer.current); prepTimer.current = null; }
   }, []);
@@ -191,7 +197,8 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
     setStep('form'); setShowPreparing(false); setPct(0); setReceived(0); setTotal(0);
     setFails(0); setDirect(false); setLive('');
     lastMile.current = -1;
-  }, [open, clearPrep, clearAutoClose]);
+    reset();
+  }, [open, clearPrep, clearAutoClose, reset]);
 
   // 언마운트 정리 — 타이머 누수·중복 방지(§5-5)
   useEffect(() => () => { abortRef.current?.abort(); clearPrep(); clearAutoClose(); }, [clearPrep, clearAutoClose]);
@@ -277,12 +284,7 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
   }, [onProgress, clearPrep, A]);
 
   async function submit() {
-    const next: Record<string, boolean> = {};
-    let ok = true;
-    (['name', 'org'] as const).forEach((k) => { const bad = !(v[k] || '').trim(); next[k] = bad; if (bad) ok = false; });
-    const eok = EMAIL_RE.test((v.mail || '').trim());
-    next.mail = !eok; if (!eok) ok = false;
-    setErrs(next);
+    let ok = fv.validateAll(v) === null;
     setAgreeErr(!agree);
     if (!agree) ok = false;
     if (!ok) return;
@@ -319,7 +321,7 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
   const busy = step === 'preparing' || step === 'downloading' || step === 'saving';
   // preparing이 아직 화면에 뜨지 않은 구간에서는 폼을 유지한다(§2-1 깜빡임 방지)
   const showForm = step === 'form' || (step === 'preparing' && !showPreparing);
-  const fld = (k: string) => `field${errs[k] ? ' invalid' : ''}`;
+  const fld = (k: LeadKey) => `field${fv.showError(k) ? ' invalid' : ''}`;
   const autoCloseMs = direct ? DC.AUTO_CLOSE_MS_DIRECT : DC.AUTO_CLOSE_MS;
 
   return (
@@ -331,9 +333,9 @@ function DownloadBody({ open, onClose, asset, opts }: { open: boolean; onClose: 
         <div>
           {/* 안내 배너 — 선택 동의와 한 스위치에 묶임(§3-3 히든 스위치) */}
           {HAS_DL_OPTIN && <div className="ctx">{DOWNLOAD_OPTIN_BANNER}</div>}
-          <div className={fld('name')}><label>담당자명 <span className="req">*</span></label><input aria-label="담당자명" placeholder="홍길동" value={v.name} onChange={upd('name')} /><span className="err">담당자명을 입력해 주세요.</span></div>
-          <div className={fld('org')}><label>회사/기관 <span className="req">*</span></label><input aria-label="회사/기관" placeholder="회사명" value={v.org} onChange={upd('org')} /><span className="err">회사/기관을 입력해 주세요.</span></div>
-          <div className={fld('mail')}><label>이메일 <span className="req">*</span></label><input aria-label="이메일" type="email" placeholder="name@company.com" value={v.mail} onChange={upd('mail')} /><span className="err">올바른 이메일을 입력해 주세요.</span></div>
+          <div className={fld('name')}><label>담당자명 <span className="req">*</span></label><input aria-label="담당자명" placeholder="홍길동" autoComplete="name" value={v.name} {...fv.bind('name')} /><span className="err" {...fv.errProps('name')}>담당자명을 입력해 주세요.</span></div>
+          <div className={fld('org')}><label>회사/기관 <span className="req">*</span></label><input aria-label="회사/기관" placeholder="회사명" autoComplete="organization" value={v.org} {...fv.bind('org')} /><span className="err" {...fv.errProps('org')}>회사/기관을 입력해 주세요.</span></div>
+          <div className={fld('mail')}><label>이메일 <span className="req">*</span></label><input aria-label="이메일" type="email" inputMode="email" autoComplete="email" placeholder="name@company.com" value={v.mail} {...fv.bind('mail')} /><span className="err" {...fv.errProps('mail')}>올바른 이메일을 입력해 주세요.</span></div>
           <ConsentGroup formKey="download" idPrefix="dl-" required={agree} onRequiredChange={(c) => { setAgree(c); if (c) setAgreeErr(false); }} error={agreeErr} optional={optIn} onOptionalChange={setOptIn} />
           <button className="btn btn-ink" style={{ width: '100%', marginTop: 18 }} onClick={submit} disabled={busy} aria-busy={busy} data-ga-id={A.gaId}>
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16" /></svg> {A.submit}
@@ -422,7 +424,7 @@ export default function ContentModalProvider({ children }: { children: React.Rea
     <ModalCtx.Provider value={{ openConsult, openDownload: (a?: DownloadAsset | React.SyntheticEvent, opts?: DownloadOpts) => setDl({ open: true, asset: typeof a === 'string' && a in DOWNLOAD_ASSETS ? a : 'courseList', opts }) }}>
       {children}
       <Modal open={consult.open} onClose={() => setConsult({ open: false })} labelledBy="c-title" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcChat /></span><span>{CONSULT_MODAL.title}</span><span className="mb">{CONSULT_MODAL.mb}</span></span>} maxWidth={480}>
-        <ConsultBody axis={consult.axis} onClose={() => setConsult({ open: false })} />
+        <ConsultBody open={consult.open} axis={consult.axis} onClose={() => setConsult({ open: false })} />
       </Modal>
       <Modal open={dl.open} onClose={closeDl} labelledBy="d-title" describedBy="dl-desc" title={<span className="exp-head"><span className="cat-ic" aria-hidden="true"><IcSheet /></span><span>{dlAsset.title}</span><span className="mb">{dlAsset.mb}</span></span>} maxWidth={480}>
         <DownloadBody open={dl.open} onClose={closeDl} asset={dl.asset} opts={dl.opts} />
