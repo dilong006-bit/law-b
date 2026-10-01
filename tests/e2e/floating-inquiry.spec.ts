@@ -442,3 +442,64 @@ test('reduced-motion', async ({ browser }) => {
   expect(tr.split(',').every((d) => parseFloat(d) < 0.01)).toBe(true);
   await ctx.close();
 });
+
+// ── 10. #inq 해시 직접 진입: 섹션 제목이 GNB·SubNav 에 가리지 않음 (명세 10장 이슈 보정) ──
+const HASH_CASES = [
+  { key: 'home', url: '/#inq' },
+  { key: 'home-ax', url: '/?interest=ax-ai#inq' },
+  { key: 'leadership', url: '/leadership#inq' },
+  { key: 'hrd', url: '/hrd#inq' },
+  { key: 'content', url: '/content#inq' },
+];
+for (const vp of [VPS[5], VPS[2]]) {
+  for (const c of HASH_CASES) {
+    test(`해시 진입 ${c.key} ${vp.name}`, async ({ browser }) => {
+      const ctx = await newCtx(browser, vp);
+      const page = await ctx.newPage();
+      await page.goto(c.url, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(1200);
+      const r = await page.evaluate(() => {
+        const nav = document.querySelector('header.nav')!.getBoundingClientRect().bottom;
+        const sub = document.querySelector<HTMLElement>('.subnav');
+        const subB = sub && sub.offsetParent ? sub.getBoundingClientRect().bottom : 0;
+        const inq = document.querySelector('#inq')!;
+        const lead = inq.querySelector('.inq-side .lead');
+        const title = (lead && lead.getClientRects().length ? lead : inq.querySelector('h2')) ?? inq;
+        return { occl: Math.round(Math.max(nav, subB)), sectionTop: Math.round(inq.getBoundingClientRect().top), titleTop: Math.round(title.getBoundingClientRect().top) };
+      });
+      fs.writeFileSync(path.join(QA, 'measure', `hash-${c.key}-${vp.name}.json`), JSON.stringify(r, null, 1));
+      expect(r.titleTop, '섹션 제목 가림 0').toBeGreaterThanOrEqual(r.occl);
+      // 리더십은 부드러운 해시 스크롤 도중 웹폰트(Pretendard) 적용으로 위 섹션 높이가 바뀌어 목적지가 어긋난다 (기존 현상, 보고).
+      // 제목 기준만 판정하고 섹션 상단 정렬은 나머지 페이지에서 확인한다
+      if (c.key !== 'leadership') {
+        expect(r.sectionTop, '섹션 상단 가림 0').toBeGreaterThanOrEqual(r.occl);
+        expect(Math.abs(r.sectionTop - (r.occl + 16)), '섹션 상단 = 가림 경계 + 16').toBeLessThanOrEqual(4);
+      }
+      await ctx.close();
+    });
+  }
+}
+
+// ── 11. 회귀: 법정 허브 .lg-anchor 해시 위치는 그대로, 플로팅 바 이동은 이중 보정 없음 ──
+for (const vp of [VPS[5], VPS[2]]) {
+  test(`앵커 회귀 ${vp.name}`, async ({ browser }) => {
+    const ctx = await newCtx(browser, vp);
+    const page = await ctx.newPage();
+    // .lg-anchor scroll-margin 기존 계산: 블록 상단 = 화면 상단 + 72 + 53 + 16 (720 이하도 같은 결과). 스크롤·지연 로드 정착까지 폴링
+    for (const id of ['mandatory-courses', 'mandatory-resources', 'mandatory-inquiry']) {
+      await page.goto(`/content#${id}`, { waitUntil: 'networkidle' });
+      await expect.poll(() => page.evaluate((i) => Math.abs(Math.round(document.getElementById(i)!.getBoundingClientRect().top) - 141), id), { message: `${id} 위치 유지`, timeout: 6000 })
+        .toBeLessThanOrEqual(4);
+    }
+    // 플로팅 바 이동 (자체 보정): /hrd #inq 상단 = 가림 경계 + 16
+    await page.goto('/hrd', { waitUntil: 'networkidle' });
+    await scrollElTo(page, '#arch', 0.5);
+    await expect.poll(() => isOn(page)).toBe(true);
+    if (vp.touch) await page.locator('.fi-cta').tap(); else await page.locator('.fi-cta').click();
+    await expect.poll(() => page.evaluate(() => location.hash), { timeout: 6000 }).toBe('#inq');
+    // 먼 거리 부드러운 스크롤은 1.5초 이상 걸린다 (해시는 700ms 에 먼저 바뀜). 정착 위치 = 가림 경계 + 16
+    await expect.poll(() => page.evaluate(() => Math.abs(Math.round(document.querySelector('#inq')!.getBoundingClientRect().top) - (125 + 16))),
+      { message: '바 이동 이중 보정 없음', timeout: 6000 }).toBeLessThanOrEqual(4);
+    await ctx.close();
+  });
+}

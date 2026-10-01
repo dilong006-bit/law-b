@@ -367,3 +367,8 @@
 /* 상세 — 강사 소속 */
 .sme-affil{color:var(--muted);font-weight:400;font-size:12.5px}
 .cdetail-head .mb span:last-child{background:rgba(255,255,255,.28)}
+
+/* #inq 해시 진입 보정 (B안 플로팅 문의 바 명세 10장 이슈): 섹션 상단을 GNB·SubNav 하단 + 16px 에 맞춘다.
+   실측: GNB 하단 73px + SubNav 52px = 125px (.lg-anchor 의 72 + 53 과 같은 값). 전역 scroll-padding-top 35px (720 이하 81px) 전제 */
+.tint-p4 #inq{scroll-margin-top:calc(73px + 52px + 16px - 35px)}
+@media(max-width:720px){.tint-p4 #inq{scroll-margin-top:calc(73px + 52px + 16px - 81px)}}

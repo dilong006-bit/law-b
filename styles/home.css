@@ -257,3 +257,9 @@
   .hs-link{display:none}
 }
 @media(prefers-reduced-motion:reduce){.hs-link,.hs-trust{transition:none!important}}
+
+/* #inq 해시 진입 보정 (B안 플로팅 문의 바 명세 10장 이슈): html scroll-padding-top(35px, 720 이하 81px) 이 GNB 보다 작아
+   섹션 상단이 GNB 아래로 걸리던 문제. 섹션 상단을 GNB 하단 + 16px 에 맞춘다. 전역 scroll-padding 은 .lg-anchor 계산 전제라 그대로 둔다.
+   실측: GNB 하단 73px (72 + 경계선 1), 홈은 SubNav 없음. 범위는 홈 본문 직속 #inq 만 (/kium·/content 의 #inq 는 제외) */
+body > main > #inq{scroll-margin-top:calc(73px + 16px - 35px)}
+@media(max-width:720px){body > main > #inq{scroll-margin-top:calc(73px + 16px - 81px)}}
