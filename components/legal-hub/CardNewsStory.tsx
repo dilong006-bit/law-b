@@ -87,7 +87,7 @@ export default function CardNewsStory() {
           <div className="lg-cn" role="region" aria-roledescription="carousel" aria-label={R.cardNewsLabel}>
             <ul className="lg-cn-track" ref={track} onScroll={onScroll} data-hscroll>
               {LEGAL_CARDNEWS.map((c, k) => (
-                <li className="lg-cn-slide" key={c.photo} role="group" aria-roledescription="slide" aria-label={R.counter(k + 1, N)}>
+                <li className="lg-cn-slide" key={c.id} role="group" aria-roledescription="slide" aria-label={R.counter(k + 1, N)}>
                   <button
                     type="button"
                     className="lg-cn-open"
@@ -98,7 +98,7 @@ export default function CardNewsStory() {
                     data-ga-id="legal_cardnews_open"
                   >
                     <LgPhoto
-                      src={c.photo}
+                      src={c.photo.src}
                       alt={c.alt}
                       ratio={[4, 5]}
                       sizes="(max-width:880px) 86vw, 367px"
@@ -116,17 +116,17 @@ export default function CardNewsStory() {
             </div>
           </div>
           {/* 880 이하 캡션: 현재 장 제목 (목차 대신) */}
-          <p className="lg-cn-cap" aria-live="polite">{cur.title}</p>
+          <p className="lg-cn-cap" aria-live="polite">{cur.title.join(' ')}</p>
         </div>
 
         <div className="lg-c8 lg-story-side">
           <h4 className="lg-sub-title lg-toc-h">{R.storyTitle}</h4>
           <ol className="lg-toc" onKeyDown={onTocKey}>
             {LEGAL_CARDNEWS.map((c, k) => (
-              <li key={c.photo}>
+              <li key={c.id}>
                 <button type="button" className="lg-toc-item" aria-current={k === index ? 'true' : undefined} onClick={() => go(k)} data-ga-id="legal_cardnews_toc">
-                  <span className="t">{c.title}</span>
-                  <span className="s">{c.summary}</span>
+                  <span className="t">{c.title.join(' ')}</span>
+                  <span className="s">{c.toc}</span>
                 </button>
               </li>
             ))}

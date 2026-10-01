@@ -162,17 +162,79 @@ export const LEGAL_COPY = {
   contentLink: '법정필수교육 과정·미리보기 전체 보기',
 } as const;
 
-// 카드뉴스 4장 (legal-B upgrade-02 LB32, TECHSPEC upgrade-02 §2-1)
-// photo: images.unsplash.com 기본 URL(쿼리 없음) — 최종본(10/12) 전 임시 실사, 출처는 ref/legal/ASSET_SOURCES.md
-// 임시 사진은 원고 문구를 담지 않으므로 alt 는 title 과 같게 둔다. 최종본 수령 시 photo(로컬 경로 가능)·alt(최종 문구 전문)·title·summary 교체
-export type LegalCardNews = { photo: string; alt: string; title: string; summary: string };
-export const LEGAL_CARDNEWS: readonly LegalCardNews[] = [
-  { photo: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643', alt: '법정교육, 우리 회사는 몇 개나 끝냈나요?',
-    title: '법정교육, 우리 회사는 몇 개나 끝냈나요?', summary: '매년 챙겨야 할 법정교육을 점검해 보세요' },
-  { photo: 'https://images.unsplash.com/photo-1631557777232-a2632ae3c67d', alt: '교육만 열면 끝일까요?',
-    title: '교육만 열면 끝일까요?', summary: '대상 선정부터 증빙까지 담당자가 챙길 일' },
-  { photo: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8', alt: '2026년 최신 법정필수교육, 한 곳에 모았습니다',
-    title: '2026년 최신 법정필수교육, 한 곳에 모았습니다', summary: '최신 콘텐츠 · 맞춤 구성 · 운영 지원' },
-  { photo: 'https://images.unsplash.com/photo-1577412647305-991150c7d163', alt: '올해 법정교육, 지금 점검하세요',
-    title: '올해 법정교육, 지금 점검하세요', summary: '3가지 질문으로 필요한 과정 확인' },
+// 카드뉴스 4장 (26827 카드뉴스 고도화 PRD upgrade-02 CN-01, 기술명세서 v1.0 §2)
+// 카드·우측 목록·대체 텍스트·확대 보기가 모두 이 데이터를 쓴다. 목록 제목 = title.join(' '), 목록 부제 = toc
+// image 가 없으면 HTML 카드(template), 있으면 디자이너 최종 JPG (public/images/legal/cardnews/keess_legal_cardnews_0n.jpg, 1080x1350)
+// 사진 출처·라이선스(Unsplash License)는 ref/legal/ASSET_SOURCES.md
+// 대체 사진 (cn1): photo-1551151773-191e586a96d3 / Melinda Gimpel / https://unsplash.com/photos/ame4-J586eM
+export type CardNewsTemplate = 'opening' | 'problem' | 'solution' | 'closing';
+
+export interface CardNewsPhoto {
+  src: string;          // https://images.unsplash.com/photo-xxxx (쿼리 없이)
+  fpX: number;          // 초점 0~1
+  fpY: number;
+  credit: string;       // 작가명
+  creditUrl: string;    // https://unsplash.com/photos/{id}
+}
+
+export interface CardNewsPoint { icon: 'refresh-cw' | 'layers' | 'headset'; title: string; desc: string }
+
+export interface CardNewsItem {
+  id: 'cn1' | 'cn2' | 'cn3' | 'cn4';
+  template: CardNewsTemplate;
+  label?: string;           // 상단 라벨
+  title: string[];          // 줄 단위 (수동 줄바꿈)
+  toc: string;              // 우측 목록 부제
+  body?: string;
+  emphasis?: string;        // problem 전용
+  points?: CardNewsPoint[]; // solution 전용 (3개)
+  footer?: string;          // closing 전용
+  alt: string;              // 장 전문 (JPG 모드 대체 텍스트)
+  photo: CardNewsPhoto;
+  image?: string;           // 디자이너 최종 JPG 경로. 있으면 JPG 모드
+}
+
+export const LEGAL_CARDNEWS: readonly CardNewsItem[] = [
+  {
+    id: 'cn1', template: 'opening', label: '2026 법정필수교육',
+    title: ['법정교육, 우리 회사는', '몇 개나 끝냈나요?'],
+    toc: '매년 챙겨야 할 법정교육을 점검해 보세요',
+    body: '성희롱 예방, 장애인 인식개선, 퇴직연금 교육까지. 매년 챙겨야 할 법정교육, 모두 확인하셨나요?',
+    alt: '법정교육, 우리 회사는 몇 개나 끝냈나요? 성희롱 예방, 장애인 인식개선, 퇴직연금 교육까지. 매년 챙겨야 할 법정교육, 모두 확인하셨나요?',
+    photo: { src: 'https://images.unsplash.com/photo-1513128034602-7814ccaddd4e', fpX: 0.5, fpY: 0.55,
+      credit: 'Marissa Grootes', creditUrl: 'https://unsplash.com/photos/flRm0z3MEoA' },
+  },
+  {
+    id: 'cn2', template: 'problem',
+    title: ['교육만 열면 끝일까요?'],
+    toc: '대상 선정부터 증빙까지 담당자가 챙길 일',
+    body: '대상 선정부터 일정, 이수, 증빙까지 HR 담당자가 챙길 일은 많습니다.',
+    emphasis: '하나라도 놓치면 과태료 등 기업 리스크로 이어질 수 있습니다.',
+    alt: '교육만 열면 끝일까요? 대상 선정부터 일정, 이수, 증빙까지 HR 담당자가 챙길 일은 많습니다. 하나라도 놓치면 과태료 등 기업 리스크로 이어질 수 있습니다.',
+    photo: { src: 'https://images.unsplash.com/photo-1691934286085-c88039d93dae', fpX: 0.45, fpY: 0.35,
+      credit: 'Elen Sher', creditUrl: 'https://unsplash.com/photos/h0SVizhJyLw' },
+  },
+  {
+    id: 'cn3', template: 'solution', label: 'KG에듀원',
+    title: ['2026 최신 법정필수교육,', '한 곳에 모았습니다'],
+    toc: '최신 콘텐츠 · 맞춤 구성 · 운영 지원',
+    points: [
+      { icon: 'refresh-cw', title: '최신 콘텐츠', desc: '매년 자체 제작, 2026 최신 과정' },
+      { icon: 'layers',     title: '맞춤 구성',   desc: '기업 상황에 맞춘 필수·권장 구성' },
+      { icon: 'headset',    title: '운영 지원',   desc: '전담 운영자 배정과 정기 방문' },
+    ],
+    alt: '2026 최신 법정필수교육, KG에듀원이 한 곳에 모았습니다. 최신 콘텐츠: 매년 자체 제작하는 2026년 최신 과정. 맞춤 구성: 기업 상황에 맞춘 필수·권장 과정 구성. 운영 지원: 전담 운영자 배정과 정기 방문.',
+    photo: { src: 'https://images.unsplash.com/photo-1634790778908-bdaf7700bf06', fpX: 0.55, fpY: 0.4,
+      credit: 'alfi fahmi', creditUrl: 'https://unsplash.com/photos/nhLPFS1vZWI' },
+  },
+  {
+    id: 'cn4', template: 'closing', label: '2026 법정필수교육',
+    title: ['올해 법정교육, 지금', 'KG에듀원에서 점검하세요'],
+    toc: '3가지 질문으로 필요한 과정 확인',
+    body: '우리 회사에 필요한 과정, 3가지 질문으로 바로 확인할 수 있습니다.',
+    footer: 'KEESS 기업교육 | keess.co.kr',
+    alt: '올해 법정교육, 지금 KG에듀원에서 점검하세요. 우리 회사에 필요한 과정, 3가지 질문으로 바로 확인할 수 있습니다. KEESS 기업교육 keess.co.kr',
+    photo: { src: 'https://images.unsplash.com/photo-1579487785973-74d2ca7abdd5', fpX: 0.5, fpY: 0.5,
+      credit: 'Jose Losada', creditUrl: 'https://unsplash.com/photos/DyFjxmHt3Es' },
+  },
 ];

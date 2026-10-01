@@ -35,8 +35,8 @@ export default function CardNewsLightbox({ index, onIndex, onClose }: { index: n
       <div className="lg-lb" ref={ref} role="dialog" aria-modal="true" aria-label={R.cardNewsLabel}>
         <button type="button" className="lg-lb-close" onClick={onClose} aria-label={R.close} data-autofocus><LgIcon name="x" size={18} /></button>
         <figure className="lg-lb-fig">
-          <LgPhoto key={index} className="lg-lb-img" src={c.photo} alt={c.alt} ratio={[4, 5]} sizes="min(90vw, 560px)" eager />
-          <figcaption className="lg-lb-cap">{c.title}</figcaption>
+          <LgPhoto key={index} className="lg-lb-img" src={c.photo.src} alt={c.alt} ratio={[4, 5]} sizes="min(90vw, 560px)" eager />
+          <figcaption className="lg-lb-cap">{c.title.join(' ')}</figcaption>
         </figure>
         <div className="lg-cn-ctrl lg-lb-ctrl">
           <button type="button" className="lg-cn-btn" onClick={() => onIndex(index - 1)} disabled={index === 0} aria-label={R.prev} data-ga-id="legal_cardnews_nav"><LgIcon name="chevron-left" size={18} /></button>

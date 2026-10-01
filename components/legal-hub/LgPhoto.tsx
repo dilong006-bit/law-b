@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Img from '@/components/common/Img';
-import { isUnsplash, unsplashSrcSet, unsplashUrl } from '@/lib/legal/unsplash';
+import { isUnsplash, unsplashSrcSet, unsplashUrl, type FocalPoint } from '@/lib/legal/unsplash';
 
 /**
  * 허브 사진 공용 (legal-B upgrade-02 LB39, TECHSPEC §4-2). 기존 Img 에 선택 prop(srcSet·sizes·onFail) 으로 재사용.
@@ -10,8 +10,12 @@ import { isUnsplash, unsplashSrcSet, unsplashUrl } from '@/lib/legal/unsplash';
  * - 컨테이너 aspect-ratio 로 공간 선점(CLS 0). ratio 가 없으면 부모 크기를 채운다(cover)
  * - 로드 실패: 이미지를 숨기고 컨테이너 --surface 면만 남김, data-failed, onFail 콜백
  */
-export default function LgPhoto({ src, alt = '', ratio, sizes, eager = false, className, onFail }: {
+export default function LgPhoto({ src, alt = '', ratio, sizes, eager = false, className, onFail, fp, widths }: {
   src: string; alt?: string; ratio?: readonly [number, number]; sizes?: string; eager?: boolean; className?: string; onFail?: () => void;
+  /** 초점 크롭 (카드뉴스). 없으면 기존 가운데 크롭 */
+  fp?: FocalPoint;
+  /** srcset 폭 목록. 없으면 640/1080/1600/2000 */
+  widths?: readonly number[];
 }) {
   const [failed, setFailed] = useState(false);
   const box = useRef<HTMLDivElement | null>(null);
@@ -31,8 +35,8 @@ export default function LgPhoto({ src, alt = '', ratio, sizes, eager = false, cl
       data-failed={failed ? 'true' : undefined}
     >
       <Img
-        src={un ? unsplashUrl(src, 1080, ratio) : src}
-        srcSet={un ? unsplashSrcSet(src, ratio) : undefined}
+        src={un ? unsplashUrl(src, 1080, ratio, fp) : src}
+        srcSet={un ? unsplashSrcSet(src, ratio, widths, fp) : undefined}
         sizes={un ? sizes : undefined}
         alt={alt}
         eager={eager}

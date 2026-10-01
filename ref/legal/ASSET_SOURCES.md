@@ -2,7 +2,7 @@
 
 - 업무번호 26827 / 기준: TECHSPEC upgrade-01 §7·결정 D6, TECHSPEC upgrade-02 D15 (IMAGE_SOURCES.md → ASSET_SOURCES.md 이름 변경, 아이콘 절 추가)
 - 사진 라이선스: Unsplash License (상업적 사용 가능, 표기 의무 없음, 초상권 동의 미보장). Unsplash+ 유료 사진은 사용하지 않음
-- 핫링크라 파일은 저장소에 없음. 교체 시 `data/legalHub.ts` `HUB_COPY.heroSlide.image`, `data/legal.ts` `LEGAL_CARDNEWS[].photo` 의 URL 만 바꾼다
+- 핫링크라 파일은 저장소에 없음. 교체 시 `data/legalHub.ts` `HUB_COPY.heroSlide.image`, `data/legal.ts` `LEGAL_CARDNEWS[].photo.src` 의 URL 만 바꾼다
 
 ## 아이콘 (B안 upgrade-02, 커밋 12)
 
@@ -19,20 +19,30 @@
 
 추가 시: 스크립트의 `NAMES` 에 Lucide 이름을 넣고 `npm run icons:legal` 재실행.
 
-## 카드뉴스 임시 실사 4장 (B안 upgrade-02, 커밋 12)
+## 카드뉴스 HTML 카드 사진 4장 + 대체 1장 (26827 카드뉴스 고도화 PRD upgrade-02 §5.1, 2026-10-01)
 
-- 받은 날짜 2026-09-29, 모두 임시 (10/12 최종본 수령 시 교체)
-- 크롭: 4:5, `lib/legal/unsplash.ts` 가 `w/h/fit=crop` 쿼리와 srcset(640/1080/1600/2000)을 붙인다
-- 선정 기준: 무료, 얼굴 비식별, 자연광·따뜻한 중립 톤, 타사 로고·화면 문자 최소, 홈 히어로 사진과 톤 통일
+- 라이선스: Unsplash License (무료, 상업 이용 가능, 표기 의무 없음). 화면에는 출처를 노출하지 않고 `data/legal.ts` `LEGAL_CARDNEWS[].photo.credit/creditUrl` 에 보관
+- 크롭: 템플릿별 비율(opening 2:1, problem 1080:562, solution 1080:324, closing 4:5) + 장별 초점(fp-x, fp-y). `lib/legal/unsplash.ts` 가 `crop=focalpoint` 쿼리와 srcset(360/540/720/1080)을 붙인다
+- 디자이너 최종 JPG(10/12 예정) 수령 시 `image` 필드로 교체. 사진은 HTML 임시본 전용
 
-| 장 | 주제 | 선정 사진 페이지 | 작가 | 핫링크 기본 URL |
-|---|---|---|---|---|
-| 1 | 올해 이수 점검 | https://unsplash.com/photos/macbook-pro-white-ceramic-mugand-black-smartphone-on-table-cckf4TsHAuw | Andrew Neel | https://images.unsplash.com/photo-1499750310107-5fef28a66643 |
-| 2 | 담당자가 챙길 일 (서류) | https://unsplash.com/photos/a-laptop-computer-sitting-on-top-of-a-wooden-desk-3q4V539j_bw | 2H Media | https://images.unsplash.com/photo-1631557777232-a2632ae3c67d |
-| 3 | 한 곳에 모은 최신 교육 (수강) | https://unsplash.com/photos/macbook-pro-near-white-open-book-FHnnjk1Yj7Y | Nick Morrison | https://images.unsplash.com/photo-1501504905252-473c47e087f8 |
-| 4 | 지금 점검 (업무 공간) | https://unsplash.com/photos/office-workspace-with-white-desks-PG8NyM_Mcts | Adolfo Félix | https://images.unsplash.com/photo-1577412647305-991150c7d163 |
+| 장 | Unsplash 페이지 | 작가 | 핫링크 기본 URL | 초점 (x, y) | 라이선스 |
+|---|---|---|---|---|---|
+| 1 | https://unsplash.com/photos/flRm0z3MEoA | Marissa Grootes | https://images.unsplash.com/photo-1513128034602-7814ccaddd4e | 0.5, 0.55 | Unsplash License |
+| 2 | https://unsplash.com/photos/h0SVizhJyLw | Elen Sher | https://images.unsplash.com/photo-1691934286085-c88039d93dae | 0.45, 0.35 | Unsplash License |
+| 3 | https://unsplash.com/photos/nhLPFS1vZWI | alfi fahmi | https://images.unsplash.com/photo-1634790778908-bdaf7700bf06 | 0.55, 0.4 | Unsplash License |
+| 4 | https://unsplash.com/photos/DyFjxmHt3Es | Jose Losada | https://images.unsplash.com/photo-1579487785973-74d2ca7abdd5 | 0.5, 0.5 | Unsplash License |
+| 대체 1 | https://unsplash.com/photos/ame4-J586eM | Melinda Gimpel | https://images.unsplash.com/photo-1551151773-191e586a96d3 | 미정 | Unsplash License |
 
-### 카드뉴스 후보 비교
+### 이전 카드뉴스 임시 실사 (upgrade-02 커밋 12, 2026-10-01 교체로 미사용)
+
+| 장 | 사진 페이지 | 작가 | 핫링크 기본 URL |
+|---|---|---|---|
+| 1 | https://unsplash.com/photos/macbook-pro-white-ceramic-mugand-black-smartphone-on-table-cckf4TsHAuw | Andrew Neel | https://images.unsplash.com/photo-1499750310107-5fef28a66643 |
+| 2 | https://unsplash.com/photos/a-laptop-computer-sitting-on-top-of-a-wooden-desk-3q4V539j_bw | 2H Media | https://images.unsplash.com/photo-1631557777232-a2632ae3c67d |
+| 3 | https://unsplash.com/photos/macbook-pro-near-white-open-book-FHnnjk1Yj7Y | Nick Morrison | https://images.unsplash.com/photo-1501504905252-473c47e087f8 |
+| 4 | https://unsplash.com/photos/office-workspace-with-white-desks-PG8NyM_Mcts | Adolfo Félix | https://images.unsplash.com/photo-1577412647305-991150c7d163 |
+
+### 이전 카드뉴스 후보 비교 (upgrade-02 커밋 12)
 
 | 장 | 후보 | 사진 페이지 | 작가 | 평가 |
 |---|---|---|---|---|
