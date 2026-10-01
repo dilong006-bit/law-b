@@ -33,9 +33,9 @@ function writeDismissed() {
 
 /**
  * 셀렉터 요소를 찾으면 cb(el). 아직 없으면(늦게 렌더) body 변화를 최대 3초 지켜보다 포기한다.
- * 반환값은 대기 해제 함수 (cb 가 돌려준 해제 함수도 함께 부른다).
+ * 반환값은 대기 해제 함수 (cb 가 돌려준 해제 함수도 함께 부른다). 포기하면 onGiveUp.
  */
-function whenFound(selector: string, cb: (el: Element) => (() => void) | void): () => void {
+function whenFound(selector: string, cb: (el: Element) => (() => void) | void, onGiveUp?: () => void): () => void {
   let release: (() => void) | void;
   const hit = document.querySelector(selector);
   if (hit) { release = cb(hit); return () => release?.(); }
@@ -48,6 +48,7 @@ function whenFound(selector: string, cb: (el: Element) => (() => void) | void): 
   mo.observe(document.body, { childList: true, subtree: true });
   const timer = window.setTimeout(() => {
     mo.disconnect();
+    onGiveUp?.();
     if (process.env.NODE_ENV !== 'production') console.warn(`[FloatingInquiry] ${selector} 를 ${WAIT_MS}ms 안에 찾지 못해 관찰을 포기합니다`);
   }, WAIT_MS);
   return () => { mo.disconnect(); window.clearTimeout(timer); release?.(); };
@@ -83,6 +84,10 @@ export function useFloatingInquiry(): FloatingInquiryState {
   const [inputFocused, setInputFocused] = useState(false);
   const [shortViewport, setShortViewport] = useState(false);
   const [activeZone, setActiveZone] = useState<string | null>(null);
+  // 경로 진입 직후 관찰자 첫 콜백이 모두 올 때까지 판정 보류 (도달 콜백이 숨김 콜백보다 먼저 와 바가 한 프레임 깜빡이는 것 방지,
+  // 예: /?interest=ax-ai#inq 처럼 문의 섹션으로 바로 들어올 때). 경로 값으로 들고 있어서
+  // 경로가 바뀐 첫 렌더(초기화 이펙트 전)에도 이전 페이지 상태로 노출되지 않는다
+  const [armedFor, setArmedFor] = useState<string | null>(null);
   const kbOpen = useRef(false);
   const editing = useRef(false);
 
@@ -148,38 +153,77 @@ export function useFloatingInquiry(): FloatingInquiryState {
     setHideTargetSeen(false);
     setFooterSeen(false);
     setActiveZone(null);
+    setArmedFor(null);
     setBlocked(readBlocked()); // 이전 페이지에서 남은 잠금 해제 반영
     if (!page) return;
     const offs: (() => void)[] = [];
+    const pending = new Set<string>();
+    let alive = true;
+    const settled = (key: string) => {
+      if (!pending.delete(key) || pending.size || !alive) return;
+      setArmedFor(page.path);
+    };
+    const wait = (key: string) => { pending.add(key); return () => settled(key); };
+
+    // 해시로 들어오면(예: /?interest=ax-ai#inq) 부드러운 앵커 스크롤이 기준 섹션을 지나가는 동안 바가 켜졌다 꺼진다.
+    // 스크롤이 멈출 때까지(scrollend, 미지원·스크롤 없음은 900ms) 판정을 보류한다
+    if (location.hash) {
+      const doneHash = wait('hash');
+      const t = window.setTimeout(doneHash, 900);
+      const onEnd = () => { window.clearTimeout(t); doneHash(); };
+      if ('onscrollend' in window) window.addEventListener('scrollend', onEnd, { once: true });
+      offs.push(() => { window.clearTimeout(t); window.removeEventListener('scrollend', onEnd); });
+    }
 
     // reached: 기준 섹션 상단이 화면 세로 60% 선을 지났는지
+    const doneReached = wait('reached');
     offs.push(whenFound(page.trigger, (el) => {
       const io = new IntersectionObserver(([e]) => {
         setReached(e.isIntersecting || e.boundingClientRect.top < 0);
+        doneReached();
       }, { rootMargin: '0px 0px -40% 0px', threshold: 0 });
       io.observe(el);
       return () => io.disconnect();
-    }));
+    }, doneReached));
 
     // hideWhen: 요소별 가시 비율 Map, 하나라도 0.2 이상이면 숨김
     const ratios = new Map<Element, number>();
+    // 폼 박스 가드: 문의 섹션이 화면보다 훨씬 길면(홈·/content 1.5~2.5배) 20% 에 닿기 전에 첫 입력칸이 화면 하단, 바 아래에 들어온다.
+    // 수용 기준 '폼 가림 0' 을 지키려고 같은 페이지 폼 박스(.form·.iform)가 조금이라도 보이면 숨김에 더한다 (명세 4장 보완)
+    const formSeen = new Set<Element>();
+    const syncHide = () => setHideTargetSeen(formSeen.size > 0 || [...ratios.values()].some((r) => r >= 0.2));
     for (const sel of page.hideWhen) {
+      const done = wait('hide ' + sel);
       offs.push(whenFound(sel, (el) => {
         const io = new IntersectionObserver((entries) => {
           for (const e of entries) ratios.set(e.target, e.isIntersecting ? e.intersectionRatio : 0);
-          setHideTargetSeen([...ratios.values()].some((r) => r >= 0.2));
+          syncHide();
+          done();
         }, { threshold: [0, 0.2] });
         io.observe(el);
         return () => { io.disconnect(); ratios.delete(el); };
-      }));
+      }, done));
+    }
+    if (!page.external) {
+      const done = wait('form');
+      offs.push(whenFound(`${page.target} .form, ${page.target} .iform`, (el) => {
+        const io = new IntersectionObserver(([e]) => {
+          if (e.isIntersecting) formSeen.add(el); else formSeen.delete(el);
+          syncHide();
+          done();
+        }, { threshold: 0 });
+        io.observe(el);
+        return () => { io.disconnect(); formSeen.delete(el); };
+      }, done));
     }
 
     // footer: 일부라도 보이면 숨김
+    const doneFooter = wait('footer');
     offs.push(whenFound(FOOTER_SEL, (el) => {
-      const io = new IntersectionObserver(([e]) => setFooterSeen(e.isIntersecting), { threshold: 0 });
+      const io = new IntersectionObserver(([e]) => { setFooterSeen(e.isIntersecting); doneFooter(); }, { threshold: 0 });
       io.observe(el);
       return () => io.disconnect();
-    }));
+    }, doneFooter));
 
     // zones: 화면 가운데 띠(위아래 40% 제외)에 걸린 구간
     if (page.zones?.length) {
@@ -196,12 +240,12 @@ export function useFloatingInquiry(): FloatingInquiryState {
       }
     }
 
-    return () => offs.forEach((off) => off());
+    return () => { alive = false; offs.forEach((off) => off()); };
   }, [page]);
 
   const dismiss = useCallback(() => { writeDismissed(); setDismissed(true); }, []);
 
-  const visible = mounted && computeVisible({
+  const visible = mounted && !!page && armedFor === page.path && computeVisible({
     configured: !!page, dismissed, reached, hideTargetSeen, footerSeen, blocked, mobile, inputFocused, shortViewport,
   });
   const copy = page ? pickCopy(page, activeZone) : null;

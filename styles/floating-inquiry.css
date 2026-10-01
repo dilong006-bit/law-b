@@ -45,15 +45,23 @@
 @media (prefers-reduced-motion:reduce){.fi,.fi-msg{transition:none;animation:none}}
 @media print{.fi{display:none}}
 
-/* 바 노출 중 다른 하단 요소 보정 (body.fi-on). :has() 미지원 브라우저는 컴포넌트가 html 인라인 style 로 같은 값을 준다 */
-body.fi-on .to-top{bottom:calc(20px + 72px + 12px)}
+/* 바 노출 중 다른 하단 요소 보정 (body.fi-on). :has() 미지원 브라우저는 컴포넌트가 html 인라인 style 로 같은 값을 준다.
+   to-top 은 명세의 bottom 값과 같은 위치로 올리되 bottom 대신 개별 translate 속성으로 옮긴다:
+   바가 켜지고 꺼질 때 보이는 버튼의 bottom 이 바뀌면 레이아웃 시프트(CLS)로 집계되기 때문 (translate 는 집계 제외, 기존 transform 과 합성).
+   이동량 = 명세 bottom 목표값 - 현재 bottom (22px, 560 이하 16px). toast 는 모달 안에서만 떠서 바와 동시에 보이지 않으므로 명세대로 bottom */
+body.fi-on .to-top{translate:0 calc(22px - (20px + 72px + 12px))}
 body.fi-on .toast{bottom:calc(20px + 72px + 12px)}
 html:has(body.fi-on){scroll-padding-bottom:104px}
-@media (max-width:1040px){body.fi-on .to-top,body.fi-on .toast{bottom:calc(16px + 64px + 12px)}}
+@media (max-width:1040px){
+  body.fi-on .to-top{translate:0 calc(22px - (16px + 64px + 12px))}
+  body.fi-on .toast{bottom:calc(16px + 64px + 12px)}
+}
 @media (max-width:760px){
-  body.fi-on .to-top,body.fi-on .toast{bottom:calc(12px + 60px + 12px + env(safe-area-inset-bottom))}
+  body.fi-on .to-top{translate:0 calc(22px - (12px + 60px + 12px + env(safe-area-inset-bottom)))}
+  body.fi-on .toast{bottom:calc(12px + 60px + 12px + env(safe-area-inset-bottom))}
   html:has(body.fi-on){scroll-padding-bottom:88px}
 }
+@media (max-width:560px){body.fi-on .to-top{translate:0 calc(16px - (12px + 60px + 12px + env(safe-area-inset-bottom)))}}
 
 /* 바에서 폼으로 이동한 뒤 터치 기기는 폼 제목에 프로그램 포커스를 준다 (키보드 자동 열림 방지).
    이때만 링을 숨기고 키보드 포커스 링은 그대로 둔다 */

@@ -1,6 +1,6 @@
 /**
  * 플로팅 문의 바 같은 페이지 이동 (기술명세서 최종 v2.0 §7, FI-05). DOM 전용.
- * 1) 관심 영역 칩 추가 선택  2) GNB·SubNav 보정 스크롤  3) 이동 완료 후 포커스  4) replaceState
+ * 1) 관심 영역 칩 추가 선택(스크롤과 동시)  2) GNB·SubNav 보정 스크롤  3) 이동 완료 후 포커스  4) replaceState
  * 문의 폼(HomeInquiry 등)과 기존 scrollToId·goToInquiry 는 수정하지 않는다.
  */
 
@@ -66,14 +66,16 @@ function afterScroll(cb: () => void) {
   const t = window.setTimeout(fire, SETTLE_MS);
 }
 
-export async function goToForm(target: string, interest?: string): Promise<void> {
+export function goToForm(target: string, interest?: string): void {
   const root = document.querySelector(target);
   if (!root) { location.hash = target; return; }
-  if (interest) await applyInterest(interest, target);
+  // 칩 선택은 라벨 모듈을 받는 동안 스크롤을 붙잡지 않도록 스크롤과 동시에 진행하고, 포커스 전에 끝을 기다린다
+  const chips = interest ? applyInterest(interest, target).catch(() => undefined) : Promise.resolve();
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const top = root.getBoundingClientRect().top + window.scrollY - topOcclusion() - SCROLL_GAP;
-  afterScroll(() => {
+  afterScroll(async () => {
+    await chips;
     if (window.matchMedia('(pointer:fine)').matches) {
       firstField(root)?.focus({ preventScroll: true });
     } else {
