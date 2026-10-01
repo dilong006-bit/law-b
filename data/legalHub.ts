@@ -140,8 +140,8 @@ export const HUB_COPY = {
     counter: (i: number, n: number) => `${i} / ${n}`,
     prev: '이전 카드', next: '다음 카드',
     open: (n: number) => `카드뉴스 ${n}번 크게 보기`,
-    // 26827 카드뉴스 CN-06: 4장에서만 노출되는 진단 연결
-    diagnose: '필요 과정 진단하기', diagnoseId: 'mandatory-diagnose',
+    // 26827 카드뉴스 CN-06: 4장에서만 노출되는 도입 상담 연결 (이동은 goConsult, #mandatory-inquiry)
+    consult: '도입 상담하기',
     close: '닫기',
     brochure: {
       title: '2026 법정필수교육 과정소개서',

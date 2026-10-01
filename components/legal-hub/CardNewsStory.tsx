@@ -8,6 +8,7 @@ import BrochureCard from './BrochureCard';
 import CardNewsLightbox from './CardNewsLightbox';
 import CardNewsFace from './CardNewsFace';
 import { LgIcon } from './icons';
+import { CONSULT_HASH, onConsultClick } from '@/lib/legal/goConsult';
 import { track as gaTrack, trackOncePerSession } from '@/lib/legal/track';
 
 const R = HUB_COPY.resources;
@@ -20,7 +21,7 @@ const N = LEGAL_CARDNEWS.length;
  * 자동 넘김 없음, 끝에서 이전·다음 비활성. 카드는 CardNewsFace (HTML 카드 또는 최종 JPG).
  * JPG 장이 실패하면 확대 비활성(목차는 그대로 동작). HTML 장은 사진만 그라데이션으로 바뀌고 확대 유지.
  * 26827 CN-08·11·12: 장 위치·제목은 시각적으로 숨긴 라이브 영역 1개로 낭독, 카드에서 좌우 방향키로 넘김,
- * legal_cardnews_view(장별 세션당 1회, 스크롤 정착 후) · legal_cardnews_diagnose 계측.
+ * legal_cardnews_view(장별 세션당 1회, 스크롤 정착 후) · legal_cardnews_consult 계측.
  */
 export default function CardNewsStory() {
   const [index, setIndex] = useState(0);
@@ -152,18 +153,18 @@ export default function CardNewsStory() {
               <span className="lg-cn-count">{R.counter(index + 1, N)}</span>
               <button type="button" className="lg-cn-btn" onClick={() => go(index + 1)} disabled={index === N - 1} aria-label={R.next} data-ga-id="legal_cardnews_nav"><LgIcon name="chevron-right" size={18} /></button>
             </div>
-            {/* CN-06: 4장 행동 유도를 진단으로 연결. 한 줄 높이는 상시 확보(레이아웃 흔들림 방지), 1~3장은 숨김·포커스 불가.
-                이동은 빠른 실행 '필요 과정 찾기' 와 같은 해시 앵커 (.lg-anchor scroll-margin 이 SubNav 오프셋 반영) */}
+            {/* CN-06: 4장 행동 유도를 도입 상담으로 연결 (확정 원고 26895: "상담 한 번이면"). 한 줄 높이는 상시 확보(레이아웃 흔들림 방지), 1~3장은 숨김·포커스 불가.
+                이동은 빠른 실행 '빠른 상담' 과 같은 onConsultClick(goConsult): 상담 블록으로 스크롤 후 첫 입력칸 포커스 */}
             <div className="lg-cn-next" data-show={last ? 'true' : undefined}>
               <a
-                href={`#${R.diagnoseId}`}
+                href={CONSULT_HASH}
                 className="lg-link lg-cn-next-link"
                 tabIndex={last ? undefined : -1}
                 aria-hidden={last ? undefined : true}
-                data-ga-id="legal_cardnews_diagnose"
-                onClick={() => gaTrack('legal_cardnews_diagnose')}
+                data-ga-id="legal_cardnews_consult"
+                onClick={(e) => { gaTrack('legal_cardnews_consult'); onConsultClick(e); }}
               >
-                {R.diagnose} <LgIcon name="arrow-right" size={16} />
+                {R.consult} <LgIcon name="arrow-right" size={16} />
               </a>
             </div>
           </div>

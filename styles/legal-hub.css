@@ -420,7 +420,7 @@
 .lg-cn-btn:disabled{color:var(--muted);opacity:.45;cursor:default}
 .lg-cn-btn:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .lg-cn-count{min-width:48px;text-align:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
-/* 26827 CN-06: 진단 연결 한 줄. 높이 상시 확보, 4장에서만 보임 (Purple 글자 + Orange 밑줄 2px, 터치 44px) */
+/* 26827 CN-06: 도입 상담 연결 한 줄. 높이 상시 확보, 4장에서만 보임 (Purple 글자 + Orange 밑줄 2px, 터치 44px) */
 .lg-cn-next{display:flex;justify-content:center;height:44px}
 .lg-cn-next-link{visibility:hidden;opacity:0;transition:opacity .2s var(--ease),visibility 0s linear .2s}
 .lg-cn-next[data-show] .lg-cn-next-link{visibility:visible;opacity:1;transition:opacity .2s var(--ease)}
