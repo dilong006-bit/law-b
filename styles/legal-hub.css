@@ -425,7 +425,8 @@
 .lg-cn-next-link{visibility:hidden;opacity:0;transition:opacity .2s var(--ease),visibility 0s linear .2s}
 .lg-cn-next[data-show] .lg-cn-next-link{visibility:visible;opacity:1;transition:opacity .2s var(--ease)}
 .lg-cn-next .lg-cn-next-link{color:var(--p1);text-decoration-color:var(--p4);text-decoration-thickness:2px}
-.lg-cn-cap{display:none;text-align:center;font-size:15px;font-weight:700;line-height:1.5;word-break:keep-all}
+/* 26827 CN-08: 장 위치·제목 낭독용 (시각적으로 숨김). styles/csr.css 의 .sr-only 와 같은 규칙 */
+.lg-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 @media (hover:hover) and (pointer:fine){
   .lg-cn-btn:not(:disabled):hover{background:var(--surface)}
   .lg-cn-open:not(:disabled) .lg-photo img{transition:transform .24s var(--ease)}
@@ -442,7 +443,7 @@
 .lg-toc-item .s{margin-top:4px;font-size:13px;color:var(--muted);line-height:1.5;word-break:keep-all}
 .lg-toc-item:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){.lg-toc-item:hover .t{color:var(--ink)}}
-/* 880 이하: 목차 숨김, 뷰어 최대 480 가운데 + 캡션. 26827 CN-04: 피크 제거, 모든 폭에서 슬라이드 = 트랙 100% */
+/* 880 이하: 목차 숨김, 뷰어 최대 480 가운데. 26827 CN-04: 피크 제거, 모든 폭에서 슬라이드 = 트랙 100% */
 /* 881~1040: 5+7. 요약 줄은 유지(명세는 숨김이나, 숨기면 늘어난 항목 안이 절반 이상 비어 우측 채움 기준 미달 — 보고) */
 @media(max-width:1040px){
   .lg-story>.lg-c4{grid-column:span 5}.lg-story>.lg-c8{grid-column:span 7}
@@ -451,7 +452,6 @@
   .lg-story>.lg-c4,.lg-story>.lg-c8{grid-column:span 12}
   .lg-story-media{max-width:480px;width:100%;margin-inline:auto}
   .lg-toc-h,.lg-toc{display:none}
-  .lg-cn-cap{display:block}
 }
 
 /* ── 26827 HTML 카드뉴스 (기술명세서 v1.0 §3). 1080 원본 = 카드 폭 100cqw, 4:5 이므로 높이 125cqw ──
@@ -531,7 +531,6 @@
 .lg-lb-fig{width:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:8px}
 .lg-lb-img{display:block;overflow:hidden;width:min(100%,calc(86dvh * .8));border-radius:12px;animation:lg-lbfade .2s var(--ease)}
 @keyframes lg-lbfade{from{opacity:0}to{opacity:1}}
-.lg-lb-cap{font-size:15px;font-weight:700;text-align:center;word-break:keep-all}
 .lg-lb-close{position:absolute;top:-14px;right:-14px;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);
   display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-2)}
 .lg-lb-close:focus-visible{outline:2px solid var(--ink);outline-offset:2px}

@@ -8,6 +8,7 @@ import BrochureCard from './BrochureCard';
 import CardNewsLightbox from './CardNewsLightbox';
 import CardNewsFace from './CardNewsFace';
 import { LgIcon } from './icons';
+import { track as gaTrack, trackOncePerSession } from '@/lib/legal/track';
 
 const R = HUB_COPY.resources;
 const N = LEGAL_CARDNEWS.length;
@@ -15,8 +16,11 @@ const N = LEGAL_CARDNEWS.length;
 /**
  * 자료 블록: 카드뉴스 스토리 (legal-B upgrade-02 LB32·LB33, TECHSPEC §5).
  * 짝 관계 media-nav: 좌 뷰어(4:5, 높이 결정자) ↔ 우 장별 목차 + 소개서 카드.
- * index 1개로 뷰어·목차·캡션·라이트박스를 동기화. 모든 폭에서 같은 scroll-snap 트랙(881 이상 피크 없음, 880 이하 86% 피크).
- * 자동 넘김 없음, 끝에서 이전·다음 비활성. 사진 실패 장은 확대 비활성(목차는 그대로 동작).
+ * index 1개로 뷰어·목차·낭독 영역·라이트박스를 동기화. 모든 폭에서 같은 scroll-snap 트랙, 슬라이드 = 트랙 100% (26827 CN-04 피크 제거).
+ * 자동 넘김 없음, 끝에서 이전·다음 비활성. 카드는 CardNewsFace (HTML 카드 또는 최종 JPG).
+ * JPG 장이 실패하면 확대 비활성(목차는 그대로 동작). HTML 장은 사진만 그라데이션으로 바뀌고 확대 유지.
+ * 26827 CN-08·11·12: 장 위치·제목은 시각적으로 숨긴 라이브 영역 1개로 낭독, 카드에서 좌우 방향키로 넘김,
+ * legal_cardnews_view(장별 세션당 1회, 스크롤 정착 후) · legal_cardnews_diagnose 계측.
  */
 export default function CardNewsStory() {
   const [index, setIndex] = useState(0);
@@ -26,6 +30,8 @@ export default function CardNewsStory() {
   const track = useRef<HTMLUListElement | null>(null);
   const lockUntil = useRef(0);
   const raf = useRef(0);
+  const region = useRef<HTMLDivElement | null>(null);
+  const seen = useRef(false); // 카드 영역이 한 번이라도 화면에 들어왔는지 (첫 view 기준)
 
   const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /** 트랙을 i 번째 슬라이드로 — 프로그램 스크롤 동안은 스크롤 이벤트로 index 를 덮어쓰지 않는다 */
@@ -67,6 +73,39 @@ export default function CardNewsStory() {
     return () => window.removeEventListener('resize', onResize);
   }, [index]);
 
+  // CN-12 view: 장 전환이 확정된 뒤(스크롤 정착 후) 장별 세션당 1회. 첫 장은 카드 영역이 화면에 절반 이상 들어왔을 때
+  const view = useCallback((i: number) => {
+    const c = LEGAL_CARDNEWS[i];
+    trackOncePerSession(`legal_cardnews_view_${c.id}`, 'legal_cardnews_view', { index: i + 1, mode: c.image ? 'image' : 'html' });
+  }, []);
+  const indexRef = useRef(0);
+  indexRef.current = index;
+  useEffect(() => {
+    const el = region.current; if (!el || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      seen.current = true; view(indexRef.current); io.disconnect();
+    }, { threshold: 0.5 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [view]);
+  useEffect(() => {
+    if (!seen.current) return;
+    const t = window.setTimeout(() => view(index), 700); // 스무스 스크롤(650ms 잠금) 정착 뒤
+    return () => window.clearTimeout(t);
+  }, [index, view]);
+
+  // CN-11: 카드 버튼에 포커스가 있을 때 좌우 방향키로 넘기고 새 카드로 포커스 이동 (확대 보기가 열려 있으면 그쪽 처리에 맡김)
+  const onCardKey = (e: React.KeyboardEvent<HTMLUListElement>) => {
+    if (lb || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+    if (!(e.target as HTMLElement).classList.contains('lg-cn-open')) return;
+    const next = Math.max(0, Math.min(N - 1, index + (e.key === 'ArrowRight' ? 1 : -1)));
+    e.preventDefault();
+    if (next === index) return;
+    go(next);
+    track.current?.querySelectorAll<HTMLButtonElement>('.lg-cn-open')[next]?.focus({ preventScroll: true });
+  };
+
   // 목차: 위아래 방향키로 항목 간 포커스 이동 (Should)
   const onTocKey = (e: React.KeyboardEvent<HTMLOListElement>) => {
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
@@ -85,8 +124,8 @@ export default function CardNewsStory() {
       <BlockHead kicker={R.kicker} title={R.title} />
       <div className="lg-row lg-story" data-balance-row data-pair="media-nav">
         <div className="lg-c4 lg-story-media" data-height-owner>
-          <div className="lg-cn" role="region" aria-roledescription="carousel" aria-label={R.cardNewsLabel}>
-            <ul className="lg-cn-track" ref={track} onScroll={onScroll} data-hscroll>
+          <div className="lg-cn" ref={region} role="region" aria-roledescription="carousel" aria-label={R.cardNewsLabel}>
+            <ul className="lg-cn-track" ref={track} onScroll={onScroll} onKeyDown={onCardKey} data-hscroll>
               {LEGAL_CARDNEWS.map((c, k) => (
                 <li className="lg-cn-slide" key={c.id} role="group" aria-roledescription="slide" aria-label={R.counter(k + 1, N)}>
                   <button
@@ -122,13 +161,14 @@ export default function CardNewsStory() {
                 tabIndex={last ? undefined : -1}
                 aria-hidden={last ? undefined : true}
                 data-ga-id="legal_cardnews_diagnose"
+                onClick={() => gaTrack('legal_cardnews_diagnose')}
               >
                 {R.diagnose} <LgIcon name="arrow-right" size={16} />
               </a>
             </div>
           </div>
-          {/* 880 이하 캡션: 현재 장 제목 (목차 대신) */}
-          <p className="lg-cn-cap" aria-live="polite">{cur.title.join(' ')}</p>
+          {/* CN-08: 카드 안에 제목이 있어 화면 캡션 대신 숨긴 라이브 영역 1개로 "n / 4, 제목" 낭독. 확대 보기가 열려 있으면 그쪽 낭독에 맡김 */}
+          <p className="lg-sr" aria-live={lb ? 'off' : 'polite'}>{`${R.counter(index + 1, N)}, ${cur.title.join(' ')}`}</p>
         </div>
 
         <div className="lg-c8 lg-story-side">

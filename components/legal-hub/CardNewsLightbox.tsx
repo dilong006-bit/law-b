@@ -13,6 +13,7 @@ const R = HUB_COPY.resources;
 /**
  * 카드뉴스 확대 보기 (legal-B upgrade-02 LB32, TECHSPEC §5-4).
  * useModal 재사용: 포커스 트랩·ESC·배경 스크롤 잠금·닫힘 후 연 버튼으로 포커스 복귀.
+ * 카드는 슬라이드와 같은 CardNewsFace (26827 CN-05). 제목은 카드 안에 있어 figcaption 은 낭독 전용.
  * index 는 부모(CardNewsStory) 것을 그대로 쓴다 — 여기서 넘긴 장이 닫은 뒤 뷰어에도 반영된다. 좌우 방향키로 이동.
  */
 export default function CardNewsLightbox({ index, onIndex, onClose }: { index: number; onIndex: (i: number) => void; onClose: () => void }) {
@@ -36,7 +37,7 @@ export default function CardNewsLightbox({ index, onIndex, onClose }: { index: n
         <button type="button" className="lg-lb-close" onClick={onClose} aria-label={R.close} data-autofocus><LgIcon name="x" size={18} /></button>
         <figure className="lg-lb-fig">
           <span key={index} className="lg-lb-img"><CardNewsFace item={c} eager sizes="min(100vw - 32px, 528px)" /></span>
-          <figcaption className="lg-lb-cap">{c.title.join(' ')}</figcaption>
+          <figcaption className="lg-sr">{c.title.join(' ')}</figcaption>
         </figure>
         <div className="lg-cn-ctrl lg-lb-ctrl">
           <button type="button" className="lg-cn-btn" onClick={() => onIndex(index - 1)} disabled={index === 0} aria-label={R.prev} data-ga-id="legal_cardnews_nav"><LgIcon name="chevron-left" size={18} /></button>
