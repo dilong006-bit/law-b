@@ -45,7 +45,8 @@ export const FLOATING_INQUIRY: readonly FiPage[] = [
   { path: '/hrd', trigger: '#arch', target: '#inq', hideWhen: ['#inq'],
     copy: { accent: 'p3', title: 'HRD 운영, 지금 상황부터 진단해 드립니다',
       sub: '연수원 운영부터 학습 플랫폼까지 한 흐름으로', short: 'HRD 운영 상담', cta: '도입 문의' } },
-  { path: '/content', trigger: '#ax1', target: '#inq', hideWhen: ['#inq', '#mandatory-inquiry'],
+  // /content 이동 대상은 상담 패널부터 보이도록 #mandatory-inquiry (#inq 폼을 감싼 법정 허브 빠른 상담 블록). 칩 선택은 #inq 기준 그대로
+  { path: '/content', trigger: '#ax1', target: '#mandatory-inquiry', hideWhen: ['#inq', '#mandatory-inquiry'],
     copy: { accent: 'p4', title: '필요한 교육 콘텐츠, 맞춤 구성으로 제안해 드립니다',
       sub: '직무부터 법정필수까지 한 번에 상담하세요', short: '콘텐츠 도입 상담', cta: '상담 신청', interest: 'content' },
     zones: [{ selector: '#mandatory', copy: { accent: 'p4', title: '올해 법정교육, 필요한 과정부터 확인해 드립니다',

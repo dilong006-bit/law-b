@@ -4,6 +4,8 @@
  * 문의 폼(HomeInquiry 등)과 기존 scrollToId·goToInquiry 는 수정하지 않는다.
  */
 
+import { CONSULT_HASH, consultFirstField } from '@/lib/legal/goConsult';
+
 const DEV = process.env.NODE_ENV !== 'production';
 const SCROLL_GAP = 16;
 const SETTLE_MS = 700;
@@ -37,8 +39,8 @@ export function topOcclusion(): number {
 
 /**
  * 폼 제목 (터치 기기 포커스 대상): 홈은 보이는 리드 문구, 리더십·HRD 는 h2.
- * /content 는 법정 허브 안에서 .inq-side 가 display:none 이라 리드가 렌더되지 않는다.
- * 그때는 폼 블록(#mandatory-inquiry .lg-inq)의 실제 제목(시각적으로 숨긴 h3)으로 대신한다 (잠정, 보고 후 확정).
+ * /content 는 이동 대상이 #mandatory-inquiry(상담 블록)이고 .inq-side 가 display:none 이라,
+ * 블록 제목(BlockHead 의 시각적으로 숨긴 h3)에 포커스한다.
  */
 export function formTitle(root: Element): HTMLElement | null {
   const shown = (el: HTMLElement | null) => (el && el.getClientRects().length ? el : null);
@@ -70,14 +72,15 @@ export function goToForm(target: string, interest?: string): void {
   const root = document.querySelector(target);
   if (!root) { location.hash = target; return; }
   // 칩 선택은 라벨 모듈을 받는 동안 스크롤을 붙잡지 않도록 스크롤과 동시에 진행하고, 포커스 전에 끝을 기다린다
-  const chips = interest ? applyInterest(interest, target).catch(() => undefined) : Promise.resolve();
+  const chips = interest ? applyInterest(interest).catch(() => undefined) : Promise.resolve();
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const top = root.getBoundingClientRect().top + window.scrollY - topOcclusion() - SCROLL_GAP;
   afterScroll(async () => {
     await chips;
     if (window.matchMedia('(pointer:fine)').matches) {
-      firstField(root)?.focus({ preventScroll: true });
+      // /content 상담 블록은 기존 빠른 상담 이동(goConsult)과 같은 첫 입력칸 규칙을 쓴다
+      (target === CONSULT_HASH ? consultFirstField(root) : firstField(root))?.focus({ preventScroll: true });
     } else {
       const t = formTitle(root);
       if (t) {

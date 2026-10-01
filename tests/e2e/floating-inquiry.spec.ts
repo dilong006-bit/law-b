@@ -214,8 +214,8 @@ for (const vp of [VPS[5], VPS[2]]) {
         const views = await page.evaluate(() => (window as unknown as { dataLayer: { event: string; page?: string }[] }).dataLayer.filter((e) => e.event === 'floating_inquiry_view').map((e) => e.page));
         expect(views).toEqual(['/ax-ai']);
       } else {
-        // 이동 완료 후 replaceState 로 해시가 바뀐다 (scrollend 또는 700ms)
-        await expect.poll(() => page.evaluate(() => location.hash), { timeout: 6000 }).toBe('#inq');
+        // 이동 완료 후 replaceState 로 해시가 바뀐다 (scrollend 또는 700ms). /content 는 상담 블록
+        await expect.poll(() => page.evaluate(() => location.hash), { timeout: 6000 }).toBe(pg.key === 'content' ? '#mandatory-inquiry' : '#inq');
         await page.waitForTimeout(300);
       }
       const r = await page.evaluate(() => {
@@ -228,6 +228,7 @@ for (const vp of [VPS[5], VPS[2]]) {
         const a = document.activeElement as HTMLElement;
         return {
           occl: Math.max(nav, subB), titleTop: title.getBoundingClientRect().top, inqTop: inq.getBoundingClientRect().top,
+          panelTop: document.querySelector('#mandatory-inquiry .lg-consult-panel')?.getBoundingClientRect().top ?? null,
           active: a.id || a.tagName, activeInInq: inq.contains(a) || !!a.closest('.lg-inq'),
           pressed: [...document.querySelectorAll('#inq .mchip[aria-pressed="true"]')].map((e) => e.textContent?.trim()),
           events: (window as unknown as { dataLayer: { event: string; zone?: string }[] }).dataLayer.map((e) => `${e.event}${e.zone ? ':' + e.zone : ''}`),
@@ -236,7 +237,12 @@ for (const vp of [VPS[5], VPS[2]]) {
       fs.writeFileSync(path.join(QA, 'measure', `click-${pg.key}-${vp.name}.json`), JSON.stringify(r, null, 1));
       await shot(page, pg.key, vp.name, 'click-arrive');
       expect(r.titleTop, '폼 제목이 GNB·SubNav 아래').toBeGreaterThanOrEqual(r.occl);
-      if (pg.key === 'content') expect(r.pressed).toContain('콘텐츠 제작·도입');
+      if (pg.key === 'content') {
+        expect(r.pressed).toContain('콘텐츠 제작·도입');
+        // 상담 패널부터 보인다: 패널 상단이 GNB·SubNav 아래
+        expect(r.panelTop, '상담 패널 가림 0').not.toBeNull();
+        expect(r.panelTop!).toBeGreaterThanOrEqual(r.occl);
+      }
       if (pg.key !== 'ax-ai') {
         expect(r.activeInInq, '폼 영역 포커스').toBe(true);
         if (!vp.touch) expect(r.active).not.toBe('H2');
@@ -334,7 +340,7 @@ for (const vp of [VPS[5], VPS[2]]) {
     await scrollElTo(page, '#mandatory-courses', 0.3);
     await expect.poll(() => isOn(page)).toBe(true);
     if (vp.touch) await page.locator('.fi-cta').tap(); else await page.locator('.fi-cta').click();
-    await expect.poll(() => page.evaluate(() => location.hash), { timeout: 6000 }).toBe('#inq');
+    await expect.poll(() => page.evaluate(() => location.hash), { timeout: 6000 }).toBe('#mandatory-inquiry');
     const r = await page.evaluate(() => ({
       pressed: [...document.querySelectorAll('#inq .mchip[aria-pressed="true"]')].map((e) => e.textContent?.trim()),
       ev: (window as unknown as { dataLayer: { event: string; zone?: string }[] }).dataLayer.filter((e) => e.event === 'floating_inquiry_click').map((e) => e.zone),

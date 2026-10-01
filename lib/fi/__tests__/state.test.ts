@@ -53,8 +53,12 @@ describe('pickCopy / zoneName', () => {
 });
 
 describe('resolveHref / findPage', () => {
-  it('같은 페이지는 #inq, AX·AI 는 홈 폼 URL', () => {
-    for (const p of FLOATING_INQUIRY) expect(resolveHref(p, p.copy)).toBe(p.external ? '/?interest=ax-ai#inq' : '#inq');
+  it('같은 페이지는 #inq (/content 는 상담 블록 #mandatory-inquiry), AX·AI 는 홈 폼 URL', () => {
+    const want: Record<string, string> = { '/': '#inq', '/ax-ai': '/?interest=ax-ai#inq', '/leadership': '#inq', '/hrd': '#inq', '/content': '#mandatory-inquiry' };
+    for (const p of FLOATING_INQUIRY) {
+      expect(resolveHref(p, p.copy)).toBe(want[p.path]);
+      for (const z of p.zones ?? []) expect(resolveHref(p, z.copy)).toBe(want[p.path]);
+    }
   });
   it('경로 매칭 (끝 슬래시 무시, 미설정 경로 null)', () => {
     expect(findPage(FLOATING_INQUIRY, '/hrd/')?.path).toBe('/hrd');
