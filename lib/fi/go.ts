@@ -9,6 +9,8 @@ import { CONSULT_HASH, consultFirstField } from '@/lib/legal/goConsult';
 const DEV = process.env.NODE_ENV !== 'production';
 const SCROLL_GAP = 16;
 const SETTLE_MS = 700;
+/** 칩 라벨 모듈(동적 import) 대기 상한: 청크 로드가 늦어도 포커스·replaceState 가 묶이지 않게 */
+const CHIPS_WAIT_MS = 1200;
 
 /**
  * 관심 영역 재적용: 폼 무변경 방식. 라벨은 data/home.ts INQ.interests 원본에서 찾는다 (하드코딩 없음).
@@ -77,7 +79,7 @@ export function goToForm(target: string, interest?: string): void {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const top = root.getBoundingClientRect().top + window.scrollY - topOcclusion() - SCROLL_GAP;
   afterScroll(async () => {
-    await chips;
+    await Promise.race([chips, new Promise((r) => window.setTimeout(r, CHIPS_WAIT_MS))]);
     if (window.matchMedia('(pointer:fine)').matches) {
       // /content 상담 블록은 기존 빠른 상담 이동(goConsult)과 같은 첫 입력칸 규칙을 쓴다
       (target === CONSULT_HASH ? consultFirstField(root) : firstField(root))?.focus({ preventScroll: true });

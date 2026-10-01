@@ -62,8 +62,22 @@ async function scrollElTo(page: Page, sel: string, frac: number) {
   await settle(page);
 }
 
+/** 스크린샷 저장. 이 PC 는 보안 프로그램이 새 PNG 를 잠깐 잠그는 일이 있어 저장 실패 시 다시 시도한다 (판정과 무관) */
 async function shot(page: Page, pageKey: string, vp: string, state: string) {
-  await page.screenshot({ path: path.join(QA, `${pageKey}-${vp}-${state}.png`) });
+  const file = path.join(QA, `${pageKey}-${vp}-${state}.png`);
+  for (let i = 0; i < 3; i++) {
+    try { await page.screenshot({ path: file }); return; } catch (e) { if (i === 2) console.warn(`screenshot skipped: ${file} ${(e as Error).message.slice(0, 60)}`); await page.waitForTimeout(300); }
+  }
+}
+
+/**
+ * 해시 진입 위치 검사용: 같은 페이지를 먼저 열어 웹폰트를 받아 둔다.
+ * 첫 방문은 부드러운 해시 스크롤 도중 Pretendard 적용으로 위 문단 줄바꿈이 바뀌어 목적지가 어긋날 수 있다 (기존 현상, 별도 보고).
+ * 여기서는 이번 scroll-margin 보정 자체를 판정한다
+ */
+async function warmFonts(page: Page, url: string) {
+  await page.goto(url.split('#')[0], { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
 }
 
 /** 바 측정: 크기·글자·넘침·버튼·to-top/toast 간격 */
@@ -456,6 +470,8 @@ for (const vp of [VPS[5], VPS[2]]) {
     test(`해시 진입 ${c.key} ${vp.name}`, async ({ browser }) => {
       const ctx = await newCtx(browser, vp);
       const page = await ctx.newPage();
+      await warmFonts(page, c.url);
+      await page.goto('about:blank');
       await page.goto(c.url, { waitUntil: 'networkidle' });
       await page.waitForTimeout(1200);
       const r = await page.evaluate(() => {
@@ -469,12 +485,8 @@ for (const vp of [VPS[5], VPS[2]]) {
       });
       fs.writeFileSync(path.join(QA, 'measure', `hash-${c.key}-${vp.name}.json`), JSON.stringify(r, null, 1));
       expect(r.titleTop, '섹션 제목 가림 0').toBeGreaterThanOrEqual(r.occl);
-      // 리더십은 부드러운 해시 스크롤 도중 웹폰트(Pretendard) 적용으로 위 섹션 높이가 바뀌어 목적지가 어긋난다 (기존 현상, 보고).
-      // 제목 기준만 판정하고 섹션 상단 정렬은 나머지 페이지에서 확인한다
-      if (c.key !== 'leadership') {
-        expect(r.sectionTop, '섹션 상단 가림 0').toBeGreaterThanOrEqual(r.occl);
-        expect(Math.abs(r.sectionTop - (r.occl + 16)), '섹션 상단 = 가림 경계 + 16').toBeLessThanOrEqual(4);
-      }
+      expect(r.sectionTop, '섹션 상단 가림 0').toBeGreaterThanOrEqual(r.occl);
+      expect(Math.abs(r.sectionTop - (r.occl + 16)), '섹션 상단 = 가림 경계 + 16').toBeLessThanOrEqual(4);
       await ctx.close();
     });
   }
@@ -486,7 +498,9 @@ for (const vp of [VPS[5], VPS[2]]) {
     const ctx = await newCtx(browser, vp);
     const page = await ctx.newPage();
     // .lg-anchor scroll-margin 기존 계산: 블록 상단 = 화면 상단 + 72 + 53 + 16 (720 이하도 같은 결과). 스크롤·지연 로드 정착까지 폴링
+    await warmFonts(page, '/content');
     for (const id of ['mandatory-courses', 'mandatory-resources', 'mandatory-inquiry']) {
+      await page.goto('about:blank');
       await page.goto(`/content#${id}`, { waitUntil: 'networkidle' });
       await expect.poll(() => page.evaluate((i) => Math.abs(Math.round(document.getElementById(i)!.getBoundingClientRect().top) - 141), id), { message: `${id} 위치 유지`, timeout: 6000 })
         .toBeLessThanOrEqual(4);

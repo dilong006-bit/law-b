@@ -10,7 +10,8 @@ const PORT = Number(process.env.PW_PORT ?? 3002);
 export default defineConfig({
   testDir: './tests-fi',
   fullyParallel: true,
-  workers: process.env.CI ? 2 : 4,
+  // 이 PC(Windows, 보안 프로그램 파일 검사)에서 4개 병렬은 CPU 경합으로 위치·타이밍 판정이 흔들려 2개로 둔다
+  workers: 2,
   retries: 0,
   reporter: [['list']],
   timeout: 120_000,
