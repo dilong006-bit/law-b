@@ -90,7 +90,8 @@
 .pmcell.c1{background:color-mix(in srgb,var(--p4) 6%,#fff)}
 .pmcell.c2{background:color-mix(in srgb,var(--p4) 13%,#fff)}
 .pmcell.c3{background:color-mix(in srgb,var(--p4) 24%,#fff)}
-.pmcell.c4{background:color-mix(in srgb,var(--p4) 38%,#fff);color:color-mix(in srgb,#000 30%,var(--p4));font-weight:700}
+/* D2 (UI/UX 품질검수): 강조는 배경 틴트가 담당, 글자는 잉크 (오렌지 계열 글자 3.46:1 → 잉크 약 14:1) */
+.pmcell.c4{background:color-mix(in srgb,var(--p4) 38%,#fff);color:var(--ink);font-weight:700}
 @media(max-width:720px){.pmhead{display:none}.pmrow{grid-template-columns:1fr 1fr}.pmrow .lang{grid-column:1/-1;border-bottom:1px solid var(--line)}.pmcell{border-left:none}}
 .pmgrow{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:12px;font-weight:700;color:var(--muted);background:var(--surface);border-top:1px solid var(--line)}
 .pmgrow .bar{flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--p4) 25%,#fff),var(--p4))}
