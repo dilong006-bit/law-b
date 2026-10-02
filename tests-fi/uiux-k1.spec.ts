@@ -7,8 +7,8 @@ import { test, expect, type Page } from '@playwright/test';
  */
 
 /** 스크롤 정착: 연속 3프레임 scrollY 동일 + 웹폰트 적용 완료 */
-async function settled(page: Page) {
-  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+async function settled(page: Page, fonts = true) {
+  if (fonts) await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.evaluate(() => new Promise<void>((done) => {
     let last = -1, same = 0;
     const t0 = performance.now();
@@ -48,20 +48,21 @@ for (const [path, width, height] of [['/leadership', 1440, 900], ['/leadership',
 test('K1 사용자가 직접 스크롤하면 재보정하지 않음', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await ctx.newPage();
-  // 폰트를 늦게 보내 해시 스크롤이 끝난 뒤 폰트가 적용되게 한다
+  // 테스트 조건: 폰트 응답을 2.5초 늦춰 해시 스크롤이 끝난 뒤 폰트가 적용되게 한다 (네트워크 지연 재현, 판정 대기 아님)
   await page.route(/\.woff2$/, async (r) => { await new Promise((ok) => setTimeout(ok, 2500)); await r.continue(); });
   await page.goto('/leadership#inq', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => Math.abs(document.getElementById('inq')!.getBoundingClientRect().top) < 400);
   // 해시 스크롤이 멈출 때까지 (폰트는 아직 오지 않음)
-  await page.evaluate(() => new Promise<void>((done) => { let last = -1, same = 0; const tick = () => { const y = Math.round(scrollY); same = y === last ? same + 1 : 0; last = y; if (same >= 3) done(); else requestAnimationFrame(tick); }; requestAnimationFrame(tick); }));
+  await settled(page, false);
   expect(await page.evaluate(() => document.fonts.status), '폰트 적용 전').toBe('loading');
   // 폰트 적용 전에 사용자가 휠로 위로 400px 이동
   await page.mouse.move(700, 450);
   await page.mouse.wheel(0, -400);
-  await page.evaluate(() => new Promise((ok) => setTimeout(ok, 300)));
+  await settled(page, false);
   const yUser = await page.evaluate(() => Math.round(scrollY));
-  await page.evaluate(() => document.fonts.ready.then(() => undefined));
-  await page.evaluate(() => new Promise((ok) => setTimeout(ok, 600)));
+  // 재보정 시점(폰트 적용 + 스크롤 정착)까지 기다려도 #inq 로 끌려가지 않아야 한다
+  await settled(page);
+  await settled(page);
   const yAfter = await page.evaluate(() => Math.round(scrollY));
   // 폰트 적용으로 생긴 레이아웃 변화(스크롤 앵커링) 외에 #inq 로 끌려가지 않아야 한다
   expect(Math.abs(await offset(page, 'inq')), '#inq 로 되돌아가지 않음').toBeGreaterThan(200);

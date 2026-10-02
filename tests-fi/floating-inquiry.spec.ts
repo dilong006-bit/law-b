@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { scrollSettled } from './helpers';
+import { scrollSettled, frames, barSettled, fontsReady } from './helpers';
 
 /**
  * 플로팅 문의 바 E2E (B안 기술명세서 최종 v2.0 §11, 프롬프트 v2.1 6-2·6-3).
@@ -51,7 +51,10 @@ function watchConsole(page: Page) {
 }
 
 const isOn = (page: Page) => page.evaluate(() => !!document.querySelector('.fi.is-on'));
-const settle = (page: Page, ms = 450) => page.waitForTimeout(ms);
+/** 스크롤 정착 + 관찰자 콜백 반영 (K12: 고정 대기 대신 상태) */
+const settle = async (page: Page) => { await scrollSettled(page); await frames(page, 3); };
+/** 처음부터 안 나와야 하는 경우의 판정 시점: 바 본체 마운트(지연 로드) + 스크롤 정착 + 관찰자 첫 콜백 프레임 */
+const flushed = async (page: Page) => { await page.waitForSelector('.fi', { state: 'attached' }); await settle(page); };
 
 /** 요소 상단을 화면 세로 frac 지점에 맞춘다 (scroll 즉시) */
 async function scrollElTo(page: Page, sel: string, frac: number) {
@@ -67,7 +70,7 @@ async function scrollElTo(page: Page, sel: string, frac: number) {
 async function shot(page: Page, pageKey: string, vp: string, state: string) {
   const file = path.join(QA, `${pageKey}-${vp}-${state}.png`);
   for (let i = 0; i < 3; i++) {
-    try { await page.screenshot({ path: file }); return; } catch (e) { if (i === 2) console.warn(`screenshot skipped: ${file} ${(e as Error).message.slice(0, 60)}`); await page.waitForTimeout(300); }
+    try { await page.screenshot({ path: file }); return; } catch (e) { if (i === 2) console.warn(`screenshot skipped: ${file} ${(e as Error).message.slice(0, 60)}`); await frames(page, 10); }
   }
 }
 
@@ -150,12 +153,12 @@ async function sweep(page: Page, trigger: string) {
       window.scrollBy({ top: window.innerHeight * 0.5, behavior: 'instant' as ScrollBehavior });
       return out;
     });
+    await settle(page);
     res.steps++;
     if (r.on) res.onSteps++;
     res.formCover += r.form;
     res.footerCover += r.footer;
     if (r.end || res.steps > 200) break;
-    await page.waitForTimeout(140);
   }
   const perf = await page.evaluate(() => {
     const w = window as unknown as { __lt: number; __cls: number };
@@ -172,13 +175,13 @@ for (const vp of VPS) {
       const page = await ctx.newPage();
       const bad = watchConsole(page);
       await page.goto(pg.path, { waitUntil: 'networkidle' });
-      await settle(page, 600);
+      await flushed(page);
       expect(await isOn(page), '첫 화면 미노출').toBe(false);
       await shot(page, pg.key, vp.name, 'top');
 
       await scrollElTo(page, pg.trigger, 0.5);
       await expect.poll(() => isOn(page), { message: '기준 섹션 도달 노출' }).toBe(true);
-      await page.waitForTimeout(400); // 등장 전환 끝
+      await barSettled(page); // 등장 전환 끝 (투명도 1, 이동 0)
       const m = await measureBar(page);
       await shot(page, pg.key, vp.name, 'reached');
 
@@ -286,13 +289,13 @@ test('닫기 후 다른 페이지 미노출', async ({ browser }) => {
   expect(ev).toContain('floating_inquiry_close');
   await page.goto('/leadership', { waitUntil: 'networkidle' });
   await scrollElTo(page, '#pain', 0.5);
-  await page.waitForTimeout(600);
+  await flushed(page);
   expect(await isOn(page)).toBe(false);
   // 클라이언트 이동(GNB)으로 가도 미노출
   await page.locator('header.nav a[href="/content"]').first().click();
   await page.waitForURL('**/content');
   await scrollElTo(page, '#ax1', 0.5);
-  await page.waitForTimeout(600);
+  await flushed(page);
   expect(await isOn(page)).toBe(false);
   await ctx.close();
 });
@@ -311,7 +314,8 @@ test('view 계측과 라우트 재설정', async ({ browser }) => {
   // 클라이언트 이동: 새 페이지 맨 위에서는 숨김 (reached 초기화)
   await page.locator('header.nav a[href="/leadership"]').first().click();
   await page.waitForURL('**/leadership');
-  await page.waitForTimeout(700);
+  await page.waitForSelector('#pain');
+  await flushed(page);
   expect(await isOn(page), '라우트 변경 후 첫 화면 미노출').toBe(false);
   await scrollElTo(page, '#pain', 0.5);
   await expect.poll(() => isOn(page)).toBe(true);
@@ -339,8 +343,7 @@ for (const vp of [VPS[5], VPS[2]]) {
     // 과정 담기 → lg-tray 노출 중 바 숨김
     await page.locator('.lg-pick').first().click();
     await expect.poll(() => page.evaluate(() => document.body.classList.contains('legal-tray-on'))).toBe(true);
-    await settle(page);
-    expect(await isOn(page), 'lg-tray 노출 중 미노출').toBe(false);
+    await expect.poll(() => isOn(page), { message: 'lg-tray 노출 중 미노출' }).toBe(false);
     await shot(page, 'content', vp.name, 'lg-tray');
     // 담기 해제 → 다시 노출
     await page.locator('.lg-pick[aria-pressed="true"]').first().click();
@@ -351,8 +354,7 @@ for (const vp of [VPS[5], VPS[2]]) {
     await expect.poll(() => isOn(page)).toBe(true);
     await page.locator('.lg-cn-slide').first().locator('.lg-cn-open').click();
     await expect(page.locator('.lg-lb')).toBeVisible();
-    await settle(page);
-    expect(await isOn(page), '확대 보기 중 미노출').toBe(false);
+    await expect.poll(() => isOn(page), { message: '확대 보기 중 미노출' }).toBe(false);
     await shot(page, 'content', vp.name, 'lightbox');
     await page.keyboard.press('Escape');
     await expect.poll(() => isOn(page), { message: '확대 보기 닫은 뒤 복귀' }).toBe(true);
@@ -395,7 +397,7 @@ for (const pg of PAGES) {
     const page = await ctx.newPage();
     await page.goto(pg.path, { waitUntil: 'networkidle' });
     await scrollElTo(page, pg.trigger, 0.5);
-    await page.waitForTimeout(500);
+    await flushed(page);
     expect(await isOn(page)).toBe(false);
     expect(await page.evaluate(() => getComputedStyle(document.querySelector('.fi')!).display)).toBe('none');
     await shot(page, pg.key, LANDSCAPE.name, 'reached');
@@ -406,8 +408,7 @@ for (const pg of PAGES) {
 // ── 7. 미노출 경로 ──
 for (const p of ['/kium', '/csr', '/no-such-page']) {
   test(`미설정 경로 렌더 없음 ${p}`, async ({ page }) => {
-    await page.goto(p);
-    await page.waitForTimeout(400);
+    await page.goto(p, { waitUntil: 'networkidle' }); // 바 본체는 지연 로드: 네트워크가 끝나면 로드 여부가 확정
     expect(await page.locator('.fi').count()).toBe(0);
   });
 }
@@ -425,7 +426,7 @@ for (const vp of [VPS[5], VPS[2]]) {
 
     await scrollElTo(page, '#arch', 0.5);
     await expect.poll(() => isOn(page)).toBe(true);
-    await page.waitForTimeout(400);
+    await barSettled(page);
     const axe = await new AxeBuilder({ page }).include('.fi').analyze();
     const whole = await new AxeBuilder({ page }).analyze();
     fs.writeFileSync(path.join(QA, 'measure', `axe-${vp.name}.json`), JSON.stringify({
@@ -479,7 +480,9 @@ for (const vp of [VPS[5], VPS[2]]) {
       await warmFonts(page, c.url);
       await page.goto('about:blank');
       await page.goto(c.url, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(1200);
+      await fontsReady(page);
+      await settle(page);
+      await settle(page); // K1 재보정(폰트 적용 + 정착 후 1회)까지
       const r = await page.evaluate(() => {
         const nav = document.querySelector('header.nav')!.getBoundingClientRect().bottom;
         const sub = document.querySelector<HTMLElement>('.subnav');
