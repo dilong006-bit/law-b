@@ -11,9 +11,13 @@ const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home
  * 진입 시 해시 대상이 있을 때만, 웹폰트 적용과 스크롤 정착을 기다린 뒤 한 번만 즉시(auto) 재보정한다.
  * 그 사이 사용자가 휠·터치·키보드로 직접 스크롤했으면 하지 않는다. scroll-margin·scroll-padding 은 scrollIntoView 가 그대로 반영한다.
  * 플로팅 바 이동(lib/fi/go.ts)은 클릭 뒤 동작이라 첫 진입 1회인 이 보정과 겹치지 않는다.
+ * /kium 은 자체 상담 진입 앵커 처리가 있어 제외한다. 재보정을 실제로 했으면 html[data-hash-fix="applied"] 표식(검수용).
  */
+const EXCLUDE = /^\/kium(\/|$)/;
+
 export default function HashFontFix() {
   useEffect(() => {
+    if (EXCLUDE.test(location.pathname)) return;
     const id = decodeURIComponent(location.hash.slice(1));
     const el = id ? document.getElementById(id) : null;
     if (!el) return;
@@ -47,6 +51,7 @@ export default function HashFontFix() {
       off();
       if (cancelled || decodeURIComponent(location.hash.slice(1)) !== id || !el.isConnected) return;
       el.scrollIntoView({ behavior: 'auto', block: 'start' });
+      document.documentElement.dataset.hashFix = 'applied';
     });
     return () => { stop(); off(); };
   }, []);

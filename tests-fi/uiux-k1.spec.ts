@@ -69,3 +69,18 @@ test('K1 사용자가 직접 스크롤하면 재보정하지 않음', async ({ b
   expect(Math.abs(yAfter - yUser), '사용자 위치 유지 (폰트 리플로 범위)').toBeLessThan(120);
   await ctx.close();
 });
+
+test('K1 /kium 은 재보정 제외 (대조: /leadership 은 적용)', async ({ browser }) => {
+  const marker = async (url: string) => {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    await page.goto(url, { waitUntil: 'networkidle' });
+    await settled(page);
+    await settled(page);
+    const v = await page.evaluate(() => document.documentElement.dataset.hashFix ?? null);
+    await ctx.close();
+    return v;
+  };
+  expect(await marker('/kium#kium-faq'), '/kium 미동작').toBeNull();
+  expect(await marker('/leadership#inq'), '/leadership 동작').toBe('applied');
+});
