@@ -163,7 +163,7 @@ export default function CardNewsStory() {
                 tabIndex={last ? undefined : -1}
                 aria-hidden={last ? undefined : true}
                 data-ga-id="legal_cardnews_consult"
-                onClick={(e) => { gaTrack('legal_cardnews_consult'); onConsultClick(e); }}
+                onClick={(e) => { gaTrack('legal_cardnews_consult'); onConsultClick(e, { cue: true }); }}
               >
                 {R.consult} <LgIcon name="arrow-right" size={16} />
               </a>

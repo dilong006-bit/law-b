@@ -1,14 +1,14 @@
 /**
  * 플로팅 문의 바 같은 페이지 이동 (기술명세서 최종 v2.0 §7, FI-05). DOM 전용.
- * 1) 관심 영역 칩 추가 선택(스크롤과 동시)  2) GNB·SubNav 보정 스크롤  3) 이동 완료 후 포커스  4) replaceState
+ * 1) 관심 영역 칩 추가 선택(스크롤과 동시)  2) GNB·SubNav 보정 스크롤(긴 거리 단축, lib/scrollMotion)  3) 도착 후 포커스  4) replaceState
  * 문의 폼(HomeInquiry 등)과 기존 scrollToId·goToInquiry 는 수정하지 않는다.
  */
 
 import { CONSULT_HASH, consultFirstField } from '@/lib/legal/goConsult';
+import { cueArrive, moveTo } from '@/lib/scrollMotion';
 
 const DEV = process.env.NODE_ENV !== 'production';
 const SCROLL_GAP = 16;
-const SETTLE_MS = 700;
 /** 칩 라벨 모듈(동적 import) 대기 상한: 청크 로드가 늦어도 포커스·replaceState 가 묶이지 않게 */
 const CHIPS_WAIT_MS = 1200;
 
@@ -56,29 +56,15 @@ export function firstField(root: Element): HTMLElement | null {
   return root.querySelector<HTMLElement>('input:not([type="hidden"]):not([type="checkbox"]):not(.hp), select, textarea');
 }
 
-/** scrollend 와 700ms 타이머 중 먼저 온 것 1회만 */
-function afterScroll(cb: () => void) {
-  let done = false;
-  const fire = () => {
-    if (done) return;
-    done = true;
-    window.removeEventListener('scrollend', fire);
-    window.clearTimeout(t);
-    cb();
-  };
-  if ('onscrollend' in window) window.addEventListener('scrollend', fire, { once: true });
-  const t = window.setTimeout(fire, SETTLE_MS);
-}
-
 export function goToForm(target: string, interest?: string): void {
   const root = document.querySelector(target);
   if (!root) { location.hash = target; return; }
   // 칩 선택은 라벨 모듈을 받는 동안 스크롤을 붙잡지 않도록 스크롤과 동시에 진행하고, 포커스 전에 끝을 기다린다
   const chips = interest ? applyInterest(interest).catch(() => undefined) : Promise.resolve();
 
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const top = root.getBoundingClientRect().top + window.scrollY - topOcclusion() - SCROLL_GAP;
-  afterScroll(async () => {
+  // N4: 긴 거리는 목표 직전까지 즉시 이동 후 남은 구간만 부드럽게 (lib/scrollMotion). 도착한 뒤 포커스
+  moveTo(top).then(async () => {
     await Promise.race([chips, new Promise((r) => window.setTimeout(r, CHIPS_WAIT_MS))]);
     if (window.matchMedia('(pointer:fine)').matches) {
       // /content 상담 블록은 기존 빠른 상담 이동(goConsult)과 같은 첫 입력칸 규칙을 쓴다
@@ -90,7 +76,8 @@ export function goToForm(target: string, interest?: string): void {
         t.focus({ preventScroll: true });
       }
     }
+    // K9: 터치 기기에서 /content 상담 블록에 도착하면 상담 패널 테두리로 위치 단서
+    if (target === CONSULT_HASH) cueArrive(root.querySelector('.lg-consult-panel'));
     history.replaceState(null, '', target);
   });
-  window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'auto' : 'smooth' });
 }
