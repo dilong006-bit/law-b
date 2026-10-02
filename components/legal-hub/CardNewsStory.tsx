@@ -28,7 +28,7 @@ export default function CardNewsStory() {
   const [lb, setLb] = useState(false);
   const closeLb = useCallback(() => setLb(false), []); // useModal 이펙트가 렌더마다 재실행되지 않게 참조 고정
   const [failed, setFailed] = useState<boolean[]>(() => LEGAL_CARDNEWS.map(() => false));
-  const track = useRef<HTMLUListElement | null>(null);
+  const track = useRef<HTMLDivElement | null>(null);
   const lockUntil = useRef(0);
   const raf = useRef(0);
   const region = useRef<HTMLDivElement | null>(null);
@@ -97,7 +97,7 @@ export default function CardNewsStory() {
   }, [index, view]);
 
   // CN-11: 카드 버튼에 포커스가 있을 때 좌우 방향키로 넘기고 새 카드로 포커스 이동 (확대 보기가 열려 있으면 그쪽 처리에 맡김)
-  const onCardKey = (e: React.KeyboardEvent<HTMLUListElement>) => {
+  const onCardKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (lb || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
     if (!(e.target as HTMLElement).classList.contains('lg-cn-open')) return;
     const next = Math.max(0, Math.min(N - 1, index + (e.key === 'ArrowRight' ? 1 : -1)));
@@ -126,9 +126,10 @@ export default function CardNewsStory() {
       <div className="lg-row lg-story" data-balance-row data-pair="media-nav">
         <div className="lg-c4 lg-story-media" data-height-owner>
           <div className="lg-cn" ref={region} role="region" aria-roledescription="carousel" aria-label={R.cardNewsLabel}>
-            <ul className="lg-cn-track" ref={track} onScroll={onScroll} onKeyDown={onCardKey} data-hscroll>
+            {/* N2: 슬라이드는 group(aria-roledescription slide) 이라 목록(ul/li) 이 아닌 div 로 둔다 (li 에 group 역할을 주면 목록 구조가 깨짐) */}
+            <div className="lg-cn-track" ref={track} onScroll={onScroll} onKeyDown={onCardKey} data-hscroll>
               {LEGAL_CARDNEWS.map((c, k) => (
-                <li className="lg-cn-slide" key={c.id} role="group" aria-roledescription="slide" aria-label={R.counter(k + 1, N)}>
+                <div className="lg-cn-slide" key={c.id} role="group" aria-roledescription="slide" aria-label={R.counter(k + 1, N)}>
                   <button
                     type="button"
                     className="lg-cn-open"
@@ -145,9 +146,9 @@ export default function CardNewsStory() {
                     />
                     {!failed[k] && <span className="lg-cn-zoom" aria-hidden="true"><LgIcon name="maximize-2" size={16} /></span>}
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
             <div className="lg-cn-ctrl">
               <button type="button" className="lg-cn-btn" onClick={() => go(index - 1)} disabled={index === 0} aria-label={R.prev} data-ga-id="legal_cardnews_nav"><LgIcon name="chevron-left" size={18} /></button>
               <span className="lg-cn-count">{R.counter(index + 1, N)}</span>
