@@ -62,9 +62,9 @@ export function goToForm(target: string, interest?: string): void {
   // 칩 선택은 라벨 모듈을 받는 동안 스크롤을 붙잡지 않도록 스크롤과 동시에 진행하고, 포커스 전에 끝을 기다린다
   const chips = interest ? applyInterest(interest).catch(() => undefined) : Promise.resolve();
 
-  const top = root.getBoundingClientRect().top + window.scrollY - topOcclusion() - SCROLL_GAP;
-  // N4: 긴 거리는 목표 직전까지 즉시 이동 후 남은 구간만 부드럽게 (lib/scrollMotion). 도착한 뒤 포커스
-  moveTo(top).then(async () => {
+  const topOf = () => root.getBoundingClientRect().top + window.scrollY - topOcclusion() - SCROLL_GAP;
+  // N4: 긴 거리는 목표 직전까지 즉시 이동 후 남은 구간만 부드럽게 (lib/scrollMotion). R2: 도착 후 목적지 재확인. 도착한 뒤 포커스
+  moveTo(topOf(), topOf).then(async () => {
     await Promise.race([chips, new Promise((r) => window.setTimeout(r, CHIPS_WAIT_MS))]);
     if (window.matchMedia('(pointer:fine)').matches) {
       // /content 상담 블록은 기존 빠른 상담 이동(goConsult)과 같은 첫 입력칸 규칙을 쓴다

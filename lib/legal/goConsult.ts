@@ -20,7 +20,7 @@ export function consultFirstField(root: ParentNode | null = document.getElementB
 function moveToConsult(cue: boolean) {
   const el = document.getElementById(CONSULT_ID);
   if (!el) { location.href = `/content${CONSULT_HASH}`; return; }
-  moveTo(elementTop(el)).then(() => {
+  moveTo(elementTop(el), () => elementTop(el)).then(() => {
     consultFirstField(el)?.focus({ preventScroll: true });
     if (cue) cueArrive(el.querySelector('.lg-consult-panel'));
   });
