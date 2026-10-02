@@ -5,8 +5,8 @@
    ========================================================================= */
 
 .ct-center{text-align:center}
-.hl{color:var(--p4)}
-.ct-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--p4);white-space:nowrap}
+.hl{color:var(--p4-text)}
+.ct-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--p4-text);white-space:nowrap}
 .ct-eyebrow svg,.ct-eyebrow .ic,.ct-eyebrow .imgbig{width:15px;height:15px;stroke-width:1.5}
 
 /* ── 히어로 (홈 톤 정합 다크 --p4 웜) ────────────────────────────────── */
@@ -32,7 +32,7 @@
 .hero-note{margin-top:22px;font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;max-width:56ch}
 .hexmap{position:relative;background:linear-gradient(155deg,#fff,color-mix(in srgb,var(--p4) 6%,#fff));border:1px solid color-mix(in srgb,var(--p4) 12%,#fff);border-radius:24px;padding:30px;box-shadow:var(--shadow-3)}
 .hexmap .core{text-align:center;margin-bottom:22px}
-.hexmap .core b{font-size:clamp(34px,5.4vw,48px);font-weight:900;letter-spacing:-.04em;color:var(--p4);display:block;line-height:1;font-variant-numeric:tabular-nums}
+.hexmap .core b{font-size:clamp(34px,5.4vw,48px);font-weight:900;letter-spacing:-.04em;color:var(--p4-text);display:block;line-height:1;font-variant-numeric:tabular-nums}
 .hexmap .core span{display:block;font-size:12.5px;color:var(--muted);margin-top:8px}
 .g6{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:520px){.g6{grid-template-columns:1fr 1fr}}
@@ -58,8 +58,8 @@
 .axhead{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
 .axhead h2{font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:-.02em;margin-top:10px;line-height:1.2}
 .axhead .lead{margin-top:8px;color:var(--muted);font-size:15px;line-height:1.6;max-width:52ch}
-.axtag{flex:none;font-size:12.5px;font-weight:700;color:var(--p4);background:color-mix(in srgb,var(--p4) 10%,#fff);border-radius:999px;padding:8px 15px}
-.substep{display:flex;align-items:center;gap:10px;margin-top:34px;margin-bottom:16px;font-size:14px;font-weight:800;color:var(--p4)}
+.axtag{flex:none;font-size:12.5px;font-weight:700;color:var(--p4-text);background:color-mix(in srgb,var(--p4) 10%,#fff);border-radius:999px;padding:8px 15px}
+.substep{display:flex;align-items:center;gap:10px;margin-top:34px;margin-bottom:16px;font-size:14px;font-weight:800;color:var(--p4-text)}
 .substep:before{content:"";width:20px;height:2px;background:var(--p4)}
 
 /* ── ax1 직무 ──────────────────────────────────────────────────────── */
@@ -82,7 +82,7 @@
 .pmhead{background:var(--surface);font-size:12.5px;font-weight:800;color:var(--ink)}
 .pmhead .axis,.pmhead .col{padding:14px 16px}
 .pmhead .axis{color:var(--muted)}
-.pmhead .col{color:var(--p4);text-align:center}
+.pmhead .col{color:var(--p4-text);text-align:center}
 .pmrow{border-top:1px solid var(--line)}
 .pmrow .lang{display:flex;align-items:center;gap:8px;padding:14px 16px;font-weight:800;font-size:14px}
 .pmrow .lang svg{width:18px;height:18px;color:var(--p4)}
@@ -106,7 +106,7 @@
 @media(max-width:640px){.rmline{grid-template-columns:1fr}.rmline::before{display:none}}
 .rmpt{text-align:center;position:relative;z-index:1}
 .rmpt .dot{width:14px;height:14px;border-radius:50%;background:var(--p4);margin:0 auto 10px;box-shadow:0 0 0 4px #fff,0 0 0 6px color-mix(in srgb,var(--p4) 22%,#fff)}
-.rmpt .st{font-size:11px;font-weight:800;color:var(--p4)}
+.rmpt .st{font-size:11px;font-weight:800;color:var(--p4-text)}
 .rmpt .nm{font-size:14px;font-weight:800;margin-top:2px}
 .rmcols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media(max-width:640px){.rmcols{grid-template-columns:1fr}}
@@ -114,15 +114,15 @@
 .rmcard .sk{display:flex;flex-wrap:wrap;gap:6px;flex:1;align-content:flex-start}
 .rmcard .sk span{font-size:12px;font-weight:600;background:var(--surface);border-radius:999px;padding:5px 11px}
 .rmcard .ct{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
-.rmcard .cl{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--p4)}
+.rmcard .cl{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--p4-text)}
 .rmcard .cl svg{width:16px;height:16px}
 .rmcard .cb{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.rmcard .cb span{font-size:11.5px;font-weight:700;color:var(--p4);background:color-mix(in srgb,var(--p4) 10%,#fff);border-radius:8px;padding:4px 9px}
+.rmcard .cb span{font-size:11.5px;font-weight:700;color:var(--p4-text);background:color-mix(in srgb,var(--p4) 10%,#fff);border-radius:8px;padding:4px 9px}
 .rmaxis{display:flex;align-items:center;gap:12px;margin-top:16px;font-size:12px;font-weight:700;color:var(--muted)}
 .rmaxis span:first-child,.rmaxis .r{flex:none;white-space:nowrap}
 .rmaxis .rmaxis-track{flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--line),var(--p4));position:relative}
 .rmaxis .rmaxis-track::after{content:"";position:absolute;right:0;top:50%;transform:translateY(-50%);border-left:7px solid var(--p4);border-top:5px solid transparent;border-bottom:5px solid transparent}
-.rmaxis .r{color:var(--p4)}
+.rmaxis .r{color:var(--p4-text)}
 
 /* ── ax4 성장 프레임워크 ───────────────────────────────────────────── */
 .growthfw{margin-top:30px}
@@ -142,7 +142,7 @@
 .gftier .stage b{font-size:15px;font-weight:800;color:#fff}
 .gftier .stage span{font-size:12px;color:rgba(255,255,255,.8);margin-left:6px}
 .culturebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;background:var(--surface);border-radius:14px;padding:16px 18px}
-.culturebar .lb{font-size:13px;font-weight:800;color:var(--p4)}
+.culturebar .lb{font-size:13px;font-weight:800;color:var(--p4-text)}
 .culturebar .c{font-size:12.5px;font-weight:600;color:#3a3a42;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px}
 
 /* ── ax5 법정 ─────────────────────────────────────────────────────── */
@@ -153,7 +153,7 @@
 .tnode:last-child::before{right:50%}
 .tnode .dot{position:relative;z-index:1;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid color-mix(in srgb,var(--p4) 45%,#fff);margin:0 auto 12px}
 .tnode.cur .dot{background:var(--p4);border-color:var(--p4);box-shadow:0 0 0 5px color-mix(in srgb,var(--p4) 18%,#fff)}
-.tnode .yr{font-size:13px;font-weight:900;color:var(--p4)}
+.tnode .yr{font-size:13px;font-weight:900;color:var(--p4-text)}
 .tnode .nm{font-size:15px;font-weight:800;margin-top:5px}
 .tnode .cc{font-size:11.5px;color:var(--muted);margin-top:3px}
 .tnode .bn{display:inline-block;margin-top:8px;font-size:10px;font-weight:800;color:#fff;background:var(--p4);border-radius:999px;padding:2px 9px}
@@ -162,7 +162,7 @@
 @media(max-width:940px){.lawgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.lawgrid{grid-template-columns:1fr}}
 .lawcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 16px;box-shadow:var(--shadow-1)}
-.lawcard .must{font-size:11px;font-weight:800;color:var(--p4);background:color-mix(in srgb,var(--p4) 10%,#fff);border-radius:6px;padding:3px 9px}
+.lawcard .must{font-size:11px;font-weight:800;color:var(--p4-text);background:color-mix(in srgb,var(--p4) 10%,#fff);border-radius:6px;padding:3px 9px}
 .lawcard h3{font-size:15px;font-weight:800;margin-top:10px}
 .lawcard .frow{display:flex;gap:8px;margin-top:8px;font-size:12px}
 .lawcard dt{color:var(--muted);font-weight:700;flex:none;min-width:34px}
@@ -187,7 +187,7 @@
 .imgslot .imgbig{display:none}
 .imgslot .cap{z-index:2;font-size:12.5px;font-weight:700;position:absolute;left:16px;bottom:14px;background:rgba(21,19,29,.42);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:7px 13px}
 .pipebox{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow-1)}
-.pipebox .lb{font-size:12.5px;font-weight:800;color:var(--p4);margin-bottom:16px}
+.pipebox .lb{font-size:12.5px;font-weight:800;color:var(--p4-text);margin-bottom:16px}
 .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 @media(max-width:640px){.pipe{grid-template-columns:1fr 1fr}}
 .pstep{text-align:center;position:relative}
@@ -267,9 +267,9 @@
 .toolbar .sels{display:flex;gap:8px;flex-wrap:wrap}
 .toolbar select{border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
 .toolbar .count{font-size:12.5px;color:var(--muted)}
-.toolbar .count b{color:var(--p4);font-weight:800}
+.toolbar .count b{color:var(--p4-text);font-weight:800}
 .toolbar .reset{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
-@media (hover:hover) and (pointer:fine){.toolbar .reset:hover{border-color:var(--p4);color:var(--p4)}}
+@media (hover:hover) and (pointer:fine){.toolbar .reset:hover{border-color:var(--p4);color:var(--p4-text)}}
 .exp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
 @media(max-width:760px){.exp-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.exp-grid{grid-template-columns:1fr}}
@@ -284,7 +284,7 @@
 .ccard .badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
 .bdg{font-size:11px;font-weight:700;border-radius:6px;padding:3px 8px}
 .bdg.tg{background:var(--surface);color:#3a3a42}
-.bdg.lv{background:color-mix(in srgb,var(--p4) 12%,#fff);color:var(--p4)}
+.bdg.lv{background:color-mix(in srgb,var(--p4) 12%,#fff);color:var(--p4-text)}
 .bdg.bk{background:color-mix(in srgb,var(--p3) 10%,#fff);color:var(--p3)}
 .ccard .kw{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
 .ccard .kw span{font-size:10.5px;color:var(--muted);background:var(--surface);border-radius:999px;padding:3px 8px}
@@ -298,7 +298,7 @@
 .cdetail-head .mb{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .cdetail-head .mb span{font-size:11.5px;font-weight:700;background:rgba(255,255,255,.2);border-radius:999px;padding:4px 11px}
 .mblock{margin-bottom:18px}
-.mblock .lb{font-size:12px;font-weight:800;color:var(--p4);margin-bottom:8px}
+.mblock .lb{font-size:12px;font-weight:800;color:var(--p4-text);margin-bottom:8px}
 .mblock p{font-size:14px;color:#33333c;line-height:1.7}
 .mblock ul,.mblock ol{padding-left:20px;display:flex;flex-direction:column;gap:6px}
 .mblock li{font-size:13.5px;color:#33333c;line-height:1.6}

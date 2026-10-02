@@ -68,7 +68,7 @@
 
 /* BlockHead (결정 D3): kicker = 기존 .substep 값, 제목 = 홈 .ptext h3 값, 리드 = .axhead .lead 값 */
 .lg-bh{margin-bottom:var(--lg-gap-head)}
-.lg-bh-kicker{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--p4)}
+.lg-bh-kicker{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--p4-text)}
 .lg-bh-kicker::before{content:"";width:20px;height:2px;background:var(--p4)}
 .lg-bh-title{margin-top:10px;font-weight:800;line-height:1.25;letter-spacing:-.02em;word-break:keep-all;font-size:clamp(20px,2.3vw,28px)}
 .lg-bh-lead{margin-top:8px;color:var(--muted);font-size:15px;line-height:1.6;max-width:52ch;word-break:keep-all}
