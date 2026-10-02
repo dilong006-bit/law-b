@@ -265,6 +265,11 @@ export function useFloatingInquiry(): FloatingInquiryState {
     if (document.activeElement?.closest('.fi')) {
       const back = lastOutside.current;
       const target = back && back.isConnected ? back : document.getElementById('main');
+      // R1: 대체 대상(#main)이 포커스를 받을 수 없으면 이때만 tabindex=-1 을 주고, 포커스가 떠나면 되돌린다 (마크업 상시 변경 없음)
+      if (target && target.tabIndex < 0 && !target.hasAttribute('tabindex')) {
+        target.setAttribute('tabindex', '-1');
+        target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+      }
       target?.focus({ preventScroll: true });
     }
     setFocusInside(false);
