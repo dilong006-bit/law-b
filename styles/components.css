@@ -394,7 +394,7 @@ body.legal-tray-on .teaser{display:none}
 .cinfo{display:grid;grid-template-columns:1fr 1fr;gap:9px 30px}
 @media(max-width:560px){.cinfo{grid-template-columns:1fr}}
 .cinfo>div{display:flex;gap:10px;font-size:13px;line-height:1.5}
-.cinfo dt{color:rgba(255,255,255,.4);font-weight:600;flex:none;min-width:66px}
+.cinfo dt{color:rgba(255,255,255,.5);font-weight:600;flex:none;min-width:66px}
 .cinfo dd{color:rgba(255,255,255,.72)}
 .foot-policy{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px;font-size:13px}
 .foot-policy a{color:rgba(255,255,255,.8);font-weight:600;text-decoration:none}
@@ -414,7 +414,7 @@ body.legal-tray-on .teaser{display:none}
 .isms-cert{display:flex;justify-content:center}
 .isms-cert img{display:block;width:100%;max-width:360px;height:auto;border-radius:10px;border:1px solid var(--line)}
 .foot-bottom{display:flex;justify-content:flex-start;align-items:center;gap:12px;flex-wrap:wrap;padding-top:22px;border-top:1px solid rgba(255,255,255,.1)}
-.foot-bottom .copy{font-size:12.5px;color:rgba(255,255,255,.42);letter-spacing:.02em}
+.foot-bottom .copy{font-size:12.5px;color:rgba(255,255,255,.5);letter-spacing:.02em}
 
 /* ── 부정훈련 모달 (원본 336-491 · v13/v15) ───────────────────────────── */
 .pv-overlay{position:fixed;inset:0;z-index:120;background:rgba(20,20,26,.55);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:5vh 20px;opacity:0;visibility:hidden;transition:opacity .3s var(--ease),visibility .3s}
