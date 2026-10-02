@@ -53,6 +53,8 @@ export default function FloatingInquiryBar() {
     onClickTrack();
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
+    // 포인터 클릭이면 링크 포커스를 풀어 둔다 (N1 포커스 보류 때문에 폼으로 가는 동안 바가 남지 않게). 키보드 Enter 는 detail 0
+    if (e.detail > 0) e.currentTarget.blur();
     goToForm(page.target, copy.interest);
   };
   const onClose = () => {

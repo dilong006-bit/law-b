@@ -90,6 +90,10 @@ export function useFloatingInquiry(): FloatingInquiryState {
   const [armedFor, setArmedFor] = useState<string | null>(null);
   const kbOpen = useRef(false);
   const editing = useRef(false);
+  // N1: 바 안에 포커스가 있는 동안은 숨기지 않는다 (숨기면 inert 로 포커스가 body 로 사라짐).
+  // 바에 들어오기 전 마지막 포커스 요소를 기억해 두었다가 키보드로 닫을 때 돌려준다
+  const [focusInside, setFocusInside] = useState(false);
+  const lastOutside = useRef<HTMLElement | null>(null);
 
   // 전역 신호: 경로와 무관 (한 번 등록, 언마운트 시 해제)
   useEffect(() => {
@@ -127,6 +131,17 @@ export function useFloatingInquiry(): FloatingInquiryState {
     };
     document.addEventListener('focusin', onFocus);
     document.addEventListener('focusout', onFocus);
+    // 바 포커스는 같은 이벤트에서 바로 판정 (한 프레임 늦으면 그 사이 숨김이 먼저 적용될 수 있다)
+    const inBar = (el: EventTarget | null) => el instanceof Element && !!el.closest('.fi');
+    const onIn = (e: FocusEvent) => {
+      const t = e.target;
+      if (inBar(t)) { setFocusInside(true); return; }
+      setFocusInside(false);
+      if (t instanceof HTMLElement && t !== document.body) lastOutside.current = t;
+    };
+    const onOut = (e: FocusEvent) => { if (!inBar(e.relatedTarget)) setFocusInside(false); };
+    document.addEventListener('focusin', onIn);
+    document.addEventListener('focusout', onOut);
     // iOS 보조: 760 이하에서 화면 키보드가 열리면 visualViewport 가 크게 줄어든다
     const vv = window.visualViewport;
     const onVv = () => {
@@ -143,6 +158,8 @@ export function useFloatingInquiry(): FloatingInquiryState {
       cancelAnimationFrame(fr);
       document.removeEventListener('focusin', onFocus);
       document.removeEventListener('focusout', onFocus);
+      document.removeEventListener('focusin', onIn);
+      document.removeEventListener('focusout', onOut);
       vv?.removeEventListener('resize', onVv);
     };
   }, []);
@@ -243,10 +260,20 @@ export function useFloatingInquiry(): FloatingInquiryState {
     return () => { alive = false; offs.forEach((off) => off()); };
   }, [page]);
 
-  const dismiss = useCallback(() => { writeDismissed(); setDismissed(true); }, []);
+  const dismiss = useCallback(() => {
+    // 키보드로 닫으면 포커스를 바에 들어오기 전 요소로 돌려준다 (없으면 본문 시작점). 화면은 움직이지 않는다
+    if (document.activeElement?.closest('.fi')) {
+      const back = lastOutside.current;
+      const target = back && back.isConnected ? back : document.getElementById('main');
+      target?.focus({ preventScroll: true });
+    }
+    setFocusInside(false);
+    writeDismissed();
+    setDismissed(true);
+  }, []);
 
   const visible = mounted && !!page && armedFor === page.path && computeVisible({
-    configured: !!page, dismissed, reached, hideTargetSeen, footerSeen, blocked, mobile, inputFocused, shortViewport,
+    configured: !!page, dismissed, reached, hideTargetSeen, footerSeen, blocked, mobile, inputFocused, shortViewport, focusInside,
   });
   const copy = page ? pickCopy(page, activeZone) : null;
 

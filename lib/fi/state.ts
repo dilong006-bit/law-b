@@ -8,10 +8,13 @@ export type FiSignals = {
   configured: boolean; dismissed: boolean; reached: boolean;
   hideTargetSeen: boolean; footerSeen: boolean; blocked: boolean;
   mobile: boolean; inputFocused: boolean; shortViewport: boolean;
+  /** N1: 바 안에 키보드 포커스가 있음. 모달·닫기 외에는 숨기지 않는다 (숨기면 포커스가 사라짐) */
+  focusInside?: boolean;
 };
 
-/** 명세 4장 식 그대로 */
+/** 명세 4장 식 그대로. 단 바 안에 포커스가 있으면 설정·닫기·차단(모달 등)만 본다 (N1) */
 export function computeVisible(s: FiSignals): boolean {
+  if (s.focusInside) return s.configured && !s.dismissed && !s.blocked;
   return s.configured
     && !s.dismissed
     && s.reached

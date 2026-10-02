@@ -26,6 +26,12 @@ describe('computeVisible', () => {
     ['PC 입력 중 (휴대폰만 숨김)', { inputFocused: true }, true],
     ['휴대폰 입력 중 + 미도달', { mobile: true, inputFocused: true, reached: false }, false],
     ['닫기 + 차단', { dismissed: true, blocked: true }, false],
+    // N1: 바 안에 포커스가 있으면 숨김 조건(도달·문의·푸터·입력·짧은 화면)을 보류, 닫기·차단·미설정은 그대로
+    ['포커스 안: 푸터 보임', { focusInside: true, footerSeen: true }, true],
+    ['포커스 안: 미도달·문의 섹션', { focusInside: true, reached: false, hideTargetSeen: true }, true],
+    ['포커스 안: 모달 차단', { focusInside: true, blocked: true }, false],
+    ['포커스 안: 닫기', { focusInside: true, dismissed: true }, false],
+    ['포커스 안: 미설정 경로', { focusInside: true, configured: false }, false],
   ];
   it.each(flips)('%s', (_name, patch, want) => {
     expect(computeVisible({ ...ON, ...patch })).toBe(want);
