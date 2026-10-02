@@ -60,7 +60,12 @@ npm run dev       # http://localhost:3001  (B안 로컬 컨벤션: 3000=A안, 30
 npm run build     # 정적 빌드 (SSG)
 npm run start     # 빌드 결과 서빙 (http://localhost:3001)
 npm run test:hero # 모바일 헤더/히어로 겹침 회귀 테스트 (Playwright · 2페이지 × 4뷰포트)
+npm run test:unit # 단위 테스트 (vitest · 플로팅 문의 바 순수 로직·데이터 검증 29건)
+npm run test:e2e:fi # 플로팅 바·카드뉴스·UI/UX 품질검수 E2E 117건 (tests-fi/ · 프로덕션 빌드 :3002 · 워커 4)
 ```
+
+> `test:e2e:fi`는 `playwright.fi.config.ts`를 씁니다. 이 경로(Windows)에서는 `next dev`가 `.next` 파일 잠금 오류를 내므로
+> `next build` 후 `next start -p 3002`로 띄운 서버를 재사용합니다(없으면 설정이 빌드·기동). 고정 대기 없이 상태 폴링(`tests-fi/helpers.ts`)으로 판정합니다.
 
 > **`.next`는 프로젝트당 하나**입니다. `next dev`를 두 개 띄우거나 dev 서버가 뜬 채로 `next build`를 돌리면
 > 산출물이 섞여 서버가 500(`Cannot find module './###.js'`)을 뱉습니다. 이 경우 모든 서버를 내리고
@@ -111,6 +116,7 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 | 키 | 기본값 | 용도 |
 |---|---|---|
 | `NEXT_PUBLIC_KIUM_TEASER` | `off` | `on`이면 모바일 첫 진입 1.2초 뒤 `/kium` 안내 스낵바를 1회 노출. `off`(미설정 포함)면 DOM에 렌더되지 않음 |
+| `NEXT_PUBLIC_FI_ENABLED` | (미설정 = 활성) | `0`이면 플로팅 문의 바를 렌더하지 않음 (바만 끄는 롤백 스위치, 빌드 시 인라인) |
 
 ### 계측·검증 스크립트
 
@@ -364,6 +370,60 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`useEffect` 대신 `useLayoutEffect`인 이유**: `useEffect`는 페인트 후에 돌아 최종값 → 0 → 카운트업의 **숫자 깜빡임**이 눈에 보인다. 서버에서는 `useLayoutEffect`가 경고를 내므로 `typeof window`로 분기해(`useIsoLayout`) SSR에서는 `useEffect`로 대체한다.
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
+
+### 68) UI/UX 품질검수 2차 보완·마무리 (D1·D2, R1~R6, F1·F2, 2026-10-02)
+
+- **D1** 글자 전용 마젠타 `--p2-text` #D81B60 → **#CC1A5B** (흰 5.43 · #FAFAFB 5.21 · 리더십 연분홍 #FCEBF2 4.73:1). 홈 P2 단계 번호 원도 5.43:1
+- **D2** /content 외국어 표 강조 셀(`.pmcell.c4`) 글자를 잉크로 (3.46 → 18.38:1, 배경 틴트는 그대로)
+- **R1** 키보드로 바를 닫을 때 돌아갈 요소가 없으면 `#main`, 포커스를 받을 수 없으면 그때만 `tabindex=-1` 부여
+- **R2** `moveTo(top, recompute)`: 도착 후 목적지를 다시 계산해 4px 넘게 어긋나면 즉시 1회 보정 (이동 중 휠·터치·스크롤 키 조작이 있으면 보정 안 함)
+- **R3** 상담 패널 도착 표시 타이머를 요소별 WeakMap 으로 관리 (1.2초 안 재도착 시 다시 1.2초)
+- **R4** `HashFontFix` 는 앱 최초 마운트 1회만 동작 (클라이언트 이동 해시 진입은 폰트가 이미 적용돼 대상 아님) 주석 명시
+- **R5·R6 (기존 값, 보고만)** /content axe `aria-prohibited-attr .xls` 1건, 첫 방문 /hrd CLS 0.0128 (히어로 `.wrap` 이 Pretendard 적용 시점에 y 108→143)
+- **F1 (perf)** `goConsult` 의 이동 모듈(`lib/scrollMotion`)을 클릭 시점 동적 import. /content 첫 로드 JS 증가 3,211B → 2,236B (링크 기본 이동은 동기 `preventDefault` 로 계속 차단)
+- **F2** `LgIcon` 의 `{ __html }` 객체를 아이콘별로 모듈 수준에서 한 번만 생성. 원인: Next 14 App Router 내장 React canary(`18.3.0-canary-178c267a4e-20241218`)가 prop 을 객체 동일성으로 비교해, 렌더마다 새 객체면 문자열이 같아도 `innerHTML` 을 재설정 (누르는 도중 다시 렌더되면 `path` 가 교체되어 click 이 사라짐). 서버 렌더 SVG 마크업 전후 동일, 바의 `memo(LgIcon)` 래퍼 제거
+- 검증: build 경고 0 · tsc · 단위 29 · E2E 117 × 워커 4 연속 3회 · hero 8 · axe 색 대비 0 (5페이지 × 1440·390) · 첫 로드 JS 483f219 대비 1.31~2.24KB · 첫 방문 CLS 증가 0
+- Figma 이관 자료(저장소 밖 `qa/handoff/`): `capture-checklist.md`(34개 캡처 항목) · `tokens.json`(W3C Design Tokens, 브랜드·글자 전용 그룹 분리) · `before-after/` 7쌍 · `summary.md`
+
+### 67) UI/UX 품질검수 1차 보완 (A등급 K1·K2·K8·K12·N1·N2, B등급 K3~K7·K9·N4, 2026-10-02)
+
+0단계 전수 검수(K1~K14 알려진 이슈 + 신규 N1~N11)를 거쳐 결함 ID 단위로 수정. A등급은 결함을 잡는 E2E 를 먼저 추가해 실패를 확인한 뒤 수정.
+
+| ID | 내용 | 전 → 후 |
+|---|---|---|
+| K1 | 첫 방문 해시 진입: Pretendard 적용으로 줄바꿈이 바뀌어 부드러운 해시 스크롤 목적지가 어긋남. `HashFontFix` 가 `document.fonts.ready` + 스크롤 정착 뒤 1회 즉시 재보정 (사용자 조작 시 생략, `/kium` 제외) | 리더십 1440 −56px · 390 +78px → ±4px 5/5 |
+| K2 | /content 640 이하 `.lg-tools` 여러 줄 flex 라 필터 칩 줄이 컨테이너를 넘음 → `flex-wrap:nowrap` | 320 문서 폭 328 → 320, 칩 줄 가로 스크롤 동작 (340~355 는 칩 줄이 8px 줄고 스크롤로 바뀜) |
+| K8 | 클릭 이동 측정을 해시 변경 직후가 아닌 스크롤 정착(연속 3프레임) 후로 | 도착 블록 = 가림 경계 + 16 (±1px) |
+| K12 | E2E 고정 대기 22곳을 상태 폴링(`tests-fi/helpers.ts`)으로, 워커 2 → 4 | 워커 4 연속 3회 통과 |
+| N1 | 바에 Tab 으로 들어간 직후 바가 숨겨지며(inert) 포커스가 body 로 사라짐 → 포커스가 바 안에 있으면 숨김 보류, 키보드로 닫으면 들어오기 전 요소로 복귀 | 포커스 사라짐 0 |
+| N2 | 카드뉴스 트랙 `ul` 의 `li` 에 `role=group` (목록 구조 깨짐) → div | axe list·aria-allowed-role 5건 → 0 |
+| K3 | 공통 푸터 `.cinfo dt`·`.copy` 흰색 불투명도 .4/.42 → .5 | 3.82·4.10 → 5.29:1 |
+| K4·K5 | 글자 전용 토큰 `--p4-text` #B4530A · `--p2-text`(D1 에서 #CC1A5B) · `--p4-text-lg` #C2610F 추가, 밝은 배경 위 **글자색만** 교체 (점·선·막대·아이콘은 `--p2`·`--p4` 그대로). 홈 P4 단계 번호 잉크 | 오렌지 글자 2.35~2.59 → 4.56~5.02:1, axe 색 대비 89건 → 0 |
+| K6·K7 | 카드뉴스 글자 하한 `max(cqw, px)` (본문 13, 최소 12), 3장 포인트 행 간격 3 → 2.8cqw (297px 미만 2.2cqw) | 320 본문 12.1 → 13px, 3장 마지막 줄 106.1 → 105.6~105.8cqw |
+| K9 | 터치 기기에서 바·카드뉴스 상담 CTA 로 상담 블록 도착 시 상담 패널 outline 2px `--p4` 1.2초 (0.3초 페이드, 레이아웃 이동 없음) | 화면 위치 단서 0 → 1 |
+| N4 | 공용 `lib/scrollMotion.moveTo`: 화면 2배 넘는 거리는 목표 0.5화면 앞까지 즉시 이동 후 남은 구간만 부드럽게 (바·goConsult 공통, `scrollToId`·`goToInquiry` 무변경) | 바 이동 1,982ms → 약 330~390ms |
+
+- 보류: N3(확대 200% 시 바 미노출, 명세 결정) · N5(바 버튼 반경·hover 통일) · K10(CTA 문구 체계) · 문의 폼 오류 문구 대비(금지 범위)
+- 검수 산출물(저장소 밖): `qa/uiux-review/0`(0단계 스크린샷 55장·측정 JSON) · `qa/uiux-review/2`(After)
+
+### 66) B안 플로팅 문의 바 (FI, 기술명세서 최종 v2.0, 2026-10-01)
+
+- 홈·AX·AI·리더십·HRD·콘텐츠에서 기준 섹션(`main section:nth-of-type(2)`·`#offer`·`#pain`·`#arch`·`#ax1`)이 화면 60% 선에 닿으면 하단 바 노출. 문의 섹션 20%·폼 박스·푸터 보임, 모달·모바일 메뉴·과정 담기 바·티저, 휴대폰 입력 중, 높이 480 미만에서 숨김. 닫기는 세션 유지(`keess_fi_dismissed`)
+- 파일: `data/floatingInquiry.ts`(페이지·구간 설정과 검증) · `lib/fi/state.ts`(순수 판정) · `lib/useFloatingInquiry.ts`(IntersectionObserver·MutationObserver·matchMedia, scroll 리스너 없음) · `lib/fi/go.ts`(이동) · `components/common/FloatingInquiry.tsx`(기능 플래그 + `next/dynamic` 지연 로드) · `FloatingInquiryBar.tsx` · `styles/floating-inquiry.css`
+- 클릭: 같은 페이지 폼으로 GNB·SubNav 보정 스크롤 후 PC 첫 입력칸 / 터치 폼 제목 포커스, 관심 영역 칩은 `data/home.ts INQ.interests` 라벨로 찾아 추가만 선택 (폼 코드 무변경). AX·AI 는 `/?interest=ax-ai#inq`. /content 는 상담 블록(`#mandatory-inquiry`), 법정 구간에서 문구·관심 영역(`compliance`) 전환
+- 보완: 경로 진입 직후·해시 스크롤 중 깜빡임 방지(관찰자 첫 콜백까지 판정 보류), 맨 위로 버튼 보정을 `translate` 로 (CLS 0), 하이드레이션 경고 0
+- `#inq` 해시 진입 GNB·SubNav 가림 보정: 홈 `body > main > #inq`, 리더십·HRD·콘텐츠 `.tint-pN #inq` 에 `scroll-margin-top` (실측 GNB 73px + SubNav 52px + 16, 전역 `scroll-padding-top` 무변경)
+- 계측: `floating_inquiry_view`(세션·페이지당 1회) · `_click`(page, zone) · `_close`, `lib/legal/track.ts`(dataLayer 있을 때만 push)
+- 단위 테스트 vitest 3.2.7 (vitest 5 는 `@types/node` 20.14 와 피어 충돌), `@axe-core/playwright` 추가
+
+### 65) 26827 법정 허브 자료 섹션 카드뉴스 고도화 (기술명세서 v1.0, 2026-10-01)
+
+- `LEGAL_CARDNEWS`(data/legal.ts) 단일 데이터: 카드·우측 목록(`title.join(' ')`·`toc`)·대체 텍스트·확대 보기 공용. `image` 를 채우면 디자이너 JPG 모드로 자동 전환
+- `CardNewsFace`: 4:5 HTML 카드 4종(opening·problem·solution·closing), 1080 원본 = 100cqw 비례 단위, 우하단 16.667cqw 비움(확대 아이콘 자리). 로고는 `CardNewsLogo` 텍스트 워드마크(CI 수령 시 이 파일만 교체)
+- Unsplash 초점 크롭(`fp`), srcset 360~1080, 실패 시 그라데이션. 휴대폰 peek 제거(360 카드 255 → 312px), 760 이하 확대 보기 화면 폭 기준
+- 4장 '도입 상담하기' CTA → `goConsult` (확정 원고 반영, 진단 섹션 참조 제거), 3장 운영 지원 원문 1줄 수용
+- 접근성·계측: 좌우 방향키 넘김, 숨긴 라이브 영역 1개로 장 위치·제목 낭독, `legal_cardnews_view`(장별 세션당 1회)·`legal_cardnews_consult`
+- 2장 사진은 타사 로고 노출로 교체(`ref/legal/ASSET_SOURCES.md`). E2E `tests-fi/cardnews.spec.ts`
 
 ### 64) /kium 마감 회차 형태 통일 — 카드 표현 일관성 마무리 (F31~F33)
 > 기준: [`ref/spec/KEESS_kium_일정박스_표현일관성_기술명세서_v1.2_260909.md`](ref/spec/KEESS_kium_일정박스_표현일관성_기술명세서_v1.2_260909.md) (v1.1 → v1.2 승계).
