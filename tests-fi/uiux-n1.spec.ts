@@ -21,7 +21,9 @@ test('N1 푸터 다음 Tab 으로 바에 들어가도 포커스 유지', async (
   await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' as ScrollBehavior }));
   await expect.poll(() => onBar(page), { message: '포커스가 바 안에 있으면 숨기지 않음' }).toBe(true);
   expect(await lost(page)).toBe(false);
-  // Tab 으로 닫기, 다시 Tab 으로 바 밖으로 나가면 그때 숨김
+  // Tab 으로 닫기, 다시 Tab 으로 바 밖(맨 위로 버튼)으로 나가면 그때 숨김.
+  // 맨 위로 버튼이 아직 표시 전이면 닫기가 문서 마지막 요소라 Tab 이 브라우저 UI 로 나간다: 표시를 먼저 기다린다
+  await expect(page.locator('.to-top.show')).toHaveCount(1);
   await page.keyboard.press('Tab');
   expect(await page.evaluate(() => document.activeElement?.className)).toBe('fi-close');
   await page.keyboard.press('Tab');
