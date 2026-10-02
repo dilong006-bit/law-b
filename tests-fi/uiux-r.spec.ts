@@ -48,6 +48,8 @@ test('R2 이미지 지연(1초) 중 goConsult(빠른 실행) 도착 위치 ±4',
   await page.route(/images\.unsplash\.com/, async (r) => { await new Promise((ok) => setTimeout(ok, 1000)); await r.continue(); });
   await page.goto('/content', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#mandatory');
+  // 하이드레이션 전 클릭은 링크 기본 이동(앵커)만 일어난다: 하이드레이션 뒤 마운트되는 바 본체를 신호로 기다린다
+  await page.waitForSelector('.fi', { state: 'attached', timeout: 20000 });
   await jumpTo(page, '#mandatory', 0.1);
   await page.locator('.lg-quick-a[data-ga-id="legal_quick_consult"]').click();
   await expect.poll(() => page.evaluate(() => document.activeElement?.id), { timeout: 8000 }).toBe('f-company');
