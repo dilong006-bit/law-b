@@ -484,6 +484,8 @@
 .cnx-body{display:block;margin-top:2.2cqw;font-size:var(--cnx-body);font-weight:400;line-height:1.5;color:var(--cnx-text)}
 .cnx-em{display:block;margin-top:3cqw;padding-left:3cqw;border-left:.74cqw solid var(--p4);font-size:var(--cnx-body);font-weight:600;line-height:1.5;color:var(--p1)}
 .cnx-points{display:flex;flex-direction:column;gap:2.8cqw;margin-top:4cqw} /* K7: 행 간격 3 → 2.8cqw, 3장 마지막 줄을 우하단 비움 경계에서 더 띄움 */
+/* K6+K7: 카드 폭 297px 미만은 글자 px 하한(K6)으로 3장 글자가 커져 마지막 줄이 내려간다. 그 폭에서만 행 간격을 줄여 106cqw 이하 유지 */
+@container (max-width:296px){.cnx-points{gap:2.2cqw}}
 .cnx-pt{display:flex;align-items:center;gap:3cqw}
 .cnx-pt-ic{flex:none;width:9cqw;height:9cqw;border-radius:50%;display:grid;place-items:center;background:rgba(46,26,107,.06);color:var(--p4)}
 .cnx-pt-ic svg{width:5cqw;height:5cqw}
