@@ -6,6 +6,7 @@ import { pretendard, gowun } from './fonts';
 import Footer from '@/components/common/Footer';
 import ToTop from '@/components/common/ToTop';
 import FloatingInquiry from '@/components/common/FloatingInquiry';
+import HashFontFix from '@/components/common/HashFontFix';
 import TeaserSnackbar from '@/components/common/TeaserSnackbar';
 
 // OG 이미지(상대경로)의 절대 URL 해석 기준. 정본 도메인 미확정이라 값을 임의로 정하지 않고,
@@ -35,6 +36,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <FloatingInquiry />
+        <HashFontFix />
         <ToTop />
         <TeaserSnackbar />
       </body>
