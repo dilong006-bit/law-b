@@ -30,6 +30,8 @@ for (const [name, opt] of [['1440', pc], ['390', touch]] as const) {
     await page.route(/images\.unsplash\.com/, async (r) => { await new Promise((ok) => setTimeout(ok, 1000)); await r.continue(); }); // 테스트 조건: 네트워크 지연
     await page.goto('/content', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#ax1');
+    // domcontentloaded 직후라 바 본체(지연 로드)가 아직 없을 수 있다: 마운트된 뒤 스크롤
+    await page.waitForSelector('.fi', { state: 'attached', timeout: 20000 });
     await jumpTo(page, '#ax1', 0.5);
     await expectBar(page, true);
     if (name === '390') await page.locator('.fi-cta').tap(); else await page.locator('.fi-cta').click();
