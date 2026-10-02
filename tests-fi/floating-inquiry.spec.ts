@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { scrollSettled } from './helpers';
 
 /**
  * 플로팅 문의 바 E2E (B안 기술명세서 최종 v2.0 §11, 프롬프트 v2.1 6-2·6-3).
@@ -223,14 +224,15 @@ for (const vp of [VPS[5], VPS[2]]) {
       if (pg.key === 'ax-ai') {
         await page.waitForURL('**/?interest=ax-ai#inq');
         await expect(page.locator('#inq .mchip', { hasText: 'AX·AI 전환' })).toHaveAttribute('aria-pressed', 'true');
-        await page.waitForTimeout(1200);
+        await scrollSettled(page);
         // 홈 #inq 로 바로 들어와도 바가 한 번도 켜지지 않아야 한다 (view 는 /ax-ai 의 1회뿐)
         const views = await page.evaluate(() => (window as unknown as { dataLayer: { event: string; page?: string }[] }).dataLayer.filter((e) => e.event === 'floating_inquiry_view').map((e) => e.page));
         expect(views).toEqual(['/ax-ai']);
       } else {
         // 이동 완료 후 replaceState 로 해시가 바뀐다 (scrollend 또는 700ms). /content 는 상담 블록
         await expect.poll(() => page.evaluate(() => location.hash), { timeout: 6000 }).toBe(pg.key === 'content' ? '#mandatory-inquiry' : '#inq');
-        await page.waitForTimeout(300);
+        // K8: 해시는 700ms 에 먼저 바뀌므로 측정은 스크롤 정착(연속 3프레임 동일) 후
+        await scrollSettled(page);
       }
       const r = await page.evaluate(() => {
         const nav = document.querySelector('header.nav')!.getBoundingClientRect().bottom;
@@ -243,6 +245,8 @@ for (const vp of [VPS[5], VPS[2]]) {
         return {
           occl: Math.max(nav, subB), titleTop: title.getBoundingClientRect().top, inqTop: inq.getBoundingClientRect().top,
           panelTop: document.querySelector('#mandatory-inquiry .lg-consult-panel')?.getBoundingClientRect().top ?? null,
+          // K8: 도착 블록 (같은 페이지 이동 대상) 상단
+          blockTop: (document.querySelector(location.pathname === '/content' ? '#mandatory-inquiry' : '#inq') as HTMLElement).getBoundingClientRect().top,
           active: a.id || a.tagName, activeInInq: inq.contains(a) || !!a.closest('.lg-inq'),
           pressed: [...document.querySelectorAll('#inq .mchip[aria-pressed="true"]')].map((e) => e.textContent?.trim()),
           events: (window as unknown as { dataLayer: { event: string; zone?: string }[] }).dataLayer.map((e) => `${e.event}${e.zone ? ':' + e.zone : ''}`),
@@ -251,6 +255,8 @@ for (const vp of [VPS[5], VPS[2]]) {
       fs.writeFileSync(path.join(QA, 'measure', `click-${pg.key}-${vp.name}.json`), JSON.stringify(r, null, 1));
       await shot(page, pg.key, vp.name, 'click-arrive');
       expect(r.titleTop, '폼 제목이 GNB·SubNav 아래').toBeGreaterThanOrEqual(r.occl);
+      // K8: 측정은 스크롤 정착 후 값이어야 한다. 정착 위치 = 가림 경계 + 16
+      if (pg.key !== 'ax-ai') expect(Math.abs(r.blockTop - (r.occl + 16)), '도착 위치 (정착 후)').toBeLessThanOrEqual(4);
       if (pg.key === 'content') {
         expect(r.pressed).toContain('콘텐츠 제작·도입');
         // 상담 패널부터 보인다: 패널 상단이 GNB·SubNav 아래
