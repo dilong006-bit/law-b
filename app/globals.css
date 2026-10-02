@@ -10,8 +10,8 @@
   --bg:#FAFAFB; --ink:#14141A; --muted:#54585f; --line:#E6E8EC; --surface:#F3F5F8;
   --p1:#2E1A6B; --p2:#E91E63; --p3:#8B27A8; --p4:#F58220; --gov:#F4B83A;
   /* 글자 전용 (UI/UX 품질검수 K4·K5): 밝은 배경 위 필러색 글자의 대비 보정. 막대·점·선·아이콘 같은 그래픽은 --p2·--p4 그대로.
-     --p2-text 4.95:1, --p4-text 4.56:1 이상 (#FEF2E9·#F7F4EF·#FAFAFB·#FFF), --p4-text-lg 는 큰 글자(3:1) 전용 */
-  --p2-text:#D81B60; --p4-text:#B4530A; --p4-text-lg:#C2610F;
+     --p2-text 4.73:1 이상 (#FCEBF2 연분홍 4.73·#FAFAFB 5.21·#FFF 5.43), --p4-text 4.56:1 이상 (#FEF2E9·#F7F4EF·#FAFAFB·#FFF), --p4-text-lg 는 큰 글자(3:1) 전용 */
+  --p2-text:#CC1A5B; --p4-text:#B4530A; --p4-text-lg:#C2610F;
   --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.2,0,0,1);
   --maxw:1200px; --gut:24px; --serif:var(--font-gowun),"Gowun Batang",serif; --r:20px;
   --shadow-1:0 1px 2px rgba(20,20,26,.05),0 2px 8px rgba(20,20,26,.05);
