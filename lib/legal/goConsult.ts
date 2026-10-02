@@ -3,7 +3,6 @@
  * 허브 안: #mandatory-inquiry 로 스크롤한 뒤 폼 첫 입력 칸에 포커스(preventScroll).
  * 허브 밖(블록이 없을 때): /content#mandatory-inquiry 로 이동 — 도착 후 포커스는 HubInquiry 해시 진입 처리.
  */
-import { cueArrive, elementTop, moveTo } from '@/lib/scrollMotion';
 
 export const CONSULT_ID = 'mandatory-inquiry';
 export const CONSULT_HASH = `#${CONSULT_ID}`;
@@ -20,10 +19,12 @@ export function consultFirstField(root: ParentNode | null = document.getElementB
 function moveToConsult(cue: boolean) {
   const el = document.getElementById(CONSULT_ID);
   if (!el) { location.href = `/content${CONSULT_HASH}`; return; }
-  moveTo(elementTop(el), () => elementTop(el)).then(() => {
-    consultFirstField(el)?.focus({ preventScroll: true });
-    if (cue) cueArrive(el.querySelector('.lg-consult-panel'));
-  });
+  // F1: 이동 모듈은 클릭 때 불러온다 (/content 첫 로드 JS 를 줄이려고). 링크 기본 이동은 onConsultClick 이 동기로 막는다
+  import('@/lib/scrollMotion').then(({ cueArrive, elementTop, moveTo }) =>
+    moveTo(elementTop(el), () => elementTop(el)).then(() => {
+      consultFirstField(el)?.focus({ preventScroll: true });
+      if (cue) cueArrive(el.querySelector('.lg-consult-panel'));
+    }));
 }
 
 /** 클릭 핸들러로 직접 넘겨도 되도록 인자 없음 (PickTray 등) */
