@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FI_CTA_MOBILE } from '@/data/floatingInquiry';
 import { goToForm } from '@/lib/fi/go';
@@ -8,6 +8,13 @@ import { resolveHref, zoneName } from '@/lib/fi/state';
 import { firstInSession, track } from '@/lib/legal/track';
 import { useFloatingInquiry } from '@/lib/useFloatingInquiry';
 import { LgIcon } from '@/components/legal-hub/icons';
+
+/**
+ * 바 안 아이콘은 props 가 같으면 다시 렌더하지 않는다 (N1).
+ * 포커스 상태가 바뀌어 바가 다시 렌더될 때 아이콘 SVG 내부가 교체되면, mousedown 이 일어난 path 가 사라져 click 이 발생하지 않는다
+ * (닫기·버튼을 눌러도 동작하지 않던 문제). 공용 LgIcon 은 서버 컴포넌트에서도 쓰여 여기서만 감싼다
+ */
+const Icon = memo(LgIcon);
 
 /** 바 노출 중 하단 스크롤 여백 (styles/floating-inquiry.css 의 html:has(body.fi-on) 값과 같음) */
 const PAD_PC = '104px';
@@ -66,7 +73,7 @@ export default function FloatingInquiryBar() {
     <>
       <span className="fi-cta-full">{copy.cta}</span>
       <span className="fi-cta-short">{FI_CTA_MOBILE}</span>
-      <LgIcon name="arrow-right" size={18} className="fi-cta-ic" />
+      <Icon name="arrow-right" size={18} className="fi-cta-ic" />
     </>
   );
 
@@ -92,7 +99,7 @@ export default function FloatingInquiryBar() {
           <a className="fi-cta" href={href} onClick={onGo} data-ga-id="floating_inquiry_click">{inner}</a>
         )}
         <button type="button" className="fi-close" onClick={onClose} aria-label="빠른 상담 바 닫기" data-ga-id="floating_inquiry_close">
-          <LgIcon name="x" size={18} />
+          <Icon name="x" size={18} />
         </button>
       </div>
     </aside>

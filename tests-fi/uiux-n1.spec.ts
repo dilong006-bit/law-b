@@ -53,6 +53,13 @@ test('N1 본문에서 문서 끝까지 Tab: 포커스 사라지는 지점 0', as
   await page.evaluate(() => document.querySelector<HTMLElement>('#arch a, #arch button')?.focus());
   const seen: string[] = [];
   for (let i = 0; i < 160; i++) {
+    // 문서의 마지막 포커스 가능 요소에서 누르는 Tab 은 브라우저 UI 로 나간다 (headless 에서는 body). 거기서 멈춘다
+    const atEnd = await page.evaluate(() => {
+      const tabbable = [...document.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]')]
+        .filter((e) => e.tabIndex >= 0 && !(e as HTMLButtonElement).disabled && !e.closest('[inert]') && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden');
+      return tabbable[tabbable.length - 1] === document.activeElement;
+    });
+    if (atEnd) break;
     await page.keyboard.press('Tab');
     const s = await page.evaluate(() => ({ body: document.activeElement === document.body, inert: !!document.activeElement?.closest('[inert]'), cls: String((document.activeElement as HTMLElement)?.className ?? '') }));
     expect(s.body || s.inert, `Tab ${i + 1}번째에서 포커스 사라짐`).toBe(false);
