@@ -11,6 +11,7 @@ const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home
  * 진입 시 해시 대상이 있을 때만, 웹폰트 적용과 스크롤 정착을 기다린 뒤 한 번만 즉시(auto) 재보정한다.
  * 그 사이 사용자가 휠·터치·키보드로 직접 스크롤했으면 하지 않는다. scroll-margin·scroll-padding 은 scrollIntoView 가 그대로 반영한다.
  * 플로팅 바 이동(lib/fi/go.ts)은 클릭 뒤 동작이라 첫 진입 1회인 이 보정과 겹치지 않는다.
+ * 앱 최초 마운트 1회만 동작한다 (layout 에 있어 클라이언트 이동으로 해시에 들어가면 다시 동작하지 않음). 그때는 폰트가 이미 적용돼 있어 어긋나지 않는다 (R4).
  * /kium 은 자체 상담 진입 앵커 처리가 있어 제외한다. 재보정을 실제로 했으면 html[data-hash-fix="applied"] 표식(검수용).
  */
 const EXCLUDE = /^\/kium(\/|$)/;
