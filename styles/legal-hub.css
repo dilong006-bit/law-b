@@ -76,7 +76,8 @@
 
 /* ── LB21 허브 헤더 · 빠른 실행 ─────────────────────────────────────── */
 .lg-head .lg-row{margin-top:var(--lg-gap-head)}
-.lg-quick ul{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--lg-gap-card)}
+/* upgrade-04 D29: 열 수는 항목 수(--lg-n, QuickActions 인라인). 지표 비표시(no-stats)면 nav 가 lg-c6 → 1041 이상 6열 폭, 880 이하 전폭 */
+.lg-quick ul{list-style:none;display:grid;grid-template-columns:repeat(var(--lg-n,3),minmax(0,1fr));gap:var(--lg-gap-card)}
 .lg-quick-a{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;text-align:center;word-break:keep-all}
 .lg-quick-a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 /* 빠른 실행 칸이 스트립 높이로 늘어나면 버튼 줄은 세로 가운데 (upgrade-03 D25) */
@@ -120,16 +121,8 @@
 @media(prefers-reduced-motion:reduce){.lg-rchip.is-new{animation:none}.lg-chip span{transition:none}}
 
 /* ── LB6 과정 라인업 ────────────────────────────────────────────────── */
-.lg-tools{display:flex;align-items:center;justify-content:space-between;gap:12px 16px;flex-wrap:wrap}
-/* 필터 칩 행 — .subnav-in(가로 스크롤·엣지 페이드) 재사용, 칩은 진단과 같은 .lg-chip */
-.lg-filter-in{height:auto;gap:8px;padding:4px;margin:0 -4px;min-width:0}
-.lg-filter-in .lg-chip{flex:none;scroll-snap-align:start}
-.lg-filter-in .lg-chip span{white-space:nowrap}
-.lg-addmand{min-height:44px;flex:none}
-/* K2: 640 이하 세로 배치는 한 줄 flex 로 둔다. 여러 줄(wrap)이면 stretch 기준이 칩 내용 폭이 되어 필터 칩 줄이 컨테이너를 넘고 가로 스크롤이 동작하지 않는다 */
-@media(max-width:640px){.lg-tools{flex-direction:column;flex-wrap:nowrap;align-items:stretch}.lg-addmand{width:100%}}
-
-.lg-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--lg-gap-card);margin-top:20px}
+/* upgrade-04 LB50: 구분 필터·'한 번에 담기' 도구 줄(.lg-tools) 삭제 → 그리드가 BlockHead 바로 아래 (간격은 다른 블록과 같은 --lg-gap-head 하나) */
+.lg-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--lg-gap-card)}
 @media(max-width:1040px){.lg-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:880px){.lg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* 맞춤 구성 상담 타일 (upgrade-01 LB23): 마지막 행을 채운다. span 은 인라인 style(grid-column) */
@@ -349,8 +342,11 @@
 .lg-photo{position:relative;overflow:hidden;background:var(--surface)}
 .lg-photo img{display:block;width:100%;height:100%;object-fit:cover}
 
-/* ── LB24 KG에듀원 차이 카드 3장 (4+4+4, peer) + 비교표 펼치기 ─────────── */
-.lg-diff-h{margin:var(--lg-gap-head) 0 var(--lg-gap-card)}
+/* ── LB24 KG에듀원 차이 카드 (peer) + 비교표 펼치기 ─────────────────── */
+/* upgrade-04 LB51·D30: 독립 블록(#mandatory-diff, BlockHead 가 소제목 대체). 카드 2장 c6: 641 이상 2열, 640 이하 1열.
+   880 이하 c6 전폭 규칙(.lg-row>.lg-c6)의 예외는 .lg-diffc 범위로 한정 */
+@media(max-width:880px){.lg-diffc>.lg-c6{grid-column:span 6}}
+@media(max-width:640px){.lg-diffc>.lg-c6{grid-column:span 12}}
 .lg-diffcard{padding:24px;gap:10px}
 .lg-diffcard-t{margin-top:6px;font-size:17px;font-weight:800;line-height:1.4;word-break:keep-all}
 .lg-diffcard-d{font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
@@ -387,7 +383,8 @@
 .lg-diff-m .own dd{font-weight:800}
 
 /* ── LB35 도입 절차 4단계 (peer, 숫자 없음) ─────────────────────────── */
-.lg-steps{list-style:none;padding:0;margin:0}
+/* upgrade-04 D31: 확정 원고 설명이 길어 2×2(561~880)에서 행마다 줄 수가 달라진다 → 행 높이를 모두 같게(4장 높이 동일) */
+.lg-steps{list-style:none;padding:0;margin:0;grid-auto-rows:1fr}
 .lg-step{position:relative;padding:24px;gap:8px}
 .lg-step-label{margin-top:8px;font-size:17px;font-weight:800;line-height:1.4}
 .lg-step-desc{font-size:14px;color:var(--muted);line-height:1.6;word-break:keep-all}
@@ -520,7 +517,6 @@
 .lg-brochure-title{font-size:16px;font-weight:800;line-height:1.4;word-break:keep-all}
 .lg-brochure-inc{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
 .lg-brochure-inc li{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 10px;border-radius:999px;background:var(--surface);font-size:13px;font-weight:600}
-.lg-brochure-meta{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .lg-brochure-body>.lg-box-foot{margin-top:4px}
 .lg-brochure-cta{min-height:48px;padding:0 22px;font-size:15px}
 .lg-brochure-cta:focus-visible{outline:2px solid var(--ink);outline-offset:3px}

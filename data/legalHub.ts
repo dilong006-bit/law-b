@@ -11,11 +11,12 @@ export const HUB_COPY = {
   heroSlide: {
     tag: '2026 법정필수교육',
     title: ['올해 법정교육,', '한 곳에서 준비하세요'],
-    desc: '성희롱 예방부터 자금세탁방지까지 2026년 최신 7개 과정. 필요한 과정 확인부터 도입 상담까지 함께합니다.',
+    desc: '성희롱 예방부터 자금세탁방지까지 2026년 최신 대표 과정. 필요한 과정 확인부터 도입 상담까지 함께합니다.',
     primary: { label: '과정 보기', href: '/content#mandatory', gaId: 'home_hero_legal_courses' },
     secondary: { label: '빠른 상담', href: '/content#mandatory-inquiry', gaId: 'home_hero_legal_consult' },
     sub: { label: '과정소개서 받기', href: '/content#mandatory-resources', gaId: 'home_hero_legal_brochure' },
-    trust: '7개 과정 · 매년 자체 제작 · 전담 운영자 배정',
+    // upgrade-04 LB56: 과정 수 비노출 (#64·#70)
+    trust: '대표 과정 · 매년 자체 제작 · 전담 운영자 배정',
     image: {
       src: 'https://images.unsplash.com/photo-1663524789611-2c8330848379?q=80&w=2000&auto=format&fit=crop',
       srcMobile: 'https://images.unsplash.com/photo-1663524789611-2c8330848379?q=80&w=1080&h=1350&auto=format&fit=crop',
@@ -26,8 +27,10 @@ export const HUB_COPY = {
     kicker: 'Compliance',
     title: ['필수 기준은 정확하게, 콘텐츠는 ', '매년 새롭게'],
     // upgrade-01 LB21: 리드 교체, season·tabs 제거 → 빠른 실행 3개
-    // upgrade-03 LB46: 리드 다이어트(TECHSPEC §5-3 초안), '7개 과정'은 수치 스트립이 대신
+    // upgrade-03 LB46: 리드 다이어트(TECHSPEC §5-3 초안)
     lead: '과정 확인부터 상담까지 한 곳에서',
+    // upgrade-04 LB49 (요청자 확정 Q2): 지표 스트립 전체 비표시. stats 배열은 보존 (true 면 기존 스트립)
+    statsShow: false,
     // upgrade-03 LB45 수치 스트립 (사실 확인 값만: 과정 7 · 진단 3문항 · 도입 4단계 · 영업일 1일 내 연락 = 빠른 상담 약속과 같은 근거)
     stats: [
       { num: '7', label: '과정' },
@@ -35,13 +38,16 @@ export const HUB_COPY = {
       { num: '4', label: '단계 도입' },
       { num: '1일', label: '내 연락' },
     ],
+    // upgrade-04 D28: needs 'diagnose' 항목은 diagnose.show 가 false 면 걸러진다 (hubOn)
     quick: [
-      { label: '필요 과정 찾기', href: '#mandatory-diagnose', gaId: 'legal_quick_find' },
+      { label: '필요 과정 찾기', href: '#mandatory-diagnose', gaId: 'legal_quick_find', needs: 'diagnose' },
       { label: '과정 보기', href: '#mandatory-courses', gaId: 'legal_quick_courses' },
       { label: '빠른 상담', href: '#mandatory-inquiry', gaId: 'legal_quick_consult', consult: true },
     ],
   },
   diagnose: {
+    // upgrade-04 LB48 (#63, D27): 법무 검수 전 규칙이라 블록 비표시. 코드·규칙·데이터 보존, 차년도 보완 후 true
+    show: false,
     // upgrade-01 LB22: kicker·sub·defaultNote 추가, empty 제거(결과 패널은 처음부터 공통 추천)
     kicker: '필요 과정 찾기',
     title: '우리 회사에 필요한 과정 찾기',
@@ -65,7 +71,7 @@ export const HUB_COPY = {
   lineup: {
     // upgrade-01 LB23: kicker·sub·customTile·detailConsult 추가, 제목 교체
     kicker: '과정 라인업',
-    title: '2026 법정필수교육 7개 과정',
+    title: '2026 법정필수교육 대표 과정', // upgrade-04 LB50 (#64)
     sub: '담은 과정은 상담에 그대로 전달됩니다', // upgrade-03 LB46 §5-3 초안
     customTile: {
       title: '찾는 과정이 없나요?',
@@ -74,8 +80,7 @@ export const HUB_COPY = {
       icon: 'puzzle' as LgIconName, // upgrade-03 LB42 아이콘 타일
     },
     detailConsult: '이 과정으로 상담',
-    filters: [['all','전체'],['mandatory','법정 의무'],['recommended','권고'],['industry','업종별']],
-    addMandatory: '법정 의무 과정 한 번에 담기',
+    // upgrade-04 LB50 (#65, Q4): 구분 필터·'법정 의무 과정 한 번에 담기' 삭제. 카드 구분 배지는 유지 (Q5)
     kindLabel: { mandatory: '법정 의무', recommended: '권고', industry: '업종별' },
     // upgrade-03 D22: 구분 배지 아이콘 (의무 shield-check / 권고 lightbulb / 업종별 briefcase)
     kindIcons: { mandatory: 'shield-check', recommended: 'lightbulb', industry: 'briefcase' } as Record<'mandatory' | 'recommended' | 'industry', LgIconName>,
@@ -91,6 +96,8 @@ export const HUB_COPY = {
     prev: '이전 과정', next: '다음 과정', close: '닫기',
   },
   law: {
+    // upgrade-04 LB51 (#71, D27): 이번 배포 제외. 표·데이터 보존, 4종 세트·과태료 원고 수령 후 재구성 (Q7)
+    show: false,
     // upgrade-01 LB24: BlockHead kicker·제목 (표 데이터·기준일·출처·안내 문구는 v1.0 그대로)
     kicker: '법정 기준',
     title: '교육별 법적 근거와 대상',
@@ -102,7 +109,9 @@ export const HUB_COPY = {
   },
   // upgrade-01 LB24: 운영 지원·차별점 독립 블록을 차이 카드 3장으로 흡수. 운영 항목은 확인된 2개만
   // current: 기존 ax5 타임라인의 현재 시리즈 표기 그대로
+  // upgrade-04 LB51: 법정 기준 블록 안 소제목에서 독립 블록(#mandatory-diff)으로 승격, '전담 운영 지원' 카드 삭제 (#66)
   diff: {
+    kicker: '차별점',
     title: 'KG에듀원 법정교육이 다른 점',
     current: '현재 시리즈',
     // upgrade-03 LB43: 비교표 행 라벨 아이콘(AX5.diff 행 순서) · KG 열 표시
@@ -112,20 +121,19 @@ export const HUB_COPY = {
       // upgrade-03 LB46: 설명에서 제목 반복 제거 (매년 새로 제작 / 이야기)
       { key: 'series', title: '매년 새로운 시리즈', desc: '반복 수강의 지루함을 줄입니다.' },
       { key: 'story', title: '몰입형 스토리 콘텐츠', desc: '법정 필수 내용을 자연스럽게 익힙니다.', more: '비교표 보기', less: '비교표 닫기' },
-      { key: 'ops', title: '전담 운영 지원', items: ['전담 운영자 정·부 2명 지정', '월 1회 이상 방문 관리'] },
     ],
   },
   // upgrade-01 LB25 + upgrade-02 LB35: 도입 절차 독립 블록
   process: {
     id: 'mandatory-process',
     kicker: '도입 절차',
-    title: '신청부터 운영까지 4단계',
+    title: '신청부터 수료까지 4단계', // upgrade-04 LB52 (Q1)
     steps: [
-      // upgrade-03 LB46: 설명 20자 이내로 단축(사실 범위 유지). 10/1 미팅에서 최종 확정
-      { key: 'pick', label: '과정 선택', desc: '진단·과정 카드에서 과정을 담습니다' },
-      { key: 'apply', label: '상담 신청', desc: '담은 과정으로 상담을 신청합니다' },
-      { key: 'fix', label: '구성 확정', desc: '인원·일정·운영 방식을 함께 정합니다' },
-      { key: 'run', label: '교육 운영', desc: '전담 운영자가 운영을 지원합니다' },
+      // upgrade-04 LB52 (#67): 확정 원고 그대로 (마침표 포함, 수정 금지). D31: upgrade-03 '20자 이내' 규칙은 이 블록 해제
+      { key: 'select', label: '과정 선택 및 신청', desc: '우리 회사에 꼭 필요한 법정교육 과정을 골라 간편하게 신청합니다.' },
+      { key: 'confirm', label: '맞춤 구성 확정', desc: '우리 회사에 꼭 맞는 필수 과정이 맞는지 꼼꼼히 점검하고 일정·인원을 확정합니다.' },
+      { key: 'operate', label: '교육 운영 및 독려', desc: '전담 운영자가 학습 독려부터 진행 상황까지 밀착 관리합니다.' },
+      { key: 'complete', label: '손쉬운 수료 완료', desc: '번거로운 후속 절차 없이 간편하게 수료증까지 발급받습니다.' },
     ],
     cta: { label: '빠른 상담 신청', gaId: 'legal_process_consult' },
   },
@@ -146,7 +154,7 @@ export const HUB_COPY = {
     brochure: {
       title: '2026 법정필수교육 과정소개서',
       includes: ['과정 구성', '학습 목표', '강사 정보'],
-      meta: 'PDF · 7개 과정',
+      // upgrade-04 LB53 (#70): 메타 줄(PDF · 과정 수) 삭제
       cta: '과정소개서 받기',
       next: '담은 과정으로 빠른 상담하기',
       cover: { src: '/images/legal/brochure-cover.jpg', alt: '2026 법정필수교육 과정소개서 표지' },
@@ -163,9 +171,13 @@ export const HUB_COPY = {
     ],
     pickedTitle: (n: number) => `담은 과정 ${n}개`,
     // upgrade-03 LB46: 빈 상태 문구 삭제 — '담은 과정 0개' 제목과 같은 뜻
-    addCommon: '공통 추천 4과정 담기',
+    // upgrade-04 LB56: 진단 비표시로 '공통 추천' 맥락이 사라져 대표 과정으로 이동하는 링크로 교체
+    browse: { label: '과정 둘러보기', href: '#mandatory-courses', gaId: 'legal_consult_browse' },
     remove: '빼기',
     photo: { src: 'https://images.unsplash.com/photo-1668092548064-730e05fd0324', alt: '' },
   },
   tray: { count: (n: number) => `선택 과정 ${n}개`, more: (n: number) => `외 ${n}`, cta: '빠른 상담', listTitle: '선택한 과정', remove: '빼기' },
 } as const;
+
+/** upgrade-04 D28: 플래그 의존 요소 표식(needs) 필터. 표식이 없거나 진단 블록이 켜져 있으면 노출 */
+export const hubOn = (x: object) => !('needs' in x) || (x.needs === 'diagnose' && HUB_COPY.diagnose.show);

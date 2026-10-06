@@ -2,12 +2,13 @@
 
 import { HUB_COPY } from '@/data/legalHub';
 import { CONSULT_HASH, onConsultClick } from '@/lib/legal/goConsult';
-import type { LgIconName } from '@/lib/legal/iconData';
+import { COMPLETE_ICON, type LgIconName } from '@/lib/legal/iconData';
 import BlockHead from './BlockHead';
 import { LgIcon } from './icons';
 
 const P = HUB_COPY.process;
-const ICON: Record<string, LgIconName> = { pick: 'list-checks', apply: 'message-square-text', fix: 'calendar-check', run: 'monitor-play' };
+/** upgrade-04 LB52: 신청 → 구성 확정 → 운영·독려 → 수료. 수료 아이콘은 후보 중 선택 결과(COMPLETE_ICON) */
+const ICON: Record<string, LgIconName> = { select: 'list-checks', confirm: 'calendar-check', operate: 'monitor-play', complete: COMPLETE_ICON };
 
 /**
  * 도입 절차 독립 블록 (legal-B upgrade-02 LB35, upgrade-01 LB25).

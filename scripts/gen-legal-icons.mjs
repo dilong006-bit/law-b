@@ -36,6 +36,12 @@ for (const [id, cands] of Object.entries(COURSE_ICON_CANDIDATES)) {
   if (!NAMES.includes(hit)) NAMES.push(hit);
 }
 
+// upgrade-04 LB52: 도입 절차 4단계 '손쉬운 수료 완료' 아이콘. 후보 순서대로 Lucide 에 있는 첫 이름 (TECHSPEC upgrade-04 §6)
+const COMPLETE_ICON_CANDIDATES = ['award', 'badge-check', 'graduation-cap'];
+const COMPLETE_ICON = COMPLETE_ICON_CANDIDATES.find((n) => getIconData(icons, n));
+if (!COMPLETE_ICON) throw new Error(`수료 아이콘: 후보가 lucide 에 모두 없음 (${COMPLETE_ICON_CANDIDATES.join(', ')})`);
+if (!NAMES.includes(COMPLETE_ICON)) NAMES.push(COMPLETE_ICON);
+
 const out = {};
 for (const n of NAMES) {
   const data = getIconData(icons, n);
@@ -53,6 +59,8 @@ export const LG_ICONS = ${JSON.stringify(out, null, 2)} as const;
 export type LgIconName = keyof typeof LG_ICONS;
 /** 과정 id → 아이덴티티 아이콘 (후보 중 선택 결과) */
 export const COURSE_ICON = ${JSON.stringify(COURSE_ICON, null, 2)} as const;
+/** 도입 절차 수료 단계 아이콘 (후보 중 선택 결과) */
+export const COMPLETE_ICON = ${JSON.stringify(COMPLETE_ICON)} as const;
 `,
 );
-console.log(`lib/legal/iconData.ts: ${NAMES.length}개 (lucide ${ver})`, COURSE_ICON);
+console.log(`lib/legal/iconData.ts: ${NAMES.length}개 (lucide ${ver})`, COURSE_ICON, { complete: COMPLETE_ICON });

@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { LEGAL_COURSES, type LegalCourse, type LegalCourseId, type LegalKind } from '@/data/legal';
+import { LEGAL_COURSES, type LegalCourse, type LegalCourseId } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import { goConsult } from '@/lib/legal/goConsult';
 import { usePick } from '@/lib/legal/pick';
@@ -12,10 +12,8 @@ import CourseDetail from './CourseDetail';
 import CustomTile from './CustomTile';
 import BlockHead from './BlockHead';
 import { LgIcon } from './icons';
-import { useEdgeFade } from './useEdgeFade';
 
 const L = HUB_COPY.lineup;
-type Filter = 'all' | LegalKind;
 
 /** 760 이하 = 바텀시트, 그 위는 행 아래 인라인 상세. 열 수는 그리드 CSS 와 같은 기준(1040/880/560) */
 const SHEET_MQ = '(max-width:760px)';
@@ -25,25 +23,21 @@ const SLOT_MS = 280;
 /** 상세를 끌어올릴 때 고정 헤더(nav+SubNav) 아래 여백 */
 const REVEAL_GAP = 16;
 
-const MANDATORY_IDS: LegalCourseId[] = LEGAL_COURSES.filter((c) => c.kind === 'mandatory').map((c) => c.id);
-
 /**
- * 과정 라인업 + 상세 (legal-B LB6·LB7).
+ * 과정 라인업 + 상세 (legal-B LB6·LB7). upgrade-04 LB50: 구분 필터·'한 번에 담기' 도구 줄 삭제, 제목 아래 바로 그리드.
  * 상세는 /kium 과정 그리드 방식: 열린 카드가 속한 행 뒤에 전체 폭 행을 끼우고(761 이상),
  * 760 이하에서는 body 로 포털한 바텀시트(useModal: 포커스 트랩·ESC·스크롤 잠금·포커스 복귀)로 연다.
  */
 export default function CourseLineup() {
   const pick = usePick();
-  const [filter, setFilter] = useState<Filter>('all');
   const [openId, setOpenId] = useState<LegalCourseId | null>(null);
   const [cols, setCols] = useState(4);
   const [sheet, setSheet] = useState(false);
   const [slotOpen, setSlotOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const filterRef = useEdgeFade<HTMLDivElement>();
   const skipScroll = useRef(false);
 
-  const visible = filter === 'all' ? LEGAL_COURSES : LEGAL_COURSES.filter((c) => c.kind === filter);
+  const visible = LEGAL_COURSES;
   const openCourse = visible.find((c) => c.id === openId) ?? null;
   const openIndex = openCourse ? visible.indexOf(openCourse) : -1;
   const prev = openIndex > 0 ? visible[openIndex - 1] : null;
@@ -90,7 +84,6 @@ export default function CourseLineup() {
     setOpenId(null);
     requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(`[aria-controls="lg-detail-${id}"].lg-card-title`)?.focus());
   };
-  const changeFilter = (f: Filter) => { setFilter(f); setOpenId(null); };
 
   /** 빠른 상담으로 이동 + 폼 첫 칸 포커스 (goConsult). 시트에서는 닫힘·스크롤 복원이 끝난 뒤 이동한다 */
   const toInquiry = goConsult;
@@ -105,7 +98,7 @@ export default function CourseLineup() {
   const dragY = useRef<number | null>(null);
 
   // 행 뒤 삽입 위치: 열린 카드가 속한 행의 마지막 카드 인덱스
-  // 맞춤 구성 상담 타일 칸 수 — 마지막 행을 꽉 채운다(필터·열 수가 바뀌면 다시 계산)
+  // 맞춤 구성 상담 타일 칸 수: 마지막 행을 꽉 채운다(열 수가 바뀌면 다시 계산)
   const rem = visible.length % cols;
   const tileSpan = rem === 0 ? cols : cols - rem;
 
@@ -116,17 +109,6 @@ export default function CourseLineup() {
   return (
     <div className="lg-block lg-anchor" id="mandatory-courses">
       <BlockHead kicker={L.kicker} title={L.title} lead={L.sub} />
-      <div className="lg-tools">
-        <div className="subnav-in lg-filter-in" ref={filterRef} data-fade="none" role="radiogroup" aria-label={L.title}>
-          {L.filters.map(([v, label]) => (
-            <label className="lg-chip" key={v}>
-              <input className="lg-sr" type="radio" name="lg-lineup-filter" value={v} checked={filter === v} onChange={() => changeFilter(v as Filter)} />
-              <span>{label}</span>
-            </label>
-          ))}
-        </div>
-        <button type="button" className="btn btn-line-dark lg-addmand" onClick={() => pick.addMany(MANDATORY_IDS)}>{L.addMandatory}</button>
-      </div>
       {/* upgrade-03 LB46: 맛보기 새 창 안내 문구 삭제 — 링크의 새 창 아이콘·aria-label(새 창)과 같은 뜻 */}
 
       <div className="lg-grid">

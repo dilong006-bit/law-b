@@ -20,8 +20,9 @@ function PickAnnouncer() {
 
 /**
  * /content#mandatory 법정 허브 (legal-B §6-2). 기존 #ax5 섹션 자리를 대체한다.
- * 블록 순서(upgrade-03 §3): 헤더·빠른 실행 → 진단 → 과정 7 + 맞춤 타일 → 법정 기준·차이 → 도입 절차
- * → 자료(카드뉴스 스토리·소개서) → (FAQ 비표시) → 빠른 상담(요약 패널 + 짧은 폼). 선택 바(LB28)는 공통.
+ * 블록 순서(upgrade-04 §2): 헤더 → 대표 과정 → 차별점 → 도입 절차 → 자료(카드뉴스 스토리·소개서)
+ * → (FAQ 비표시) → 빠른 상담(요약 패널 + 짧은 폼). 선택 바(LB28)는 공통.
+ * 진단(diagnose.show)·법정 기준(law.show)은 플래그 비표시 (D27, 코드·데이터 보존).
  */
 export default function LegalHub() {
   return (
@@ -31,7 +32,8 @@ export default function LegalHub() {
       <PickProvider>
         <div className="wrap">
           <HubHead />
-          <Diagnose />
+          {/* upgrade-04 LB48 (#63): 진단 블록 비표시. 차년도 보완 후 diagnose.show=true 로 복원 */}
+          {HUB_COPY.diagnose.show && <Diagnose />}
           <CourseLineup />
           <StandardAndDiff />
           <Process />

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { courseById } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
-import { COMMON_PICK } from '@/lib/legal/diagnose';
 import type { LgIconName } from '@/lib/legal/iconData';
 import { usePick } from '@/lib/legal/pick';
 import { CourseIcon } from './CourseIcon';
@@ -18,9 +17,10 @@ const STICKY_ROOM = 160;
  * 빠른 상담 요약 패널 (legal-B upgrade-02 LB34, TECHSPEC §8).
  * 다크 면(허브 유일) + 장식 사진·오버레이, 안쪽 내용은 1041 이상에서 sticky — 긴 폼을 내리는 동안 담은 과정 요약이 보인다.
  * 담은 과정은 폼 희망과정·카드·선택 바와 같은 선택 상태(usePick). 880 이하는 사진·약속을 숨긴 요약 바.
+ * upgrade-04 LB56: 빈 상태는 '과정 둘러보기' 링크 (대표 과정으로 이동, 움직임 줄이기면 즉시, globals.css 규칙)
  */
 export default function ConsultSummary() {
-  const { picked, remove, addMany } = usePick();
+  const { picked, remove } = usePick();
   const inner = useRef<HTMLDivElement | null>(null);
   const [noSticky, setNoSticky] = useState(false);
 
@@ -72,9 +72,9 @@ export default function ConsultSummary() {
             </ul>
           ) : (
             <div className="lg-consult-empty">
-              <button type="button" className="btn btn-glass lg-consult-add" onClick={() => addMany([...COMMON_PICK])} data-ga-id="legal_consult_add_common">
-                <LgIcon name="plus" size={16} /> {I.addCommon}
-              </button>
+              <a className="btn btn-glass lg-consult-add" href={I.browse.href} data-ga-id={I.browse.gaId}>
+                <LgIcon name="layout-grid" size={16} /> {I.browse.label}
+              </a>
             </div>
           )}
         </section>

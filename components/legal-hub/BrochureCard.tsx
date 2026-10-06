@@ -12,7 +12,7 @@ const B = HUB_COPY.resources.brochure;
 /**
  * 과정소개서 컴팩트 카드 (legal-B upgrade-02 LB33, TECHSPEC §6). 자료 블록 유일 1차 버튼.
  * 게이트 모달·자동 채움·성공 화면 후속 링크는 기존 ContentModals 옵션(onLeadSubmitted, next) 재사용.
- * 표지는 소개서 PDF 1쪽 렌더(가로 16:9 원본 비율 그대로).
+ * 표지는 소개서 PDF 1쪽 렌더(가로 16:9 원본 비율 그대로). upgrade-04 LB53: 메타 줄 삭제 → 제목 / 포함 칩 3 / 다운로드 버튼.
  */
 export default function BrochureCard() {
   const { openDownload } = useContentModal();
@@ -30,7 +30,6 @@ export default function BrochureCard() {
         <ul className="lg-brochure-inc">
           {B.includes.map((t) => <li key={t}><LgIcon name="check" size={16} /> {t}</li>)}
         </ul>
-        <div className="lg-brochure-meta"><LgIcon name="file-text" size={16} /> {B.meta}</div>
         <div className="lg-box-foot">
           <button type="button" className="btn btn-ink lg-brochure-cta" onClick={open} data-ga-id="legal_brochure_open">
             <LgIcon name="download" size={18} /> {B.cta}

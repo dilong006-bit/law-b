@@ -50,7 +50,7 @@ export const FLOATING_INQUIRY: readonly FiPage[] = [
     copy: { accent: 'p4', title: '필요한 교육 콘텐츠, 맞춤 구성으로 제안해 드립니다',
       sub: '직무부터 법정필수까지 한 번에 상담하세요', short: '콘텐츠 도입 상담', cta: '상담 신청', interest: 'content' },
     zones: [{ selector: '#mandatory', copy: { accent: 'p4', title: '올해 법정교육, 필요한 과정부터 확인해 드립니다',
-      sub: '진단 결과나 담은 과정으로 바로 문의할 수 있습니다', short: '법정교육 상담', cta: '상담 신청', interest: 'compliance' } }] },
+      sub: '담은 과정으로 바로 문의할 수 있습니다', short: '법정교육 상담', cta: '상담 신청', interest: 'compliance' } }] },
 ];
 
 /** 설정 검증: 문제 목록 반환 (빈 배열이면 통과). 단위 테스트와 개발 모드 로드 시 함께 쓴다 */
