@@ -52,7 +52,11 @@ export function PickProvider({ children }: { children: React.ReactNode }) {
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : normalizePicked([...p, id]))), []);
   const addMany = useCallback((ids: LegalCourseId[]) => setPicked((p) => unionPicked(p, ids)), []);
   const remove = useCallback((id: LegalCourseId) => setPicked((p) => p.filter((x) => x !== id)), []);
-  const setFromOptions = useCallback((options: string[]) => setPicked(idsFromOptions(options)), []);
+  // upgrade-04 LB55: 결과가 기존과 같으면 이전 배열을 그대로 둔다 (불필요한 재렌더·폼 동기화 이펙트 차단)
+  const setFromOptions = useCallback((options: string[]) => setPicked((p) => {
+    const next = idsFromOptions(options);
+    return next.length === p.length && next.every((id, i) => id === p[i]) ? p : next;
+  }), []);
   const setPrefill = useCallback((p: Prefill) => setPrefillState({ ...p }), []);
 
   const value = useMemo<PickCtx>(() => ({

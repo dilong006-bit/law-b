@@ -18,6 +18,8 @@
 .lg-course-field input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--ink)}
 /* '기타'는 체크박스 오른쪽에 입력칸이 붙는다. 560 이하에서는 아래로 내려가 전체 폭을 쓴다. */
 .lg-course-etc{flex-wrap:wrap}
+/* upgrade-04 D36: 법정 8개 2열 × 4행 뒤 '기타'는 전폭 1행 (직접 입력칸 폭 확보). 560 이하 1열 규칙은 그대로 */
+.lg-course-field .lg-course-etc{grid-column:1 / -1}
 .lg-etc-input{flex:1 1 180px;min-width:0;font-size:16px;padding:10px 12px;border:1px solid var(--line);
   border-radius:12px;background:#fff;color:var(--ink)}
 .lg-etc-input:focus-visible{outline:2px solid var(--ink);outline-offset:1px}

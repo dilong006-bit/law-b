@@ -111,10 +111,13 @@ export const previewUrl = (classkey: string) =>
 export const lawOf = (key: string | null) => (key ? AX5.laws.find((l) => l.h3 === key) ?? null : null);
 
 // 희망과정 옵션 표시 순서 (PC 2열 가로 읽기 순서)
+// upgrade-04 LB55 (#68): '산업안전보건교육' 은 자체 콘텐츠 없이 수요만 받는 옵션 (법정 과목 마지막, '기타' 앞). LEGAL_COURSES 불변
 export const LEGAL_COURSE_OPTIONS = [
   '직장 내 괴롭힘 예방 교육', '장애인 인식개선 교육', '성희롱 예방 교육', '윤리경영 교육',
-  '퇴직연금 가입자 교육', '개인정보보호 및 정보보안 교육', '자금세탁방지 교육',
+  '퇴직연금 가입자 교육', '개인정보보호 및 정보보안 교육', '자금세탁방지 교육', '산업안전보건교육',
 ] as const;
+/** 과정 카드와 연결되는 옵션 (담은 과정 동기화 대상, D35). 산업안전보건교육은 콘텐츠가 없어 제외 */
+export const LEGAL_SYNC_OPTIONS: readonly string[] = LEGAL_COURSES.map((c) => c.option);
 export const LEGAL_ETC_MAX = 50;
 
 // 카피 상수 (확정본, 변경 금지)

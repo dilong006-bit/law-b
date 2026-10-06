@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import HomeInquiry from '@/components/sections/home/HomeInquiry';
-import { LEGAL_COPY, LEGAL_COURSE_OPTIONS, LEGAL_ETC_MAX } from '@/data/legal';
+import { LEGAL_COPY, LEGAL_COURSE_OPTIONS, LEGAL_ETC_MAX, LEGAL_SYNC_OPTIONS } from '@/data/legal';
 import { HUB_COPY } from '@/data/legalHub';
 import type { CourseFieldConfig } from '@/lib/legal/courseField';
 import { CONSULT_HASH, CONSULT_ID, consultFirstField } from '@/lib/legal/goConsult';
@@ -19,10 +19,13 @@ const COURSE_FIELD: CourseFieldConfig = {
   etcMax: LEGAL_ETC_MAX,
   errRequired: LEGAL_COPY.inquiry.errRequired,
   errEtc: LEGAL_COPY.inquiry.errEtc,
+  // upgrade-04 D35: 담은 과정 동기화는 과정 카드와 연결된 옵션만. 산업안전보건교육 체크는 보존
+  syncOptions: LEGAL_SYNC_OPTIONS,
 };
 const PRESET = ['compliance'];
-/** 짧은 폼 비표시 필드 (upgrade-01 §6-7) — payload 키는 기본값으로 유지 */
-const HIDDEN = ['companySize', 'trainees', 'attachment'] as const;
+/** 짧은 폼 비표시 필드 (upgrade-01 §6-7). payload 키는 기본값으로 유지
+ *  upgrade-04 LB54: 예상 교육인원은 필수 슬롯(연락처 옆)으로 옮겨 노출, 회사 규모·첨부만 숨김 */
+const HIDDEN = ['companySize', 'attachment'] as const;
 const I = HUB_COPY.inquiry;
 
 /**
@@ -53,6 +56,7 @@ export default function HubInquiry() {
             leadSource="content-legal"
             courseField={COURSE_FIELD}
             hiddenFields={HIDDEN}
+            requiredSlot="trainees"
             messageRows={2}
             submitGaId="legal_quick_submit"
             prefill={pick.prefill}

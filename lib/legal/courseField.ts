@@ -11,6 +11,11 @@ export interface CourseFieldConfig {
   etcMax: number;
   errRequired: string;
   errEtc: string;
+  /**
+   * 외부 선택 상태(courseValue)가 덮어쓰는 옵션 (upgrade-04 D35). 미지정이면 options 전체(기존 동작).
+   * 여기에 없는 옵션(과정과 매핑되지 않는 옵션)은 폼 안의 체크 상태를 보존한다.
+   */
+  syncOptions?: readonly string[];
 }
 
 /** 문의 내용 앞에 붙는 희망과정 토큰 — 신규 수집 필드를 만들지 않기 위한 표기 규칙 */

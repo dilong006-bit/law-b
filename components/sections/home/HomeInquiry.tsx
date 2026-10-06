@@ -14,6 +14,7 @@ import { SUCCESS_AUTO_RESET_MS } from '@/components/common/InquirySuccess';
 import { PREFILL_STRIP } from '@/lib/kium/inquiryBridge';
 import { COURSE_TOKEN_RE, courseToken, type CourseFieldConfig } from '@/lib/legal/courseField';
 import LegalCourseField from '@/components/legal/LegalCourseField';
+import { consentItems, type RequiredSlot } from '@/lib/inquiry/consentItems';
 
 const ALLOWED = ['zip', 'pdf', 'hwp', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif'];
 const MAX = 10 * 1024 * 1024;
@@ -96,6 +97,12 @@ interface HomeInquiryProps {
    */
   courseValue?: readonly string[];
   onCourseChange?: (options: string[]) => void;
+  /**
+   * 필수 4번째 슬롯 (연락처 옆, upgrade-04 D32). 'trainees' 면 직급/직책 대신 예상 교육인원(필수, '해당없음' 제외)을 렌더하고
+   * 직급/직책은 렌더하지 않는다(payload position 은 빈 값, 키 불변). 동의문 수집 항목도 이 값에서 파생한다(D34).
+   * 미지정이면 'position' = 렌더·검증·동의문·payload 가 기존과 100% 같다.
+   */
+  requiredSlot?: RequiredSlot;
 }
 
 /** 제출 진행 상태 (기술명세서 §1) — idle·submitting 을 거쳐 결과 3종 중 하나로 간다. */
@@ -140,7 +147,12 @@ export default function HomeInquiry({
   prefill,
   courseValue,
   onCourseChange,
+  requiredSlot,
 }: HomeInquiryProps = {}) {
+  const slot: RequiredSlot = requiredSlot ?? 'position';
+  /** 필수 텍스트·선택 키 (검증·첫 오류 포커스 순서). 이메일·희망과정·동의는 따로 판정 */
+  const REQ = ['company', 'name', 'phone', slot] as const;
+  const consentText = consentItems(slot);
   const [v, setV] = useState({
     company: '', name: '', phone: '', position: '',
     emailLocal: '', emailDomain: '', companySize: '', trainees: '', message: '',
@@ -315,12 +327,14 @@ export default function HomeInquiry({
           for (const re of hasCourseField ? [...strip, COURSE_TOKEN_RE] : strip) message = message.replace(re, '');
           message = (d.text + message).slice(0, INQ_MAX.message);
         }
-        return { ...s, message, ...(d.trainees ? { trainees: d.trainees } : {}) };
+        // 필수 슬롯(trainees)에는 '해당없음' 선택지가 없다 → 빈 값(미선택)으로 받아 검증에 맡긴다
+        const trainees = slot === 'trainees' && d.trainees === 'none' ? '' : d.trainees;
+        return { ...s, message, ...(d.trainees ? { trainees } : {}) };
       });
     };
     window.addEventListener(prefillEventName, onPrefill);
     return () => window.removeEventListener(prefillEventName, onPrefill);
-  }, [prefillEventName, hasCourseField]);
+  }, [prefillEventName, hasCourseField, slot]);
 
   const email = `${v.emailLocal.trim()}@${v.emailDomain.trim()}`;
 
@@ -349,12 +363,18 @@ export default function HomeInquiry({
     if (custom !== null) setCustomDomain(custom);
   }, [prefill]);
 
-  /* ── courseValue → 희망과정 체크 (같은 값이면 갱신하지 않아 양방향 루프를 막는다) ── */
+  /* ── courseValue → 희망과정 체크 (같은 값이면 갱신하지 않아 양방향 루프를 막는다) ──
+     upgrade-04 D35: syncOptions 에 든 옵션만 덮어쓰고, 그 밖의 옵션(과정과 매핑 없는 옵션)은 현재 체크를 보존한다.
+     syncOptions 미지정이면 options 전체 = 기존 동작 */
   useEffect(() => {
     if (!courseField || !courseValue) return;
+    const sync = courseField.syncOptions ?? courseField.options;
     setCourseSel((cur) => {
-      const same = courseField.options.every((o) => !!cur[o] === courseValue.includes(o));
-      return same ? cur : Object.fromEntries(courseField.options.map((o) => [o, courseValue.includes(o)]));
+      const same = sync.every((o) => !!cur[o] === courseValue.includes(o));
+      if (same) return cur;
+      const next = courseField.syncOptions ? { ...cur } : {};
+      sync.forEach((o) => { next[o] = courseValue.includes(o); });
+      return next;
     });
     setCourseErr(null);
   }, [courseField, courseValue]);
@@ -424,13 +444,13 @@ export default function HomeInquiry({
     return null;
   }
 
-  // 제출 차단 = 필수 5개(회사·기관명/담당자명/연락처/직급·직책/이메일) + 개인정보 동의
+  // 제출 차단 = 필수 5개(회사·기관명/담당자명/연락처/직급·직책 또는 예상 교육인원(requiredSlot)/이메일) + 개인정보 동의
   async function submit() {
     if (hp) return; // 허니팟
     if (submitting) return;
     const next: Record<string, boolean> = {};
     let ok = true;
-    (['company', 'name', 'phone', 'position'] as const).forEach((k) => {
+    REQ.forEach((k) => {
       const bad = !(v[k] || '').trim();
       next[k] = bad;
       if (bad) ok = false;
@@ -456,7 +476,7 @@ export default function HomeInquiry({
     if (cBad) ok = false;
     if (fileErr) ok = false;
     if (!ok) {
-      const firstBad = over ?? (['company', 'name', 'phone', 'position'] as const).find((k) => next[k]);
+      const firstBad = over ?? REQ.find((k) => next[k]);
       if (firstBad) document.getElementById(FIELD_ID[firstBad])?.focus({ preventScroll: false });
       else if (courseProblem) {
         document.getElementById(courseProblem === 'etc' ? 'f-course-etc' : 'f-course-0')?.focus({ preventScroll: false });
@@ -468,7 +488,7 @@ export default function HomeInquiry({
       companyName: v.company.trim(),
       managerName: v.name.trim(),
       phone: v.phone.trim(),
-      position: v.position.trim(),
+      position: slot === 'position' ? v.position.trim() : '', // 필수 슬롯이 trainees 면 직급/직책 미수집(키 유지)
       email,
       companySize: v.companySize,
       expectedTrainees: v.trainees,
@@ -507,7 +527,9 @@ export default function HomeInquiry({
   const risky = hasRiskyInput(v.message);
 
   /* 선택 필드 블록 — hiddenFields 로 줄·필드 단위 생략 가능(마크업 동일) */
-  const sizeRow = hidden('companySize') && hidden('trainees') ? null : (
+  // 예상 교육인원이 필수 슬롯(3·4 행)으로 올라가면 이 줄에서는 렌더하지 않는다(중복 id 금지)
+  const traineesHere = !hidden('trainees') && slot !== 'trainees';
+  const sizeRow = hidden('companySize') && !traineesHere ? null : (
     <div className="frow">
       {!hidden('companySize') && (
         <div className="field">
@@ -518,7 +540,7 @@ export default function HomeInquiry({
           </select>
         </div>
       )}
-      {!hidden('trainees') && (
+      {traineesHere && (
         <div className="field">
           <label htmlFor="f-trainees">예상 교육인원</label>
           <select id="f-trainees" name="expectedTrainees" value={v.trainees} onChange={upd('trainees')}>
@@ -630,7 +652,7 @@ export default function HomeInquiry({
                   </div>
                 </div>
 
-                {/* 3·4 연락처* / 직급·직책* */}
+                {/* 3·4 연락처* / 직급·직책* (requiredSlot='trainees' 면 예상 교육인원*) */}
                 <div className="frow">
                   <div className={fld('phone')}>
                     <label htmlFor="f-phone">연락처 <span className="req">*</span></label>
@@ -639,11 +661,24 @@ export default function HomeInquiry({
                     {phoneHint && <span className="phone-hint" aria-live="polite">숫자만 입력할 수 있어요.</span>}
                     <span className="err" aria-live="polite">연락처를 입력해 주세요.</span>
                   </div>
+                  {slot === 'position' ? (
                   <div className={fld('position')}>
                     <label htmlFor="f-position">직급/직책 <span className="req">*</span></label>
                     <input id="f-position" name="jobTitle" placeholder="예: 인사팀 과장 / 교육담당" maxLength={INQ_MAX.position} value={v.position} onChange={upd('position')} aria-required="true" aria-invalid={!!errs.position} />
                     <span className="err" aria-live="polite">직급/직책을 입력해 주세요.</span>
                   </div>
+                  ) : (
+                  <div className={fld('trainees')}>
+                    <label htmlFor="f-trainees">예상 교육인원 <span className="req">*</span></label>
+                    {/* 선택 즉시 오류 해제 (법정 폼 한정. 기본 슬롯 필드는 기존대로 제출 시 재판정) */}
+                    <select id="f-trainees" name="expectedTrainees" value={v.trainees} aria-required="true" aria-invalid={!!errs.trainees}
+                      onChange={(e) => { upd('trainees')(e); if (e.target.value) setErrs((s) => (s.trainees ? { ...s, trainees: false } : s)); }}>
+                      <option value="">선택</option>
+                      {INQ.trainees.filter((o) => o.value !== 'none').map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <span className="err" aria-live="polite">예상 교육인원을 선택해 주세요.</span>
+                  </div>
+                  )}
                 </div>
 
                 {/* 5 이메일* — 아이디 @ 도메인(프리셋/직접입력) */}
@@ -741,7 +776,7 @@ export default function HomeInquiry({
                     <button type="button" className="consent-view" onClick={() => setConsentOpen((s) => ({ ...s, priv: !s.priv }))}>{consentOpen.priv ? '접기' : '전문 보기'}</button>
                   </div>
                   {consentErr && <span className="err" style={{ display: 'block', marginTop: 0 }} aria-live="polite">개인정보 수집·이용에 동의해 주세요.</span>}
-                  <div className="consent-text" style={{ maxHeight: consentOpen.priv ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>개인정보 수집·이용 동의 (필수)</b></p><p>KG에듀원 KEESS 서비스를 제공하기 위해 필요한 필수 정보를 아래와 같이 수집·이용하고자 하오니, 이에 동의하여 주시기를 부탁드립니다.</p><p><b>1. 수집·이용 목적</b><br />상담신청 및 안내: KEESS 직원 교육 상담신청 서비스의 상담·안내를 위한 자료 활용</p><p><b>2. 수집 항목</b><br />(필수) 담당자명, 회사·기관명, 직급/직책, 연락처, 이메일<br />(선택) 회사 규모(임직원 수), 예상 교육인원, 관심 영역, 문의 내용, 첨부파일</p><p><b>3. 보유 및 이용 기간</b><br />법령에 따른 보유·이용 기간 또는 동의받은 기간 내에서 처리·보유합니다. 수집·보유 근거: 정보주체의 동의 / 보유·이용기간: 동의일로부터 1년간(보유목적 달성) 또는 삭제 요청 시 지체 없이 파기.</p><p><b>4. 동의 거부 권리</b><br />동의를 거부할 권리가 있습니다. 다만 거부 시 상담 서비스 이용이 제한될 수 있습니다.</p><p>{FILE_PRIVACY_NOTE}</p></div></div>
+                  <div className="consent-text" style={{ maxHeight: consentOpen.priv ? CONSENT_TEXT_MAXH : 0 }}><div className="ct-inner"><p><b>개인정보 수집·이용 동의 (필수)</b></p><p>KG에듀원 KEESS 서비스를 제공하기 위해 필요한 필수 정보를 아래와 같이 수집·이용하고자 하오니, 이에 동의하여 주시기를 부탁드립니다.</p><p><b>1. 수집·이용 목적</b><br />상담신청 및 안내: KEESS 직원 교육 상담신청 서비스의 상담·안내를 위한 자료 활용</p><p><b>2. 수집 항목</b><br />{`(필수) ${consentText.req}`}<br />{`(선택) ${consentText.opt}`}</p><p><b>3. 보유 및 이용 기간</b><br />법령에 따른 보유·이용 기간 또는 동의받은 기간 내에서 처리·보유합니다. 수집·보유 근거: 정보주체의 동의 / 보유·이용기간: 동의일로부터 1년간(보유목적 달성) 또는 삭제 요청 시 지체 없이 파기.</p><p><b>4. 동의 거부 권리</b><br />동의를 거부할 권리가 있습니다. 다만 거부 시 상담 서비스 이용이 제한될 수 있습니다.</p><p>{FILE_PRIVACY_NOTE}</p></div></div>
 
                   {/* 12 마케팅 정보 수신 동의 (선택) — 부모 + 3채널 */}
                   <div className="consent">

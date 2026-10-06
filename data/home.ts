@@ -340,6 +340,7 @@ export const INQ = {
     { value: 'lte9', label: '1~9명' },
     { value: 'lte50', label: '~ 50명' },
     { value: 'lte100', label: '~ 100명' },
+    { value: 'lte300', label: '~ 300명' }, // 추가 (26827 법정 검토 #69, upgrade-04 D33). 전 폼 공통, 필드 수·페이로드 키 불변
     { value: 'lte500', label: '~ 500명' },
     { value: 'lte1000', label: '~ 1000명' },
     { value: 'gt1000', label: '~ 1000명 이상' },
