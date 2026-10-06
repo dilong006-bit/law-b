@@ -61,7 +61,7 @@ npm run build     # 정적 빌드 (SSG)
 npm run start     # 빌드 결과 서빙 (http://localhost:3001)
 npm run test:hero # 모바일 헤더/히어로 겹침 회귀 테스트 (Playwright · 2페이지 × 4뷰포트)
 npm run test:unit # 단위 테스트 (vitest · 플로팅 문의 바 순수 로직·데이터 검증 29건)
-npm run test:e2e:fi # 플로팅 바·카드뉴스·UI/UX 품질검수 E2E 117건 (tests-fi/ · 프로덕션 빌드 :3002 · 워커 4)
+npm run test:e2e:fi # 플로팅 바·카드뉴스·UI/UX 품질검수 E2E 129건 (tests-fi/ · 프로덕션 빌드 :3002 · 워커 4)
 ```
 
 > `test:e2e:fi`는 `playwright.fi.config.ts`를 씁니다. 이 경로(Windows)에서는 `next dev`가 `.next` 파일 잠금 오류를 내므로
@@ -370,6 +370,10 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 - **`useEffect` 대신 `useLayoutEffect`인 이유**: `useEffect`는 페인트 후에 돌아 최종값 → 0 → 카운트업의 **숫자 깜빡임**이 눈에 보인다. 서버에서는 `useLayoutEffect`가 경고를 내므로 `typeof window`로 분기해(`useIsoLayout`) SSR에서는 `useEffect`로 대체한다.
 - **`prefers-reduced-motion`·IO 미지원**: 되감기를 건너뛰므로 최종값이 처음부터 표시된다(종전 동작과 동일한 결과, 경로만 단순해졌다).
 - **검증**: `npm run build` 경고·에러 0 · 빌드 산출 `/ax-ai` HTML의 `.num` 5개가 실제 수치(5/8/5/8/5)로 렌더되고 `class="num">0<` **0건**.
+
+### 69) 26827 법정 허브 HRD사업팀 검토 반영 (upgrade-04, 커밋 16~18, 2026-10-06)
+
+- 진단·법정 기준 표·지표 스트립 플래그 비표시, 대표 과정·차별점 2장·'신청부터 수료까지 4단계', 법정 폼 예상 교육인원 필수(~ 300명 추가)·산업안전보건교육 희망과정(체크 불가 결함 수정). 상세는 [`ref/legal/REPORT_legal-B_upgrade-04.md`](ref/legal/REPORT_legal-B_upgrade-04.md)
 
 ### 68) UI/UX 품질검수 2차 보완·마무리 (D1·D2, R1~R6, F1·F2, 2026-10-02)
 
