@@ -11,7 +11,8 @@ export default defineConfig({
   testDir: './tests-fi',
   fullyParallel: true,
   // K12: 판정은 고정 대기 없이 상태 폴링(tests-fi/helpers.ts)으로 해서 병렬 4개에서도 흔들리지 않게 한다
-  workers: 4,
+  // upgrade-04 (2026-10-06): 이 PC 에서 4 는 브라우저 정지·타이머 지연으로 비결정 실패 (매회 다른 3~4건), 2 에서 129/129 2회 연속 통과
+  workers: 2,
   retries: 0,
   reporter: [['list']],
   timeout: 120_000,
