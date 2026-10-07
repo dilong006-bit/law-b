@@ -7,6 +7,7 @@
 | 레포 | KEESS_law-B · `feat/legal-b` → law-b(`feat/legal-b`, `main`) → https://law-b.vercel.app |
 | 기준 HEAD | `ffbb02d` · 추적 변경 0 |
 | 구현 상태 | Cowork 클라우드 클론에서 구현 · 빌드 · 실측 완료 → 패치 4개로 전달 |
+| 개정 | 10/7 C안 확정 반영: 주석 · README 소속 표기 정정, 동작 무변경 (패치 `KEESS_kium_5_C안확정.patch`) |
 | 규모 | 15파일 · +448 / −52 (신규 4: gotoOpen.ts · KiumHeroCta.tsx · brochure.ts · verify-kium-f40.mjs) |
 
 ## 1. 커밋 구성 (순서 고정 · 기능별 독립 원복)

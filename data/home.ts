@@ -43,7 +43,7 @@ export const KIUM_GOV_SLIDE: HeroSlide = {
 };
 
 /**
- * [F40 · 261007] 인재키움 공개교육 슬라이드: HRD사업팀 지예정 대리 원고(메인·서브·버튼) 그대로.
+ * [F40 · 261007] 인재키움 공개교육 슬라이드: HRD솔루션팀 지예정 대리 원고(메인·서브·버튼) 그대로.
  * 사진 슬롯 없이 kium 테마 그라디언트만 사용(LCP 이미지 추가 없음).
  * 태그 옆 「다음 개강」은 lib/kium/sessions 회차 데이터에서 자동 계산(nextOpenBadge).
  */
@@ -134,11 +134,11 @@ const LEGAL_HERO_SLIDE: HeroSlide = {
 };
 
 /**
- * [F40 · 261007] 첫 장 정책 (C안 · HRD사업팀 유현경 차장 동의, 지예정 대리 확인 중).
+ * [F40 · 261007] 첫 장 정책: C안 확정(10/7 HRD사업팀 유현경 차장 · HRD솔루션팀 지예정 대리 동의).
  *   'alternate' = 접속마다 법정 ↔ 공개교육이 번갈아 첫 장(첫 방문은 50:50). 나머지 순서는 고정
  *   'legal'     = 법정 슬라이드 고정 첫 장, 공개교육 2번째
  *   'kium'      = 공개교육 슬라이드 고정 첫 장, 법정 2번째
- * 회신 결과에 따라 이 값 하나만 바꾼다. 법정 시즌 off면 정책과 무관하게 BASE 순서(공개교육 2번째).
+ * 정책 변경 요청이 오면 이 값 하나만 바꾼다. 법정 시즌 off면 정책과 무관하게 BASE 순서(공개교육 2번째).
  */
 export type HeroStart = 'alternate' | 'legal' | 'kium';
 export const HERO_START = 'alternate' as HeroStart;

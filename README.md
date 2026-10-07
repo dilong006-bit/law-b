@@ -141,12 +141,16 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 
 ## 작업 이력 (Changelog)
 
+### ★ 홈 히어로 첫 장 C안 확정 반영 (F40 후속 · 261007)
+- **확정**: 접속마다 법정 ↔ 공개교육 첫 장 교차(C안). 10/7 HRD사업팀 유현경 차장 · HRD솔루션팀 지예정 대리 동의. 동작 무변경(`HERO_START='alternate'` 유지)
+- **정정**: 주석 · README의 지예정 대리 소속 표기 HRD사업팀 → HRD솔루션팀
+
 ### ★ 인재키움 과정 소개서 다운로드 (F42 · 261007 · 게시 스위치 off)
 - **범위**: `lib/kium/brochure.ts` `ready=false` → 버튼 DOM 미생성. 개정본 수령 시 ①`public/downloads/` 파일 배치 ②`sizeLabel` 실측 ③`ready=true` 3가지만 변경. 노출 위치: 홈 공개교육 슬라이드 2차 버튼 + 과정안내 세그먼트 행 오른쪽(폼 없는 직접 다운로드)
 - **회귀**: `scripts/verify-kium-f40.mjs` 22단언(F40~F43 통합) 신설
 
 ### ★ 홈 히어로 인재키움 공개교육 슬라이드 · 첫 장 교차 (F40 · 261007)
-- **슬라이드**: 정부지원 슬라이드 → 공개교육 슬라이드 교체(원고: HRD사업팀 지예정 대리, 종전 슬라이드는 `KIUM_GOV_SLIDE`로 보존). 태그 옆 `다음 개강 M.D(요일)`은 `getUpcomingSession()`이 회차 데이터로 자동 계산(0건이면 숨김)
+- **슬라이드**: 정부지원 슬라이드 → 공개교육 슬라이드 교체(원고: HRD솔루션팀 지예정 대리, 종전 슬라이드는 `KIUM_GOV_SLIDE`로 보존). 태그 옆 `다음 개강 M.D(요일)`은 `getUpcomingSession()`이 회차 데이터로 자동 계산(0건이면 숨김)
 - **C안 첫 장 교차**: `HERO_START='alternate'`(data/home.ts) → 접속마다 법정 ↔ 공개교육이 번갈아 첫 장(첫 방문 50:50). 인라인 스크립트 + CSS로 하이드레이션 전 첫 장 확정(깜빡임 0), `<html suppressHydrationWarning>`. `'legal'` · `'kium'`으로 고정 전환 가능
 - **접근성**: 키보드 포커스가 캐러셀 안에 있으면 자동 넘김 정지
 
