@@ -1,0 +1,343 @@
+diff --git a/components/kium/KiumCoursesTab.tsx b/components/kium/KiumCoursesTab.tsx
+index c7745e1..a9af168 100644
+--- a/components/kium/KiumCoursesTab.tsx
++++ b/components/kium/KiumCoursesTab.tsx
+@@ -16,8 +16,8 @@ import {
+ import { KIUM_CONTENT } from '@/lib/kium/content';
+ import { KIUM_OPEN_THUMBS } from '@/lib/kium/openThumbs';
+ import { KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
+-import { getAllCourses, getCategoryCounts, getCourseById, getOpenFaq } from '@/lib/kium/queries';
+-import type { KiumCategory, KiumCourse } from '@/lib/kium/data';
++import { getAllCourses, getCourseById, getOpenFaq } from '@/lib/kium/queries';
++import type { KiumCourse } from '@/lib/kium/data';
+ import {
+   KIUM_SESSIONS,
+   KIUM_SESSION_META,
+@@ -41,7 +41,6 @@ import {
+ } from '@/lib/kium/openBridge';
+ 
+ type Mode = 'all' | 'open';
+-type Cat = 'all' | KiumCategory;
+ 
+ 
+ /** 상태 필터 칩 아이콘 — SessionBadge와 같은 Lucide 심볼. 색은 CSS(data-st)가 준다 */
+@@ -76,10 +75,6 @@ export default function KiumCoursesTab() {
+   const segRef = useRef<HTMLDivElement>(null);
+ 
+   const [mode, setMode] = useState<Mode>('all');
+-  const [cat, setCat] = useState<Cat>('all');
+-  /** [F36] 보기 전환 시 URL 복원용. 분야 선택은 전체과정 보기 전용이라 공개교육 보기에서는 URL에서 내리고, 돌아오면 되살린다 */
+-  const catRef = useRef<Cat>('all');
+-  catRef.current = cat;
+   /**
+    * [F23] 'empty'는 데이터 필터가 아니라 '빈 상태 화면'을 강제로 만드는 검토용 값이다.
+    *   F21로 마감 시드가 들어가고 F22로 0건 칩이 사라지면서
+@@ -105,7 +100,7 @@ export default function KiumCoursesTab() {
+   const future = useMemo(() => KIUM_SESSIONS.filter((s) => !(now && isPast(s, now))), [now]);
+ 
+   /* [F36 · 261007] 공개교육 보기의 분야·기간 필터 제거. 공개교육 5과정 15회차 규모에서는
+-     1~3건짜리 칩이 고르는 데 기여하지 않는다. 분야 필터는 전체과정 보기 전용으로 남고 회차 집합에 걸리지 않는다.
++     1~3건짜리 칩이 고르는 데 기여하지 않는다. [F38] 전체과정 보기의 분야 필터도 폐지됐다.
+      scoped는 미래 회차 전체이며, 모집 상태 칩 카운트의 모수라는 역할 때문에 이름을 유지한다. */
+   const scoped = future;
+ 
+@@ -121,7 +116,6 @@ export default function KiumCoursesTab() {
+      전체 보기 = 전체 과정 전건. 공개교육 보기 = 필터 결과에 회차가 남은 개설 과정만
+      (회차가 하나도 없는 카드를 공개교육 보기에 세우면 "일정 보기"라는 라벨이 거짓말이 된다) */
+   const allCourses = useMemo(() => getAllCourses(), []);
+-  const allCats = useMemo(() => getCategoryCounts(), []);
+ 
+   const openCourses = useMemo(() => {
+     const ids = new Set(visible.map((s) => s.courseId));
+@@ -130,13 +124,6 @@ export default function KiumCoursesTab() {
+ 
+   const isOpenMode = mode === 'open';
+   const courses = isOpenMode ? openCourses : allCourses;
+-  const categories = allCats;
+-  /**
+-   * 분야 칩의 [전체] 카운트는 전체과정 보기 카탈로그 규모다([F36] 분야 행은 전체과정 보기 전용).
+-   * 필터를 걸 때마다 이 숫자가 같이 줄면 분류별 카운트(고정)와 축이 어긋나 읽을 수 없게 된다.
+-   * 필터 연동으로 움직여야 하는 숫자는 모드 헤더의 회차 수 하나뿐이다.
+-   */
+-  const catTotal = allCourses.length;
+   /**
+    * 세그먼트 우측 카운트 — **과정 수**다(회차 수가 아니다).
+    * 세그먼트는 '보기 범위'를 고르는 컨트롤이라 양쪽 단위가 같아야 한다.
+@@ -145,23 +132,19 @@ export default function KiumCoursesTab() {
+   const openCourseTotal = getOpenCourses().length;
+ 
+   /* ── URL 동기화 — replace라 뒤로가기 스택을 늘리지 않는다 ─────────── */
+-  const syncQuery = useCallback((next: { mode?: Mode; cat?: Cat }) => {
++  const syncQuery = useCallback((next: { mode?: Mode }) => {
+     const url = new URL(window.location.href);
+     if (next.mode !== undefined) {
+       if (next.mode === 'open') {
+         url.searchParams.set('tab', 'courses');
+         url.searchParams.set('mode', 'open');
+-        url.searchParams.delete('cat'); // [F36] 공개교육 보기에는 분야 필터가 없다
+       } else {
+         url.searchParams.delete('mode');
+-        if (catRef.current !== 'all') url.searchParams.set('cat', catRef.current);
+       }
+     }
+-    url.searchParams.delete('month'); // [F36] 기간 필터 폐지. 구 쿼리는 어떤 경로로 남아 있든 걷어낸다
+-    if (next.cat !== undefined) {
+-      if (next.cat === 'all') url.searchParams.delete('cat');
+-      else url.searchParams.set('cat', next.cat);
+-    }
++    // [F36·F38] 기간·분야 필터 폐지. 구 쿼리는 어떤 경로로 남아 있든 걷어낸다
++    url.searchParams.delete('month');
++    url.searchParams.delete('cat');
+     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+   }, []);
+ 
+@@ -212,15 +195,12 @@ export default function KiumCoursesTab() {
+     const legacyOpen = q.get('tab') === 'open' || window.location.hash === '#open';
+     if (q.get('mode') === 'open' || legacyOpen) setMode('open');
+ 
+-    /* [F36] ?cat=는 전체과정 보기에서만 반영한다. 공개교육 보기 진입이면 무시하고,
+-       폐지된 ?month=와 함께 주소창에서 걷어낸다(공유 링크가 존재하지 않는 상태를 가리키지 않게). */
+-    const openEntry = q.get('mode') === 'open' || legacyOpen;
+-    const qCat = q.get('cat');
+-    if (!openEntry && qCat && getCategoryCounts().some((c) => c.key === qCat)) setCat(qCat as KiumCategory);
+-    if (q.has('month') || (openEntry && q.has('cat'))) {
++    /* [F36·F38 · 261007] 분야·기간 필터는 두 보기 모두 폐지됐다. 구 링크의 ?cat= · ?month=는 무시하고
++       주소창에서도 걷어낸다(공유 링크가 존재하지 않는 상태를 가리키지 않게). 화면은 기본 보기 그대로다. */
++    if (q.has('cat') || q.has('month')) {
+       const u = new URL(window.location.href);
++      u.searchParams.delete('cat');
+       u.searchParams.delete('month');
+-      if (openEntry) u.searchParams.delete('cat');
+       window.history.replaceState(null, '', `${u.pathname}${u.search}${u.hash}`);
+     }
+ 
+@@ -302,10 +282,6 @@ export default function KiumCoursesTab() {
+   };
+   const onConsultCourse = (c: KiumCourse) => consultCourse(c);
+ 
+-  const changeCat = (next: Cat) => {
+-    setCat(next);
+-    syncQuery({ cat: next });
+-  };
+   /** [F36] 빈 상태는 공개교육 보기에서만 생기고, 그 보기의 필터는 모집 상태 하나다 */
+   const resetFilters = () => {
+     setStatus('all');
+@@ -387,42 +363,13 @@ export default function KiumCoursesTab() {
+         </div>
+       </div>
+       {/* ── 필터 — 보기를 고르고, 그 안에서 거른다 ─────────────────────
+-          [F36 · 261007] 분야 행은 전체과정 보기 전용. 공개교육 보기는 분야·기간 행을 두지 않고
+-          모집 상태 1축만, F37 조건(0건 아닌 상태 2종 이상 또는 검토용 칩)을 만족할 때 DOM에 생긴다 */}
+-      {(!isOpenMode || (!seasonOff && showStatusRow)) && (
++          [F38 · 261007] 과정 11개 규모라 전체과정 보기도 분야 필터를 두지 않는다(카드 분야 라벨로 충분).
++          남은 필터는 공개교육 보기의 모집 상태 1축이며, F37 조건(0건 아닌 상태 2종 이상 또는 검토용 칩)을
++          만족할 때만 DOM에 생긴다. 전체과정 보기는 세그먼트 바로 아래 인트로로 이어진다 */}
++      {isOpenMode && !seasonOff && showStatusRow && (
+       <div className="kium-vfilters">
+-        {!isOpenMode && (
+-        <div className="kium-frow">
+-          <span className="kium-frow-lb" id="kium-cf-cat">
+-            분야
+-          </span>
+-          <div className="kium-filters" role="group" aria-labelledby="kium-cf-cat">
+-            <button
+-              type="button"
+-              className="kium-chip"
+-              aria-pressed={cat === 'all'}
+-              onClick={() => changeCat('all')}
+-            >
+-              전체 <span className="cnt">{catTotal}</span>
+-            </button>
+-            {categories.map((c) => (
+-              <button
+-                key={c.key}
+-                type="button"
+-                className="kium-chip"
+-                aria-pressed={cat === c.key}
+-                onClick={() => changeCat(c.key)}
+-              >
+-                {c.label} <span className="cnt">{c.count}</span>
+-              </button>
+-            ))}
+-          </div>
+-        </div>
+-        )}
+-
+-        {isOpenMode && !seasonOff && showStatusRow && (
+           <>
+-            {/* 모집 상태 칩은 분야 칩과 같은 플레인 칩이다.
++            {/* 모집 상태 칩은 플레인 칩이다.
+                 상태 구분은 아이콘 stroke 한 축, 선택 표시는 네이비 반전 한 축 — 칩 안의 칩 금지 */}
+             <div className="kium-frow">
+               <span className="kium-frow-lb" id="kium-cf-st">
+@@ -479,7 +426,6 @@ export default function KiumCoursesTab() {
+               </div>
+             </div>
+           </>
+-        )}
+       </div>
+       )}
+ 
+@@ -576,9 +522,9 @@ export default function KiumCoursesTab() {
+       {!(isOpenMode && (seasonOff || visible.length === 0)) && (
+         <KiumCourseGrid
+           courses={courses}
+-          categories={categories}
+-          cat={isOpenMode ? 'all' : cat}
+-          onCat={changeCat}
++          categories={[]}
++          cat="all"
++          onCat={() => {}}
+           scope={isOpenMode ? visible : undefined}
+           hideFilters
+           variant={isOpenMode ? 'open' : 'default'}
+diff --git a/scripts/verify-kium-f38.mjs b/scripts/verify-kium-f38.mjs
+new file mode 100644
+index 0000000..da8e9b7
+--- /dev/null
++++ b/scripts/verify-kium-f38.mjs
+@@ -0,0 +1,144 @@
++// /kium 필터 회귀 단언 (F38 전체과정 분야 필터 제거 · F36 공개교육 분야·기간 제거 · F37 모집 상태 행 조건 · 261007)
++// 기준: ref/kium/spec/KEESS_kium_필터전면제거_F38_기술명세서_최종_v1.0_261007.md §5
++// verify-kium-f36의 B1(분야 칩)·B5(?cat= 유지)·B6(분야 복원) 단언은 F38로 폐기되며 이 스크립트가 대체한다.
++// 실행: BASE=http://localhost:3001 node scripts/verify-kium-f38.mjs   (선택: PW_CHROMIUM=브라우저 실행 경로)
++import { chromium } from 'playwright';
++
++const BASE = process.env.BASE || 'http://localhost:3001';
++const KEEP = ['kium-01', 'kium-02', 'kium-04', 'kium-08', 'kium-09', 'kium-10', 'kium-11', 'kium-15', 'kium-16', 'kium-17', 'kium-19'];
++const OPEN = ['kium-04', 'kium-09', 'kium-10', 'kium-11', 'kium-19'];
++const DELETED_NAMES = ['On-Powering', 'Role Up', '협상 스킬', '스피치&프레젠테이션', '구두보고', '플레잉 코치'];
++const NAV = { waitUntil: 'networkidle', timeout: 90000 };
++
++const results = [];
++const ok = (id, pass, detail = '') => { results.push({ id, pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'} ${id} ${detail}`); };
++
++const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
++const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
++const errors = [];
++page.on('pageerror', (e) => errors.push(String(e)));
++page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
++
++const cardIds = () => page.$$eval('[id^="kium-cardwrap-"]', (els) => els.map((e) => e.id.replace('kium-cardwrap-', '')));
++const rows = () => page.evaluate(() => ({
++  cat: !!document.querySelector('#kium-cf-cat'),
++  month: !!document.querySelector('#kium-cf-month'),
++  st: !!document.querySelector('#kium-cf-st'),
++  vf: !!document.querySelector('.kium-vfilters'),
++}));
++
++try {
++  // B1 전체과정 보기: 필터 영역 미생성 · 카드 11 · 삭제 과정 0 · 세그먼트 11/5
++  await page.goto(`${BASE}/kium?tab=courses#courses`, NAV);
++  await page.waitForTimeout(600);
++  const r1 = await rows();
++  ok('B1 전체과정 보기: 필터 영역 미생성(분야·기간·상태 0)', !r1.vf && !r1.cat && !r1.month && !r1.st, JSON.stringify(r1));
++  const ids = await cardIds();
++  ok('B1 전체 카드 11장', ids.length === 11 && KEEP.every((k) => ids.includes(k)), ids.join(','));
++  const html = await page.content();
++  const leaked = DELETED_NAMES.filter((n) => html.includes(n));
++  ok('B1 삭제 과정명 DOM 0건', leaked.length === 0, leaked.join(',') || '0');
++  const seg = await page.evaluate(() => document.body.innerText.match(/전체과정\s*(\d+)[\s\S]{0,40}?공개교육\s*(\d+)/)?.slice(1));
++  ok('B1 세그먼트 11 / 5', seg?.[0] === '11' && seg?.[1] === '5', JSON.stringify(seg));
++  const labels = await page.$$eval('[id^="kium-cardwrap-"] .kium-lab.cat', (els) => els.length);
++  ok('B1 카드 분야 라벨 유지(11)', labels === 11, `labels ${labels}`);
++
++  // B2 공개교육 보기: 분야·기간 행 0 · 모집 상태 행 존재(검토용 시드·칩) · 회차 15 · 카드 5
++  await page.goto(`${BASE}/kium?tab=courses&mode=open#courses`, NAV);
++  await page.waitForTimeout(600);
++  const r2 = await rows();
++  ok('B2 공개교육 보기: 분야·기간 행 미생성', !r2.cat && !r2.month, JSON.stringify(r2));
++  ok('B2 모집 상태 행 노출(F37: 상태 2종 이상 또는 검토용 칩)', r2.st && r2.vf, JSON.stringify(r2));
++  const head = await page.$eval('.kium-modehead-t', (e) => e.textContent.replace(/\s+/g, ' ').trim()).catch(() => '');
++  ok('B2 헤더 범위·회차 수 파생(10~12월 · 15개)', /10~12월/.test(head) && /15\s*개/.test(head), head);
++  const oids = await cardIds();
++  ok('B2 공개교육 카드 5장', oids.length === 5 && OPEN.every((k) => oids.includes(k)), oids.join(','));
++
++  // B3 모집 상태 필터 동작: 첫 상태 칩 → 헤더 반영 · 회차 감소 · 필터 초기화로 복귀
++  const stChips = await page.$$('[aria-labelledby="kium-cf-st"] .kium-chip-st');
++  if (stChips.length >= 1) {
++    const label = (await stChips[0].innerText()).replace(/\d+/g, '').trim();
++    const n = Number((await stChips[0].$eval('.cnt', (e) => e.textContent)).trim());
++    await stChips[0].click();
++    await page.waitForTimeout(400);
++    const h = await page.$eval('.kium-modehead-t', (e) => e.textContent.replace(/\s+/g, ' ').trim()).catch(() => '');
++    ok('B3 상태 칩 선택 → 헤더에 상태명 · 회차 수 반영', h.includes(label) && new RegExp(`${n}\\s*개`).test(h), `${label} ${n} | ${h}`);
++    await page.locator('[aria-labelledby="kium-cf-st"] .kium-chip').first().click();
++    await page.waitForTimeout(300);
++    const h2 = await page.$eval('.kium-modehead-t', (e) => e.textContent.replace(/\s+/g, ' ').trim()).catch(() => '');
++    ok('B3 [전체] 복귀 → 15개', /15\s*개/.test(h2), h2);
++  } else {
++    ok('B3 상태 칩 존재', false, '상태 칩 0개');
++  }
++
++  // B4 Empty Case(검토용) → 빈 상태 → [필터 초기화] 복귀
++  const review = page.locator('.kium-chip-review');
++  if (await review.count()) {
++    await review.click();
++    await page.waitForTimeout(300);
++    const empty = await page.locator('.kium-empty2').count();
++    await page.locator('.kium-empty2 .kium-chip').click();
++    await page.waitForTimeout(300);
++    const h3 = await page.$eval('.kium-modehead-t', (e) => e.textContent.replace(/\s+/g, ' ').trim()).catch(() => '');
++    ok('B4 Empty Case → 필터 초기화 → 15개 복귀', empty === 1 && /15\s*개/.test(h3), `empty=${empty} | ${h3}`);
++  } else {
++    ok('B4 검토용 칩(SHOW_REVIEW_CHIP)', true, '미노출 설정: 생략');
++  }
++
++  // B5 구 딥링크: ?cat= · ?month= 는 두 보기 모두 무시하고 주소창에서 제거
++  errors.length = 0;
++  const DL = [
++    ['cat=ai', 11],
++    ['cat=roleup', 11],
++    ['cat=ai&month=11', 11],
++    ['mode=open&cat=ai', 5],
++    ['mode=open&month=12', 5],
++    ['mode=open&cat=ai&month=11', 5],
++  ];
++  for (const [q, want] of DL) {
++    const res = await page.goto(`${BASE}/kium?tab=courses&${q}#courses`, NAV);
++    await page.waitForTimeout(500);
++    const url = new URL(page.url());
++    const n = (await cardIds()).length;
++    ok(`B5 ${q} → 카드 ${want} · 쿼리 제거`, res.status() === 200 && n === want && !url.searchParams.has('cat') && !url.searchParams.has('month'), `status ${res.status()} cards ${n} url ${url.search}`);
++  }
++
++  // B6 보기 전환 왕복: 카드 11 ↔ 5, URL에 cat·month 없음
++  await page.goto(`${BASE}/kium?tab=courses#courses`, NAV);
++  await page.waitForTimeout(500);
++  await page.locator('.kium-modeseg .kium-viewseg-btn').nth(1).click();
++  await page.waitForTimeout(500);
++  const uo = new URL(page.url());
++  const on = (await cardIds()).length;
++  await page.locator('.kium-modeseg .kium-viewseg-btn').nth(0).click();
++  await page.waitForTimeout(500);
++  const ua = new URL(page.url());
++  const an = (await cardIds()).length;
++  ok('B6 왕복: 공개 5장 → 전체 11장 · URL 정상', on === 5 && an === 11 && !uo.searchParams.has('cat') && !ua.searchParams.has('cat') && !ua.searchParams.has('month'), `open ${on} ${uo.search} / all ${an} ${ua.search}`);
++  ok('B6 콘솔·페이지 에러 0', errors.length === 0, errors.slice(0, 3).join(' / '));
++  await page.goto(`${BASE}/kium?tab=courses#courses`, NAV);
++  await page.waitForTimeout(400);
++
++  // B7 상세 패널 · 모바일 레이아웃
++  await page.locator('#kium-cardwrap-kium-04 .kium-card').first().click();
++  await page.waitForTimeout(500);
++  ok('B7 kium-04 상세 오픈', (await page.locator('#kium-cardwrap-kium-04 .kium-card').first().getAttribute('aria-expanded')) === 'true');
++  await page.setViewportSize({ width: 390, height: 844 });
++  await page.goto(`${BASE}/kium?tab=courses&mode=open#courses`, NAV);
++  await page.waitForTimeout(600);
++  const ovf = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
++  ok('B7 MO 390 가로 넘침 0', ovf <= 0, `overflow ${ovf}px`);
++
++  // B8 타 라우트
++  for (const p of ['/', '/content', '/hrd', '/leadership', '/ax-ai']) {
++    const res = await page.goto(`${BASE}${p}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
++    ok(`B8 ${p} 200`, res.status() === 200);
++  }
++} catch (e) {
++  ok('실행 오류', false, String(e).split('\n')[0]);
++}
++
++await browser.close();
++const fail = results.filter((r) => !r.pass).length;
++console.log(`\n${results.length - fail}/${results.length} PASS`);
++process.exit(fail ? 1 : 0);

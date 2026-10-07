@@ -24,6 +24,12 @@ export type KiumSession = {
   status: KiumSessionStatus;
   /** 마감임박 시 잔여석 (선택) — 값이 없으면 배지에 병기하지 않는다 */
   seatsLeft?: number;
+  /**
+   * [F39 · 261007] 숨김 처리 — HRD솔루션팀 요청(IA 「12-2.공개교육일정」 '숨김처리' 열).
+   * true면 사이트 전 영역(일정·스트립·상세 회차·카운트·딥링크)에서 제외한다.
+   * 데이터는 지우지 않고 남겨 요청 이력과 대조할 수 있게 한다(폐강은 삭제, 숨김은 플래그).
+   */
+  hidden?: true;
 };
 
 /**
@@ -92,25 +98,31 @@ export const KIUM_STATUS_ORDER: KiumSessionStatus[] = ['recruiting', 'confirmed'
  *   잔여 15건의 일자·displayMonth·status는 무변경. 월별 10월 5 / 11월 6 / 12월 4.
  *   위 주석의 '20건'·'9과정' 수치는 작성 시점 값이다(현행 값은 전부 이 배열에서 파생).
  */
-export const KIUM_SESSIONS: KiumSession[] = [
+/*
+ * [숨김 처리 · F39 · 261007] 수강신청기간 종료 회차 5건 hidden → 노출 15 → 10회차.
+ *   agent-r1 · data-r1 · aijob-r1 · relead-r1 · cs-r1 (전부 10월 1회차, 시트 상태 '수강신청기간종료')
+ *   근거: IA 「12-2.공개교육일정」 C열 '숨김처리' 10.7 표기. 폐강·숨김은 모든 필터 결과에 공통 적용.
+ *   노출 월별 10월 0 / 11월 6 / 12월 4. 원본 배열은 KIUM_SESSIONS_SOURCE, 화면은 KIUM_SESSIONS만 쓴다.
+ */
+export const KIUM_SESSIONS_SOURCE: KiumSession[] = [
   // AI활용 — 업무효율화: Agent (kium-09)
-  { id: 'agent-r1',  courseId: 'kium-09', displayMonth: 10, start: '2026-10-12', end: '2026-10-13', status: 'closing' },
+  { id: 'agent-r1',  courseId: 'kium-09', displayMonth: 10, start: '2026-10-12', end: '2026-10-13', status: 'closing', hidden: true },
   { id: 'agent-r2',  courseId: 'kium-09', displayMonth: 11, start: '2026-11-02', end: '2026-11-03', status: 'confirmed' },
   { id: 'agent-r3',  courseId: 'kium-09', displayMonth: 11, start: '2026-11-30', end: '2026-12-01', status: 'closing' },
   // AI활용 — 업무효율화: Data (kium-10)
-  { id: 'data-r1',   courseId: 'kium-10', displayMonth: 10, start: '2026-10-14', end: '2026-10-15', status: 'confirmed' },
+  { id: 'data-r1',   courseId: 'kium-10', displayMonth: 10, start: '2026-10-14', end: '2026-10-15', status: 'confirmed', hidden: true },
   { id: 'data-r2',   courseId: 'kium-10', displayMonth: 11, start: '2026-11-09', end: '2026-11-10', status: 'recruiting' },
   { id: 'data-r3',   courseId: 'kium-10', displayMonth: 12, start: '2026-12-07', end: '2026-12-08', status: 'confirmed' },
   // AI활용 — AI 직무전문화 (kium-11)
-  { id: 'aijob-r1',  courseId: 'kium-11', displayMonth: 10, start: '2026-10-19', end: '2026-10-20', status: 'recruiting' },
+  { id: 'aijob-r1',  courseId: 'kium-11', displayMonth: 10, start: '2026-10-19', end: '2026-10-20', status: 'recruiting', hidden: true },
   { id: 'aijob-r2',  courseId: 'kium-11', displayMonth: 11, start: '2026-11-16', end: '2026-11-17', status: 'closing' },
   { id: 'aijob-r3',  courseId: 'kium-11', displayMonth: 12, start: '2026-12-14', end: '2026-12-15', status: 'confirmed' },
   // CS·민원응대 — CS 종합 솔루션 (kium-19)
-  { id: 'cs-r1',     courseId: 'kium-19', displayMonth: 10, start: '2026-10-26', end: '2026-10-26', status: 'closing' },
+  { id: 'cs-r1',     courseId: 'kium-19', displayMonth: 10, start: '2026-10-26', end: '2026-10-26', status: 'closing', hidden: true },
   { id: 'cs-r2',     courseId: 'kium-19', displayMonth: 11, start: '2026-11-20', end: '2026-11-20', status: 'confirmed' },
   { id: 'cs-r3',     courseId: 'kium-19', displayMonth: 12, start: '2026-12-21', end: '2026-12-21', status: 'recruiting' },
   // 리더십·관리자 — 진단 기반 팀장 리더십 Re-Lead (kium-04)
-  { id: 'relead-r1', courseId: 'kium-04', displayMonth: 10, start: '2026-10-21', end: '2026-10-22', status: 'closed' },
+  { id: 'relead-r1', courseId: 'kium-04', displayMonth: 10, start: '2026-10-21', end: '2026-10-22', status: 'closed', hidden: true },
   { id: 'relead-r2', courseId: 'kium-04', displayMonth: 11, start: '2026-11-18', end: '2026-11-19', status: 'recruiting' },
   // [당시 판단 · 이력] 원문 표기 `12/17(수)~18(금)`에서 틀린 것은 **요일 라벨 (수) 하나뿐**이고
   //   날짜 17~18은 2일로 과정 길이(14시간·2일)와 정합한다고 보아 원문 날짜를 그대로 신뢰했다.
@@ -120,6 +132,9 @@ export const KIUM_SESSIONS: KiumSession[] = [
   //   화면에 `12.16(수) ~ 17(목)`으로 정확히 출력된다.
   { id: 'relead-r3', courseId: 'kium-04', displayMonth: 12, start: '2026-12-16', end: '2026-12-17', status: 'recruiting' },
 ];
+
+/** [F39] 화면 노출 회차 — 숨김(hidden) 제외. 모든 소비처는 이 배열만 참조한다 */
+export const KIUM_SESSIONS: KiumSession[] = KIUM_SESSIONS_SOURCE.filter((s) => !s.hidden);
 
 /** 공개교육 개설 과정 id — KIUM_SESSIONS에서 파생(수기 목록 금지) */
 export const KIUM_OPEN_COURSE_IDS: string[] = Array.from(
