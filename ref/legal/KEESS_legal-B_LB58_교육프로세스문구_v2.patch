@@ -1,0 +1,62 @@
+diff --git a/data/legalHub.ts b/data/legalHub.ts
+index 5e5c8c6..2ac6526 100644
+--- a/data/legalHub.ts
++++ b/data/legalHub.ts
+@@ -126,8 +126,9 @@ export const HUB_COPY = {
+   // upgrade-01 LB25 + upgrade-02 LB35: 도입 절차 독립 블록
+   process: {
+     id: 'mandatory-process',
+-    kicker: '도입 절차',
+-    title: '신청부터 수료까지 4단계', // upgrade-04 LB52 (Q1)
++    // upgrade-05 LB58: HRD사업팀 문구 수정 요청(10/7) 확정 원고. 느낌표 포함, 수정 금지
++    kicker: '교육 프로세스',
++    title: '신청부터 수료까지 손쉽게!', // 구 upgrade-04 LB52 '신청부터 수료까지 4단계'
+     steps: [
+       // upgrade-04 LB52 (#67): 확정 원고 그대로 (마침표 포함, 수정 금지). D31: upgrade-03 '20자 이내' 규칙은 이 블록 해제
+       { key: 'select', label: '과정 선택 및 신청', desc: '우리 회사에 꼭 필요한 법정교육 과정을 골라 간편하게 신청합니다.' },
+diff --git a/tests-fi/legal-review-261006.spec.ts b/tests-fi/legal-review-261006.spec.ts
+index 440e8c2..f5040b5 100644
+--- a/tests-fi/legal-review-261006.spec.ts
++++ b/tests-fi/legal-review-261006.spec.ts
+@@ -63,7 +63,9 @@ test.describe('법정 허브 구조·문구 (커밋 16)', () => {
+ 
+   test('5 4단계 라벨·설명 확정 원고 일치', async ({ page }) => {
+     await openContent(page);
+-    await expect(page.locator('#mandatory-process .lg-bh-title')).toHaveText('신청부터 수료까지 4단계');
++    // upgrade-05 LB58: 머리말 문구 변경
++    await expect(page.locator('#mandatory-process .lg-bh-kicker')).toHaveText('교육 프로세스');
++    await expect(page.locator('#mandatory-process .lg-bh-title')).toHaveText('신청부터 수료까지 손쉽게!');
+     await expect(page.locator('#mandatory-process .lg-step-label')).toHaveText(['과정 선택 및 신청', '맞춤 구성 확정', '교육 운영 및 독려', '손쉬운 수료 완료']);
+     await expect(page.locator('#mandatory-process .lg-step-desc')).toHaveText([
+       '우리 회사에 꼭 필요한 법정교육 과정을 골라 간편하게 신청합니다.',
+diff --git a/scripts/verify-legal-lb58.mjs b/scripts/verify-legal-lb58.mjs
+new file mode 100644
+index 0000000..b9e5366
+--- /dev/null
++++ b/scripts/verify-legal-lb58.mjs
+@@ -0,0 +1,25 @@
++// /content 법정 허브 교육 프로세스 문구 회귀 단언 (legal-B upgrade-05 LB58 · 261007)
++// 기준: ref/legal/TECHSPEC_KEESS_26827_legal-B_v1.0_upgrade-05.md §4
++// 브라우저 없이 서버 HTML(SSG)만 확인한다. 실행: BASE=http://localhost:3001 node scripts/verify-legal-lb58.mjs
++const BASE = process.env.BASE || 'http://localhost:3001';
++const results = [];
++const ok = (id, pass, detail = '') => { results.push(pass); console.log(`${pass ? 'PASS' : 'FAIL'} ${id} ${detail}`); };
++
++try {
++  const res = await fetch(`${BASE}/content`);
++  const html = await res.text();
++  ok('L1 /content 200', res.status === 200, `status ${res.status}`);
++  const block = html.slice(html.indexOf('id="mandatory-process"'));
++  ok('L2 블록 존재(#mandatory-process)', html.includes('id="mandatory-process"'));
++  ok('L3 키커 「교육 프로세스」', block.includes('>교육 프로세스<'));
++  ok('L4 제목 「신청부터 수료까지 손쉽게!」', block.includes('신청부터 수료까지 손쉽게!'));
++  ok('L5 구 문구 0건(도입 절차 · 수료까지 4단계)', !html.includes('>도입 절차<') && !html.includes('신청부터 수료까지 4단계'));
++  const labels = ['과정 선택 및 신청', '맞춤 구성 확정', '교육 운영 및 독려', '손쉬운 수료 완료'];
++  ok('L6 4단계 라벨 무변경', labels.every((l) => block.includes(l)));
++  ok('L7 [빠른 상담 신청] 버튼 유지', block.includes('빠른 상담 신청'));
++} catch (e) {
++  ok('실행 오류', false, String(e).split('\n')[0]);
++}
++const fail = results.filter((p) => !p).length;
++console.log(`\n${results.length - fail}/${results.length} PASS`);
++process.exit(fail ? 1 : 0);

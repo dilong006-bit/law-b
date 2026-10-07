@@ -63,7 +63,9 @@ test.describe('법정 허브 구조·문구 (커밋 16)', () => {
 
   test('5 4단계 라벨·설명 확정 원고 일치', async ({ page }) => {
     await openContent(page);
-    await expect(page.locator('#mandatory-process .lg-bh-title')).toHaveText('신청부터 수료까지 4단계');
+    // upgrade-05 LB58: 머리말 문구 변경
+    await expect(page.locator('#mandatory-process .lg-bh-kicker')).toHaveText('교육 프로세스');
+    await expect(page.locator('#mandatory-process .lg-bh-title')).toHaveText('신청부터 수료까지 손쉽게!');
     await expect(page.locator('#mandatory-process .lg-step-label')).toHaveText(['과정 선택 및 신청', '맞춤 구성 확정', '교육 운영 및 독려', '손쉬운 수료 완료']);
     await expect(page.locator('#mandatory-process .lg-step-desc')).toHaveText([
       '우리 회사에 꼭 필요한 법정교육 과정을 골라 간편하게 신청합니다.',

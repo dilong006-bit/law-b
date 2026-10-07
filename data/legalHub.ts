@@ -126,8 +126,9 @@ export const HUB_COPY = {
   // upgrade-01 LB25 + upgrade-02 LB35: 도입 절차 독립 블록
   process: {
     id: 'mandatory-process',
-    kicker: '도입 절차',
-    title: '신청부터 수료까지 4단계', // upgrade-04 LB52 (Q1)
+    // upgrade-05 LB58: HRD사업팀 문구 수정 요청(10/7) 확정 원고. 느낌표 포함, 수정 금지
+    kicker: '교육 프로세스',
+    title: '신청부터 수료까지 손쉽게!', // 구 upgrade-04 LB52 '신청부터 수료까지 4단계'
     steps: [
       // upgrade-04 LB52 (#67): 확정 원고 그대로 (마침표 포함, 수정 금지). D31: upgrade-03 '20자 이내' 규칙은 이 블록 해제
       { key: 'select', label: '과정 선택 및 신청', desc: '우리 회사에 꼭 필요한 법정교육 과정을 골라 간편하게 신청합니다.' },
