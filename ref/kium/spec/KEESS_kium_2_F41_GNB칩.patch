@@ -1,0 +1,90 @@
+diff --git a/README.md b/README.md
+index 185e83253e959cf8da8a3ba7ee87bf7fc0611121..3a17d0e7bf6fc45d819c0677a6ed9ea61a81b380 100644
+--- a/README.md
++++ b/README.md
+@@ -141,6 +141,9 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
+ 
+ ## 작업 이력 (Changelog)
+ 
++### ★ GNB 인재키움 프리미엄 칩 강조 (F41 · 261007)
++- **범위**: 글자 13→14px · 높이 32→36px · 좌우 여백 14→16px(히트 44px 유지). 반짝임 7s 무한 반복 → 진입 0.4s 후 2.2s × 2회(4.8s) 뒤 정지(WCAG 2.2.2), hover · 포커스 시 1회 재생. 모션 줄이기 시 반짝임 없음. 940px 이하(햄버거) 무변경
++
+ ### ★ /kium 상단 CTA 교체 · 공개교육 바로가기 (F43 · 261007)
+ - **범위**: 히어로 `신청 문의` · `지원대상 확인` → 1차 `공개교육 신청하기`(과정안내 탭 + 공개교육 보기 전환 후 탭바 위치로 이동, 회차 카드의 회차별 상담으로 연결) · 2차 `문의하기`(`#inq`). `components/kium/KiumHeroCta.tsx` 신설, 신호 `lib/kium/gotoOpen.ts`(의존 0)
+ - **딥링크 착지**: `?tab=courses` 진입은 히어로가 아닌 탭바 위치로 즉시 이동(사업소개 · 상담 프리필 딥링크는 제외). FAQ 하단 `신청 문의`는 범위 밖(무변경)
+diff --git a/styles/components.css b/styles/components.css
+index 48b120dc6ee020b44b42cd597d1a3fb34d95d407..319677042479e887037e568757aa067838e547d3 100644
+--- a/styles/components.css
++++ b/styles/components.css
+@@ -48,17 +48,18 @@
+    전 페이지 유일 캠페인 진입점이라 절제된 주기 모션을 허용한다(원 스펙 F12 → F12′ 개정).
+    배경·텍스트·radius·44px 타깃은 불변이고, 아이콘·NEW 라벨·빛·모션만 더한다.
+    보더는 inset box-shadow로 그려 레이아웃(패딩 박스)에 영향을 주지 않는다.
+-   칩 높이 32px + ::after 히트 확장으로 터치 타깃 44px 확보. */
++   칩 높이 32px + ::after 히트 확장으로 터치 타깃 44px 확보.
++   [F41 · 261007] 강조 상향: 글자 13→14px · 높이 32→36px · 좌우 14→16px (::after 확장 −4px로 히트 44px 유지) */
+ .nav-right{display:flex;align-items:center;gap:14px}
+-.nav-chip{position:relative;display:inline-flex;align-items:center;gap:6px;height:32px;
+-  padding:0 14px;border-radius:999px;overflow:hidden;
+-  background:var(--p1);color:#fff;font-size:13px;font-weight:700;letter-spacing:-.01em;
++.nav-chip{position:relative;display:inline-flex;align-items:center;gap:6px;height:36px;
++  padding:0 16px;border-radius:999px;overflow:hidden;
++  background:var(--p1);color:#fff;font-size:14px;font-weight:700;letter-spacing:-.01em;
+   white-space:nowrap;
+   box-shadow:inset 0 0 0 1px rgba(124,58,237,.6),0 2px 12px rgba(124,58,237,.35);
+   transition:background-color .3s var(--ease),box-shadow .3s var(--ease),transform .3s var(--ease)}
+ /* 히트 영역은 overflow:hidden에 잘리지 않도록 별도 레이어로 확장 */
+-.nav-chip::after{content:"";position:absolute;left:0;right:0;top:-6px;bottom:-6px}
+-.nav-chip .spark{flex:none;width:16px;height:16px;display:block;transform-origin:50% 50%}
++.nav-chip::after{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
++.nav-chip .spark{flex:none;width:17px;height:17px;display:block;transform-origin:50% 50%}
+ .nav-chip .chip-new{flex:none;font-size:9px;font-weight:800;letter-spacing:.06em;color:#C4B5FD}
+ .nav-chip:focus-visible{background-color:color-mix(in srgb,var(--p1) 82%,#fff);
+   box-shadow:inset 0 0 0 1px rgba(124,58,237,.6),0 4px 16px rgba(124,58,237,.5);
+@@ -69,28 +70,37 @@
+ .nav-chip:focus-visible{outline:2px solid #fff;outline-offset:2px}
+ .nav.solid .nav-chip:focus-visible{outline-color:var(--ink)}
+ 
+-/* ── 주기 모션: shimmer sweep 7s 주기 · 1s 진행 (transform만 → 레이아웃 영향 0) ── */
++/* ── [F41 · 261007] 유한 모션: 진입 0.4s 후 2.2s 주기 2회 = 4.8s 안에 끝나고 멈춘다 ──
++   종전 7s 무한 반복은 WCAG 2.2.2(5초 넘는 자동 움직임 정지 수단) 위반 소지 → 5초 이내 종료로 해소.
++   진행 구간 1.1s(50%) · 나머지 대기. transform만 → 레이아웃 영향 0.
++   사용자가 가리키거나 포커스하면 1회 다시 반짝인다(사용자 유발 모션). */
+ .nav-chip .shimmer{position:absolute;inset:0;pointer-events:none;
+-  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.25) 50%,transparent 60%);
++  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.32) 50%,transparent 62%);
+   transform:translateX(-100%);
+-  animation:chip-shimmer 7s var(--ease) infinite}
++  animation:chip-shimmer 2.2s var(--ease) .4s 2 both}
+ @keyframes chip-shimmer{
+   0%{transform:translateX(-100%)}
+-  14.3%{transform:translateX(100%)}   /* 1s / 7s = 14.3% → 진행 1s */
++  50%{transform:translateX(100%)}
+   100%{transform:translateX(100%)}
+ }
+-/* 스파클 트윙클 — shimmer와 동일 7s 주기 동기화 */
++@keyframes chip-shimmer-once{
++  0%{transform:translateX(-100%)}
++  100%{transform:translateX(100%)}
++}
++/* 스파클 트윙클: shimmer와 같은 시간축 */
+ @keyframes chip-twinkle{
+   0%{transform:scale(1);opacity:.92}
+-  7%{transform:scale(1.15);opacity:1}
+-  14.3%{transform:scale(1);opacity:.92}
++  25%{transform:scale(1.18);opacity:1}
++  50%{transform:scale(1);opacity:.92}
+   100%{transform:scale(1);opacity:.92}
+ }
+-.nav-chip .spark{animation:chip-twinkle 7s var(--ease) infinite}
++.nav-chip .spark{animation:chip-twinkle 2.2s var(--ease) .4s 2 both}
++.nav-chip:focus-visible .shimmer{animation:chip-shimmer-once 1.1s var(--ease) 1 both}
++@media (hover:hover) and (pointer:fine){.nav-chip:hover .shimmer{animation:chip-shimmer-once 1.1s var(--ease) 1 both}}
+ 
+ /* 모션 저감 — 주기 모션 완전 제거, 정적 글로우·아이콘만 남는다 */
+ @media(prefers-reduced-motion:reduce){
+-  .nav-chip .shimmer{display:none}
++  .nav-chip .shimmer{display:none;animation:none}
+   .nav-chip .spark{animation:none;transform:none;opacity:1}
+   .nav-chip:focus-visible{transform:none}
+ }
