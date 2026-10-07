@@ -14,6 +14,7 @@ import {
   IconCircleSlash,
 } from './kiumIcons';
 import { KIUM_CONTENT } from '@/lib/kium/content';
+import { KIUM_GOTO_OPEN_EVENT } from '@/lib/kium/gotoOpen';
 import { KIUM_OPEN_THUMBS } from '@/lib/kium/openThumbs';
 import { KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
 import { getAllCourses, getCourseById, getOpenFaq } from '@/lib/kium/queries';
@@ -176,6 +177,13 @@ export default function KiumCoursesTab() {
   );
 
   useEffect(() => () => clearTimeout(fadeTimer.current), []);
+
+  /* [F43 · 261007] 히어로 [공개교육 신청하기]: 공개교육 보기로 전환. 스크롤은 KiumTabs가 맡는다(anchor:false) */
+  useEffect(() => {
+    const onGoto = () => changeMode('open', { anchor: false });
+    window.addEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
+    return () => window.removeEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
+  }, [changeMode]);
 
   /* ── 마운트 1회: 딥링크 반영 · now · 상담 프리필 ─────────────────── */
   useEffect(() => {

@@ -141,6 +141,11 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 
 ## 작업 이력 (Changelog)
 
+### ★ /kium 상단 CTA 교체 · 공개교육 바로가기 (F43 · 261007)
+- **범위**: 히어로 `신청 문의` · `지원대상 확인` → 1차 `공개교육 신청하기`(과정안내 탭 + 공개교육 보기 전환 후 탭바 위치로 이동, 회차 카드의 회차별 상담으로 연결) · 2차 `문의하기`(`#inq`). `components/kium/KiumHeroCta.tsx` 신설, 신호 `lib/kium/gotoOpen.ts`(의존 0)
+- **딥링크 착지**: `?tab=courses` 진입은 히어로가 아닌 탭바 위치로 즉시 이동(사업소개 · 상담 프리필 딥링크는 제외). FAQ 하단 `신청 문의`는 범위 밖(무변경)
+- 기준: `ref/kium/spec/KEESS_kium_공개교육신청유도_F40-F43_기술명세서_v1.0_261007.md`
+
 ### ★ /kium 수강신청 종료 회차 숨김 (F39 · 261007)
 - **범위**: 시트 '수강신청기간종료' 5건(agent-r1 · data-r1 · aijob-r1 · relead-r1 · cs-r1)을 `hidden: true`로 숨김. 원본은 `KIUM_SESSIONS_SOURCE`에 보존, `KIUM_SESSIONS`는 숨김 제외 파생 → 노출 10회차(11월 6 / 12월 4), 헤더 `11~12월 10개 회차`. 컴포넌트 수정 0
 - **회귀**: `scripts/verify-kium-f39.mjs` 30단언(F38 단언 포함) 신설. 기준: `ref/kium/spec/KEESS_kium_회차숨김_F39_기술명세서_최종_v1.0_261007.md`

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { KIUM_GOTO_OPEN_EVENT } from '@/lib/kium/gotoOpen';
 
 /**
  * F2 탭 — 기술명세서 v1.0 §4 · 전략 §4-3
@@ -98,11 +99,18 @@ export default function KiumTabs({
    * 탭 상태의 단일 출처는 종전대로 해시다 — 쿼리는 첫 진입에서 해시로 번역만 하고 끝낸다.
    */
   useEffect(() => {
-    const qtab = new URLSearchParams(window.location.search).get('tab');
+    const q = new URLSearchParams(window.location.search);
+    const qtab = q.get('tab');
     if (!qtab) return;
     const i = TABS.findIndex((t) => t.id === qtab);
     if (i < 0) return;
     setActive(i);
+    /* [F43 · 261007] 착지 위치: 홈 히어로 [공개교육 신청] 등 `?tab=courses` 딥링크는 히어로가 아니라
+       탭바(목록 시작점)에 내려 앉힌다. 사업소개(기본 탭)와 상담 프리필 딥링크(폼으로 스크롤)는 제외 */
+    const consultLink = ['consult', 'apply', 'course', 'session', 'round'].some((k) => q.has(k));
+    if (i === 0 || consultLink) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => scrollToContent('auto')));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 해시 → 탭 (초기 딥링크 + 뒤로/앞으로 가기)
@@ -147,12 +155,12 @@ export default function KiumTabs({
    * [수정 6] 전환 시 탭바 바로 아래(콘텐츠 상단)로 스크롤.
    * 탭바는 nav(72px) 아래에 sticky이므로, 탭바 상단이 nav 바로 밑에 붙는 위치로 이동한다.
    */
-  const scrollToContent = () => {
+  const scrollToContent = (force?: 'auto') => {
     const bar = barRef.current;
     if (!bar) return;
     const y = bar.getBoundingClientRect().top + window.scrollY - 72;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' });
+    window.scrollTo({ top: Math.max(0, y), behavior: force ?? (reduce ? 'auto' : 'smooth') });
   };
 
   const select = (i: number, focusPanel = true) => {
@@ -167,9 +175,27 @@ export default function KiumTabs({
       // 해시가 이미 같은 값이면 hashchange가 발생하지 않으므로 직접 반영
       setActive(i);
       // 패널 교체로 높이가 바뀐 뒤 스크롤(다음 프레임)
-      requestAnimationFrame(scrollToContent);
+      requestAnimationFrame(() => scrollToContent());
     }, OUT_MS);
   };
+
+  /* [F43 · 261007] 히어로 [공개교육 신청하기]: 과정안내 탭으로 확정 전환(포커스는 패널 첫 헤딩).
+     이미 과정안내 탭이면 전환 없이 탭바 위치로만 이동한다. 최신 active를 보려고 ref로 읽는다 */
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const selectRef = useRef(select);
+  selectRef.current = select;
+  useEffect(() => {
+    const onGoto = () => {
+      const i = TABS.findIndex((t) => t.id === 'courses');
+      if (i < 0) return;
+      if (i === activeRef.current) requestAnimationFrame(() => scrollToContent());
+      else selectRef.current(i);
+    };
+    window.addEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
+    return () => window.removeEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;

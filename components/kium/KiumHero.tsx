@@ -5,6 +5,7 @@ import { KIUM_CONTENT } from '@/lib/kium/content';
 import KiumBenefitStats from './KiumBenefitStats';
 import KiumHeroStack from './KiumHeroStack';
 import KiumHeroNeat from './KiumHeroNeat';
+import KiumHeroCta from './KiumHeroCta';
 
 /**
  * F1 히어로 — 기술명세서 v1.0 §4 · 전략 §4-2 · 디자인 고도화 [수정 1]
@@ -59,14 +60,8 @@ export default function KiumHero() {
               ))}
             </p>
 
-            <div className="kium-hero-cta r">
-              <a className="btn btn-ink" href="#inq">
-                신청 문의
-              </a>
-              <a className="kium-btn-ghost" href="#kium-eligibility">
-                지원대상 확인
-              </a>
-            </div>
+            {/* [F43] 1차 공개교육 신청하기 · 2차 문의하기: 클릭 동작이 있어 클라이언트 컴포넌트로 분리 */}
+            <KiumHeroCta />
           </div>
 
           <div className="kium-hero-art r">

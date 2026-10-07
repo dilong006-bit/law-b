@@ -1,0 +1,211 @@
+diff --git a/README.md b/README.md
+index 263a6373a1424a63d9d6f16432507ad66aa0099f..185e83253e959cf8da8a3ba7ee87bf7fc0611121 100644
+--- a/README.md
++++ b/README.md
+@@ -141,6 +141,11 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
+ 
+ ## 작업 이력 (Changelog)
+ 
++### ★ /kium 상단 CTA 교체 · 공개교육 바로가기 (F43 · 261007)
++- **범위**: 히어로 `신청 문의` · `지원대상 확인` → 1차 `공개교육 신청하기`(과정안내 탭 + 공개교육 보기 전환 후 탭바 위치로 이동, 회차 카드의 회차별 상담으로 연결) · 2차 `문의하기`(`#inq`). `components/kium/KiumHeroCta.tsx` 신설, 신호 `lib/kium/gotoOpen.ts`(의존 0)
++- **딥링크 착지**: `?tab=courses` 진입은 히어로가 아닌 탭바 위치로 즉시 이동(사업소개 · 상담 프리필 딥링크는 제외). FAQ 하단 `신청 문의`는 범위 밖(무변경)
++- 기준: `ref/kium/spec/KEESS_kium_공개교육신청유도_F40-F43_기술명세서_v1.0_261007.md`
++
+ ### ★ /kium 수강신청 종료 회차 숨김 (F39 · 261007)
+ - **범위**: 시트 '수강신청기간종료' 5건(agent-r1 · data-r1 · aijob-r1 · relead-r1 · cs-r1)을 `hidden: true`로 숨김. 원본은 `KIUM_SESSIONS_SOURCE`에 보존, `KIUM_SESSIONS`는 숨김 제외 파생 → 노출 10회차(11월 6 / 12월 4), 헤더 `11~12월 10개 회차`. 컴포넌트 수정 0
+ - **회귀**: `scripts/verify-kium-f39.mjs` 30단언(F38 단언 포함) 신설. 기준: `ref/kium/spec/KEESS_kium_회차숨김_F39_기술명세서_최종_v1.0_261007.md`
+diff --git a/components/kium/KiumCoursesTab.tsx b/components/kium/KiumCoursesTab.tsx
+index a9af16819de9f279bc74abeb921f4ca8f5767a29..d1573a6463d4ec0e84121fda64d0e8e26c88f27f 100644
+--- a/components/kium/KiumCoursesTab.tsx
++++ b/components/kium/KiumCoursesTab.tsx
+@@ -14,6 +14,7 @@ import {
+   IconCircleSlash,
+ } from './kiumIcons';
+ import { KIUM_CONTENT } from '@/lib/kium/content';
++import { KIUM_GOTO_OPEN_EVENT } from '@/lib/kium/gotoOpen';
+ import { KIUM_OPEN_THUMBS } from '@/lib/kium/openThumbs';
+ import { KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
+ import { getAllCourses, getCourseById, getOpenFaq } from '@/lib/kium/queries';
+@@ -177,6 +178,13 @@ export default function KiumCoursesTab() {
+ 
+   useEffect(() => () => clearTimeout(fadeTimer.current), []);
+ 
++  /* [F43 · 261007] 히어로 [공개교육 신청하기]: 공개교육 보기로 전환. 스크롤은 KiumTabs가 맡는다(anchor:false) */
++  useEffect(() => {
++    const onGoto = () => changeMode('open', { anchor: false });
++    window.addEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
++    return () => window.removeEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
++  }, [changeMode]);
++
+   /* ── 마운트 1회: 딥링크 반영 · now · 상담 프리필 ─────────────────── */
+   useEffect(() => {
+     const n = new Date();
+diff --git a/components/kium/KiumHero.tsx b/components/kium/KiumHero.tsx
+index 148eb1494a5f40b9039cd0a0ee9e6bd507c38277..a2330e7d7d29775c284dd7d4ee67d0db384b027c 100644
+--- a/components/kium/KiumHero.tsx
++++ b/components/kium/KiumHero.tsx
+@@ -5,6 +5,7 @@ import { KIUM_CONTENT } from '@/lib/kium/content';
+ import KiumBenefitStats from './KiumBenefitStats';
+ import KiumHeroStack from './KiumHeroStack';
+ import KiumHeroNeat from './KiumHeroNeat';
++import KiumHeroCta from './KiumHeroCta';
+ 
+ /**
+  * F1 히어로 — 기술명세서 v1.0 §4 · 전략 §4-2 · 디자인 고도화 [수정 1]
+@@ -59,14 +60,8 @@ export default function KiumHero() {
+               ))}
+             </p>
+ 
+-            <div className="kium-hero-cta r">
+-              <a className="btn btn-ink" href="#inq">
+-                신청 문의
+-              </a>
+-              <a className="kium-btn-ghost" href="#kium-eligibility">
+-                지원대상 확인
+-              </a>
+-            </div>
++            {/* [F43] 1차 공개교육 신청하기 · 2차 문의하기: 클릭 동작이 있어 클라이언트 컴포넌트로 분리 */}
++            <KiumHeroCta />
+           </div>
+ 
+           <div className="kium-hero-art r">
+diff --git a/components/kium/KiumHeroCta.tsx b/components/kium/KiumHeroCta.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..0320fd20d4c612d3f2779aded94bdd1d06c10d22
+--- /dev/null
++++ b/components/kium/KiumHeroCta.tsx
+@@ -0,0 +1,35 @@
++'use client';
++
++import { KIUM_OPEN_HREF, gotoOpenCourses } from '@/lib/kium/gotoOpen';
++
++/**
++ * [F43 · 261007] /kium 히어로 CTA: HRD사업팀 요청(지예정 대리).
++ *
++ * 1차(채움) [공개교육 신청하기] → 같은 페이지에서 과정안내 탭 + 공개교육 보기로 전환 후 탭바 위치로 이동.
++ *   회차 카드의 기존 회차별 상담 프리필 흐름으로 이어진다(문의 유형을 새로 만들지 않는다).
++ *   href는 무JS 폴백 · 새 탭 열기용 딥링크다.
++ * 2차(외곽선) [문의하기] → 상담 폼(#inq).
++ * 순서: 1차가 왼쪽(모바일은 위). 구 라벨 '신청 문의' · '지원대상 확인'은 이 위치에서 폐기.
++ */
++export default function KiumHeroCta() {
++  return (
++    <div className="kium-hero-cta r">
++      <a
++        className="btn btn-ink"
++        href={KIUM_OPEN_HREF}
++        data-ga-id="kium_hero_open"
++        onClick={(e) => {
++          // 수정키 클릭(새 탭 등)은 브라우저 기본 동작에 맡긴다
++          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
++          e.preventDefault();
++          gotoOpenCourses();
++        }}
++      >
++        공개교육 신청하기
++      </a>
++      <a className="kium-btn-ghost" href="#inq" data-ga-id="kium_hero_inquiry">
++        문의하기
++      </a>
++    </div>
++  );
++}
+diff --git a/components/kium/KiumTabs.tsx b/components/kium/KiumTabs.tsx
+index 3313d658625bd089bb308dc011a9a22140e9eb5d..10bfa5a1874c897830adb099b7d8a784547c0e25 100644
+--- a/components/kium/KiumTabs.tsx
++++ b/components/kium/KiumTabs.tsx
+@@ -1,6 +1,7 @@
+ 'use client';
+ 
+ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
++import { KIUM_GOTO_OPEN_EVENT } from '@/lib/kium/gotoOpen';
+ 
+ /**
+  * F2 탭 — 기술명세서 v1.0 §4 · 전략 §4-3
+@@ -98,11 +99,18 @@ export default function KiumTabs({
+    * 탭 상태의 단일 출처는 종전대로 해시다 — 쿼리는 첫 진입에서 해시로 번역만 하고 끝낸다.
+    */
+   useEffect(() => {
+-    const qtab = new URLSearchParams(window.location.search).get('tab');
++    const q = new URLSearchParams(window.location.search);
++    const qtab = q.get('tab');
+     if (!qtab) return;
+     const i = TABS.findIndex((t) => t.id === qtab);
+     if (i < 0) return;
+     setActive(i);
++    /* [F43 · 261007] 착지 위치: 홈 히어로 [공개교육 신청] 등 `?tab=courses` 딥링크는 히어로가 아니라
++       탭바(목록 시작점)에 내려 앉힌다. 사업소개(기본 탭)와 상담 프리필 딥링크(폼으로 스크롤)는 제외 */
++    const consultLink = ['consult', 'apply', 'course', 'session', 'round'].some((k) => q.has(k));
++    if (i === 0 || consultLink) return;
++    requestAnimationFrame(() => requestAnimationFrame(() => scrollToContent('auto')));
++    // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
+ 
+   // 해시 → 탭 (초기 딥링크 + 뒤로/앞으로 가기)
+@@ -147,12 +155,12 @@ export default function KiumTabs({
+    * [수정 6] 전환 시 탭바 바로 아래(콘텐츠 상단)로 스크롤.
+    * 탭바는 nav(72px) 아래에 sticky이므로, 탭바 상단이 nav 바로 밑에 붙는 위치로 이동한다.
+    */
+-  const scrollToContent = () => {
++  const scrollToContent = (force?: 'auto') => {
+     const bar = barRef.current;
+     if (!bar) return;
+     const y = bar.getBoundingClientRect().top + window.scrollY - 72;
+     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+-    window.scrollTo({ top: Math.max(0, y), behavior: reduce ? 'auto' : 'smooth' });
++    window.scrollTo({ top: Math.max(0, y), behavior: force ?? (reduce ? 'auto' : 'smooth') });
+   };
+ 
+   const select = (i: number, focusPanel = true) => {
+@@ -167,10 +175,28 @@ export default function KiumTabs({
+       // 해시가 이미 같은 값이면 hashchange가 발생하지 않으므로 직접 반영
+       setActive(i);
+       // 패널 교체로 높이가 바뀐 뒤 스크롤(다음 프레임)
+-      requestAnimationFrame(scrollToContent);
++      requestAnimationFrame(() => scrollToContent());
+     }, OUT_MS);
+   };
+ 
++  /* [F43 · 261007] 히어로 [공개교육 신청하기]: 과정안내 탭으로 확정 전환(포커스는 패널 첫 헤딩).
++     이미 과정안내 탭이면 전환 없이 탭바 위치로만 이동한다. 최신 active를 보려고 ref로 읽는다 */
++  const activeRef = useRef(active);
++  activeRef.current = active;
++  const selectRef = useRef(select);
++  selectRef.current = select;
++  useEffect(() => {
++    const onGoto = () => {
++      const i = TABS.findIndex((t) => t.id === 'courses');
++      if (i < 0) return;
++      if (i === activeRef.current) requestAnimationFrame(() => scrollToContent());
++      else selectRef.current(i);
++    };
++    window.addEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
++    return () => window.removeEventListener(KIUM_GOTO_OPEN_EVENT, onGoto);
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, []);
++
+   const onKeyDown = (e: React.KeyboardEvent) => {
+     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+     e.preventDefault();
+diff --git a/lib/kium/gotoOpen.ts b/lib/kium/gotoOpen.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..e2de70c56cfc017276da1a6daffff9cb396e1726
+--- /dev/null
++++ b/lib/kium/gotoOpen.ts
+@@ -0,0 +1,16 @@
++/**
++ * [F43 · 261007] 공개교육 바로가기 신호.
++ *
++ * /kium 히어로 [공개교육 신청하기]가 같은 페이지 안에서 「과정안내 탭 + 공개교육 보기」로 옮길 때 쓴다.
++ * - KiumTabs: 과정안내 탭으로 전환(이미 활성이면 탭바 위치로 스크롤만)
++ * - KiumCoursesTab: 공개교육 보기로 전환
++ * 의존 모듈이 없는 독립 파일이다(브리지끼리 순환 import 방지).
++ */
++export const KIUM_GOTO_OPEN_EVENT = 'kium:goto-open';
++
++/** 공개교육 딥링크(무JS 폴백 · 홈 히어로 CTA 공용) */
++export const KIUM_OPEN_HREF = '/kium?tab=courses&mode=open';
++
++export function gotoOpenCourses() {
++  window.dispatchEvent(new Event(KIUM_GOTO_OPEN_EVENT));
++}
