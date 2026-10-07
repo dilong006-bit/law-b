@@ -27,7 +27,6 @@ import {
   getOpenCourses,
   getSessionById,
   isPast,
-  openCategoryCounts,
   type KiumSession,
   type KiumSessionStatus,
 } from '@/lib/kium/sessions';
@@ -42,10 +41,8 @@ import {
 } from '@/lib/kium/openBridge';
 
 type Mode = 'all' | 'open';
-type Month = 'all' | 10 | 11 | 12;
 type Cat = 'all' | KiumCategory;
 
-const MONTHS = [10, 11, 12] as const;
 
 /** 상태 필터 칩 아이콘 — SessionBadge와 같은 Lucide 심볼. 색은 CSS(data-st)가 준다 */
 const STATUS_ICON: Record<KiumSessionStatus, (p: { size?: 14 }) => JSX.Element> = {
@@ -80,7 +77,9 @@ export default function KiumCoursesTab() {
 
   const [mode, setMode] = useState<Mode>('all');
   const [cat, setCat] = useState<Cat>('all');
-  const [month, setMonth] = useState<Month>('all');
+  /** [F36] 보기 전환 시 URL 복원용. 분야 선택은 전체과정 보기 전용이라 공개교육 보기에서는 URL에서 내리고, 돌아오면 되살린다 */
+  const catRef = useRef<Cat>('all');
+  catRef.current = cat;
   /**
    * [F23] 'empty'는 데이터 필터가 아니라 '빈 상태 화면'을 강제로 만드는 검토용 값이다.
    *   F21로 마감 시드가 들어가고 F22로 0건 칩이 사라지면서
@@ -100,23 +99,15 @@ export default function KiumCoursesTab() {
 
   /* ── 회차 집합 ────────────────────────────────────────────────────────
      future  = 미래 회차(end >= today). 세그먼트 카운트·시즌 오프 판정의 기준
-     scoped  = future ∩ (기간·분야). 모집 상태 칩 카운트의 모수
+     scoped  = future (F36: 기간·분야 필터 제거). 모집 상태 칩 카운트의 모수
      visible = scoped ∩ 모집 상태. 모드 헤더·전체 일정·그리드 연동의 최종 목록
      스트립만 여기서 다시 마감을 걷어낸다(STEP 4-1) */
   const future = useMemo(() => KIUM_SESSIONS.filter((s) => !(now && isPast(s, now))), [now]);
 
-  const scoped = useMemo(
-    () =>
-      future.filter((s) => {
-        if (month !== 'all' && s.displayMonth !== month) return false;
-        if (cat !== 'all') {
-          const c = getCourseById(s.courseId);
-          if (!c || c.category !== cat) return false;
-        }
-        return true;
-      }),
-    [future, month, cat]
-  );
+  /* [F36 · 261007] 공개교육 보기의 분야·기간 필터 제거. 공개교육 5과정 15회차 규모에서는
+     1~3건짜리 칩이 고르는 데 기여하지 않는다. 분야 필터는 전체과정 보기 전용으로 남고 회차 집합에 걸리지 않는다.
+     scoped는 미래 회차 전체이며, 모집 상태 칩 카운트의 모수라는 역할 때문에 이름을 유지한다. */
+  const scoped = future;
 
   const visible = useMemo(() => {
     /* [F23] 'empty'는 데이터 필터가 아니라 '빈 상태 화면'을 강제로 만드는 검토용 값이다. */
@@ -131,7 +122,6 @@ export default function KiumCoursesTab() {
      (회차가 하나도 없는 카드를 공개교육 보기에 세우면 "일정 보기"라는 라벨이 거짓말이 된다) */
   const allCourses = useMemo(() => getAllCourses(), []);
   const allCats = useMemo(() => getCategoryCounts(), []);
-  const openCats = useMemo(() => openCategoryCounts(), []);
 
   const openCourses = useMemo(() => {
     const ids = new Set(visible.map((s) => s.courseId));
@@ -140,13 +130,13 @@ export default function KiumCoursesTab() {
 
   const isOpenMode = mode === 'open';
   const courses = isOpenMode ? openCourses : allCourses;
-  const categories = isOpenMode ? openCats : allCats;
+  const categories = allCats;
   /**
-   * 분야 칩의 [전체] 카운트는 **보기 기준 카탈로그 규모**다(전체 과정 수 / 공개교육 과정 수).
+   * 분야 칩의 [전체] 카운트는 전체과정 보기 카탈로그 규모다([F36] 분야 행은 전체과정 보기 전용).
    * 필터를 걸 때마다 이 숫자가 같이 줄면 분류별 카운트(고정)와 축이 어긋나 읽을 수 없게 된다.
    * 필터 연동으로 움직여야 하는 숫자는 모드 헤더의 회차 수 하나뿐이다.
    */
-  const catTotal = isOpenMode ? getOpenCourses().length : allCourses.length;
+  const catTotal = allCourses.length;
   /**
    * 세그먼트 우측 카운트 — **과정 수**다(회차 수가 아니다).
    * 세그먼트는 '보기 범위'를 고르는 컨트롤이라 양쪽 단위가 같아야 한다.
@@ -155,20 +145,19 @@ export default function KiumCoursesTab() {
   const openCourseTotal = getOpenCourses().length;
 
   /* ── URL 동기화 — replace라 뒤로가기 스택을 늘리지 않는다 ─────────── */
-  const syncQuery = useCallback((next: { mode?: Mode; month?: Month; cat?: Cat }) => {
+  const syncQuery = useCallback((next: { mode?: Mode; cat?: Cat }) => {
     const url = new URL(window.location.href);
     if (next.mode !== undefined) {
       if (next.mode === 'open') {
         url.searchParams.set('tab', 'courses');
         url.searchParams.set('mode', 'open');
+        url.searchParams.delete('cat'); // [F36] 공개교육 보기에는 분야 필터가 없다
       } else {
         url.searchParams.delete('mode');
+        if (catRef.current !== 'all') url.searchParams.set('cat', catRef.current);
       }
     }
-    if (next.month !== undefined) {
-      if (next.month === 'all') url.searchParams.delete('month');
-      else url.searchParams.set('month', String(next.month));
-    }
+    url.searchParams.delete('month'); // [F36] 기간 필터 폐지. 구 쿼리는 어떤 경로로 남아 있든 걷어낸다
     if (next.cat !== undefined) {
       if (next.cat === 'all') url.searchParams.delete('cat');
       else url.searchParams.set('cat', next.cat);
@@ -223,11 +212,17 @@ export default function KiumCoursesTab() {
     const legacyOpen = q.get('tab') === 'open' || window.location.hash === '#open';
     if (q.get('mode') === 'open' || legacyOpen) setMode('open');
 
+    /* [F36] ?cat=는 전체과정 보기에서만 반영한다. 공개교육 보기 진입이면 무시하고,
+       폐지된 ?month=와 함께 주소창에서 걷어낸다(공유 링크가 존재하지 않는 상태를 가리키지 않게). */
+    const openEntry = q.get('mode') === 'open' || legacyOpen;
     const qCat = q.get('cat');
-    if (qCat && getCategoryCounts().some((c) => c.key === qCat)) setCat(qCat as KiumCategory);
-
-    const qMonth = Number(q.get('month'));
-    if (qMonth === 10 || qMonth === 11 || qMonth === 12) setMonth(qMonth as 10 | 11 | 12);
+    if (!openEntry && qCat && getCategoryCounts().some((c) => c.key === qCat)) setCat(qCat as KiumCategory);
+    if (q.has('month') || (openEntry && q.has('cat'))) {
+      const u = new URL(window.location.href);
+      u.searchParams.delete('month');
+      if (openEntry) u.searchParams.delete('cat');
+      window.history.replaceState(null, '', `${u.pathname}${u.search}${u.hash}`);
+    }
 
     /* ── 상담 프리필 딥링크 — A type 로직 승계(경로 A·B·마감 가드). 경로 C는 미탑재 ──
        잘못된 id는 조용히 무시하고 폼 기본 상태로 둔다. 구 링크(`round`/`apply`)도 별칭으로 받는다. */
@@ -311,19 +306,29 @@ export default function KiumCoursesTab() {
     setCat(next);
     syncQuery({ cat: next });
   };
-  const changeMonth = (next: Month) => {
-    setMonth(next);
-    syncQuery({ month: next });
-  };
+  /** [F36] 빈 상태는 공개교육 보기에서만 생기고, 그 보기의 필터는 모집 상태 하나다 */
   const resetFilters = () => {
-    setMonth('all');
-    setCat('all');
     setStatus('all');
-    syncQuery({ month: 'all', cat: 'all' });
   };
 
   /* ── 카운트 ─────────────────────────────────────────────────────────── */
   const stCount = countByStatus(scoped, now);
+
+  /* [F36] 범위 문구는 남은 회차의 월에서 파생한다. 하드코딩 '10~12월'은
+     10월 회차가 모두 지나면 거짓이 된다. 회차 0건이면 헤더 자체가 렌더되지 않는다. */
+  const months = future.map((s) => s.displayMonth);
+  const mMin = months.length ? Math.min(...months) : 0;
+  const mMax = months.length ? Math.max(...months) : 0;
+  const monthRange = !months.length ? '' : mMin === mMax ? `${mMin}월` : `${mMin}~${mMax}월`;
+
+  /* [F37 · 261007] 모집 상태 행 노출 조건: 0건이 아닌 상태가 2종 이상일 때만.
+     전 회차가 '모집중' 하나뿐이면 [전체 N][모집중 N]은 같은 집합을 두 번 보여주는 잡음이다(F22와 같은 사상).
+     검토용 칩(F23·F30)이 켜져 있으면 Empty Case 진입로로 항상 노출한다. */
+  const activeStatusKinds = KIUM_STATUS_ORDER.filter((st) => stCount[st] > 0).length;
+  const showStatusRow = activeStatusKinds >= 2 || SHOW_REVIEW_CHIP || reviewMode;
+  useEffect(() => {
+    if (!showStatusRow && status !== 'all') setStatus('all');
+  }, [showStatusRow, status]);
 
   /* [F22 §4-3] 선택된 칩이 0건이 되어 사라지면 사용자가 해제할 수단이 없다.
      빈 화면 + 해제 불가는 막다른 골목이므로 자동으로 '전체'로 되돌린다.
@@ -336,8 +341,7 @@ export default function KiumCoursesTab() {
    * '10~12월'을 하드코딩해 두면 12월만 걸러 본 사용자에게 표시와 상태가 어긋난 화면이 남는다.
    */
   const scopeLabel = [
-    month === 'all' ? '10~12월' : `${month}월`,
-    cat === 'all' ? null : (categories.find((c) => c.key === cat)?.label ?? null),
+    monthRange,
     status === 'all' || status === 'empty' ? null : KIUM_SESSION_META[status].label,
   ]
     .filter(Boolean)
@@ -355,7 +359,6 @@ export default function KiumCoursesTab() {
     }
     setLive(`${scopeLabel} ${visible.length}개 회차`);
   }, [isOpenMode, scopeLabel, visible.length]);
-  const monthCount = (m: 10 | 11 | 12) => future.filter((s) => s.displayMonth === m).length;
   const openFaq = getOpenFaq();
 
   return (
@@ -384,8 +387,11 @@ export default function KiumCoursesTab() {
         </div>
       </div>
       {/* ── 필터 — 보기를 고르고, 그 안에서 거른다 ─────────────────────
-          분야는 두 보기 공통. 기간·모집 상태는 공개교육 보기에서만 DOM에 생긴다 */}
+          [F36 · 261007] 분야 행은 전체과정 보기 전용. 공개교육 보기는 분야·기간 행을 두지 않고
+          모집 상태 1축만, F37 조건(0건 아닌 상태 2종 이상 또는 검토용 칩)을 만족할 때 DOM에 생긴다 */}
+      {(!isOpenMode || (!seasonOff && showStatusRow)) && (
       <div className="kium-vfilters">
+        {!isOpenMode && (
         <div className="kium-frow">
           <span className="kium-frow-lb" id="kium-cf-cat">
             분야
@@ -412,42 +418,11 @@ export default function KiumCoursesTab() {
             ))}
           </div>
         </div>
+        )}
 
-        {isOpenMode && !seasonOff && (
+        {isOpenMode && !seasonOff && showStatusRow && (
           <>
-            <div className="kium-frow">
-              <span className="kium-frow-lb" id="kium-cf-month">
-                기간
-              </span>
-              <div className="kium-filters" role="group" aria-labelledby="kium-cf-month">
-                {/* 「기간」 행 라벨 아래의 맨숫자는 일수(6일짜리 과정)로 읽힌다.
-                    실제 값은 회차 수이므로 이 축에만 단위를 붙인다 — 분야·모집 상태는 무변경.
-                    숫자는 .cnt(tabular-nums), 단위는 <i>로 분리해 한글에 등폭이 걸리지 않게 한다. */}
-                <button
-                  type="button"
-                  className="kium-chip"
-                  aria-pressed={month === 'all'}
-                  aria-label={`기간 전체, ${future.length}개 회차`}
-                  onClick={() => changeMonth('all')}
-                >
-                  전체 <span className="cnt">{future.length}<i>회차</i></span>
-                </button>
-                {MONTHS.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    className="kium-chip"
-                    aria-pressed={month === m}
-                    aria-label={`${m}월, ${monthCount(m)}개 회차`}
-                    onClick={() => changeMonth(m)}
-                  >
-                    {m}월 <span className="cnt">{monthCount(m)}<i>회차</i></span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 모집 상태 칩은 기간·분야와 완전히 같은 플레인 칩이다.
+            {/* 모집 상태 칩은 분야 칩과 같은 플레인 칩이다.
                 상태 구분은 아이콘 stroke 한 축, 선택 표시는 네이비 반전 한 축 — 칩 안의 칩 금지 */}
             <div className="kium-frow">
               <span className="kium-frow-lb" id="kium-cf-st">
@@ -506,6 +481,7 @@ export default function KiumCoursesTab() {
           </>
         )}
       </div>
+      )}
 
       {/* 필터 결과 고지 — 시각으로는 섹션 헤더가 이미 말하므로 낭독 전용이다(v2.0 §3-6).
           조건부로 감싸지 않는다 — aria-live 영역은 내용이 바뀌기 **전부터** DOM에 있어야 읽힌다. */}
@@ -601,7 +577,7 @@ export default function KiumCoursesTab() {
         <KiumCourseGrid
           courses={courses}
           categories={categories}
-          cat={cat}
+          cat={isOpenMode ? 'all' : cat}
           onCat={changeCat}
           scope={isOpenMode ? visible : undefined}
           hideFilters
