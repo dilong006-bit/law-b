@@ -270,3 +270,18 @@
    실측: GNB 하단 73px (72 + 경계선 1), 홈은 SubNav 없음. 범위는 홈 본문 직속 #inq 만 (/kium·/content 의 #inq 는 제외) */
 body > main > #inq{scroll-margin-top:calc(73px + 16px - 35px)}
 @media(max-width:720px){body > main > #inq{scroll-margin-top:calc(73px + 16px - 81px)}}
+
+/* ── [F40 · 261007] 인재키움 공개교육 슬라이드 · C안 첫 장 교차 ─────────────────
+   ① 다음 개강 배지: 기존 .hs-tag 알약 안에 이어 붙인다(태그 줄 레이아웃·여백 불변, 신규 토큰 0) */
+.hs-tag-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.6);flex:none}
+.hs-tag-next{font-weight:700;letter-spacing:.02em;color:rgba(255,255,255,.92)}
+.hs-tag-next b{font-weight:800;color:#fff}
+/* ② 하이드레이션 전 첫 장(data-hero-start=kium): 법정을 숨기고 공개교육을 활성 상태로 그린다.
+   전환 효과 없이 즉시 적용 → 하이드레이션 후 React가 같은 장을 .active로 이어받아 화면 변화 0.
+   data-hero-ready가 켜지면 이 규칙은 모두 해제된다(이후는 기존 .active 규칙만 동작) */
+html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide{transition:none}
+html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide[data-slide="legal"]{opacity:0;visibility:hidden}
+html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide[data-slide="kium-open"]{opacity:1;visibility:visible}
+html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide[data-slide="kium-open"] :is(.hs-tag,.eyebrow,h1,.sub,.actions,.hs-link){opacity:1;transform:none}
+/* ③ 설명 줄바꿈은 PC 전용(760 이하에서 강제 줄바꿈이 한 단어 고아 줄을 만든다) */
+@media(max-width:760px){.hero-slide br.br-pc{display:none}}

@@ -294,3 +294,19 @@ export function getNextOpenSession(s: KiumSession, now: Date | null): KiumSessio
   if (sameCourse) return sameCourse;
   return getSessionsByDate().find((o) => o.id !== s.id && effectiveStatus(o, now) !== 'closed');
 }
+
+/**
+ * [F40 · 261007] 다음 개강 회차: 홈 히어로 공개교육 슬라이드 배지 「다음 개강 11.2(월)」.
+ * 개강일이 오늘 이후(오늘 포함)이고 마감이 아닌 회차 중 가장 빠른 것. 없으면 undefined(배지 숨김).
+ * now가 null(서버 렌더·마운트 전)이면 데이터 값을 그대로 신뢰한다(SSG 규칙 · 하이드레이션 일치).
+ */
+export function getUpcomingSession(now: Date | null): KiumSession | undefined {
+  let today: Date | null = null;
+  if (now) {
+    today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+  }
+  return getSessionsByDate().find(
+    (s) => effectiveStatus(s, now) !== 'closed' && (!today || toDate(s.start).getTime() >= today.getTime())
+  );
+}

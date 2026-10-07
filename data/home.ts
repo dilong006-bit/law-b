@@ -1,5 +1,6 @@
 // 홈 카피 — keess_home_C_v18 정본 verbatim (하드코딩 금지 · 여기서 주입)
 import { HUB_COPY, LEGAL_SEASON } from '@/data/legalHub';
+import { KIUM_OPEN_HREF } from '@/lib/kium/gotoOpen';
 
 // ── 히어로 캐러셀 5슬라이드 (원본 535) ──
 export interface HeroSlide {
@@ -22,7 +23,40 @@ export interface HeroSlide {
   secondary?: { label: string; href: string; gaId?: string };
   link?: { label: string; href: string; gaId?: string };
   trust?: string;
+  /** [F40] true면 태그 옆에 「다음 개강 M.D(요일)」를 회차 데이터로 자동 표기(회차 0건이면 숨김) */
+  nextOpenBadge?: boolean;
 }
+
+/**
+ * [보존 · F40 이전 운영본] 인재키움 프리미엄 정부지원 슬라이드.
+ * 카피는 lib/kium/content.ts hero 확정본의 축약형(재작성 아님). 현재 미노출.
+ */
+export const KIUM_GOV_SLIDE: HeroSlide = {
+  theme: 'kium',
+  tag: '정부지원',
+  eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
+  title: '교육비 부담은 낮추고, 훈련비의 90~95%는 환급 받고',
+  sub: '맞춤형 교육 설계부터 복잡한 환급 절차까지, KG에듀원이 함께합니다.',
+  cta: { label: '자세히 보기', href: '/kium' },
+};
+
+/**
+ * [F40 · 261007] 인재키움 공개교육 슬라이드: HRD사업팀 지예정 대리 원고(메인·서브·버튼) 그대로.
+ * 사진 슬롯 없이 kium 테마 그라디언트만 사용(LCP 이미지 추가 없음).
+ * 태그 옆 「다음 개강」은 lib/kium/sessions 회차 데이터에서 자동 계산(nextOpenBadge).
+ */
+const KIUM_OPEN_SLIDE: HeroSlide = {
+  id: 'kium-open',
+  theme: 'kium',
+  tag: '공개교육',
+  nextOpenBadge: true,
+  eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
+  // 원고 문구 그대로. 줄바꿈만 추가: 제목은 쉼표 뒤, 설명은 PC에서만(760 이하는 자연 줄바꿈 · home.css F40 .br-pc)
+  title: '필요한 직원만,<br>필요한 교육으로',
+  sub: '단 1명도 신청 가능한 공개교육으로 교육 운영의 부담은 낮추고, <br class="br-pc">필요한 역량은 바로 채워보세요.',
+  cta: { label: '공개교육 신청', href: KIUM_OPEN_HREF, gaId: 'hero_kium_open' },
+  link: { label: '인재키움 프리미엄 알아보기', href: '/kium', gaId: 'hero_kium_more' },
+};
 
 const BASE_HERO_SLIDES: HeroSlide[] = [
   {
@@ -34,17 +68,9 @@ const BASE_HERO_SLIDES: HeroSlide[] = [
     cta: { label: '교육 상담 신청', scroll: '#inq' },
     eager: true,
   },
-  // 인재키움 프리미엄 캠페인 — 카피는 lib/kium/content.ts hero 확정본의 축약형(재작성 아님).
-  // 사진 슬롯 없이 테마 그라디언트만 사용하고, CTA는 스크롤이 아닌 /kium 라우팅이다.
-  {
-    theme: 'kium',
-    // 이 슬라이드만 'EVENT ·' 접두를 뺀다 — 다른 슬라이드(EVENT·예시 / NEW·예시)는 현행 유지.
-    tag: '정부지원',
-    eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
-    title: '교육비 부담은 낮추고, 훈련비의 90~95%는 환급 받고',
-    sub: '맞춤형 교육 설계부터 복잡한 환급 절차까지, KG에듀원이 함께합니다.',
-    cta: { label: '자세히 보기', href: '/kium' },
-  },
+  // [F40 · 261007] 인재키움 정부지원 슬라이드 → 공개교육 슬라이드로 교체(KIUM_OPEN_SLIDE, 아래 정의).
+  //   종전 슬라이드는 KIUM_GOV_SLIDE로 보존한다. 복구 = 이 자리의 KIUM_OPEN_SLIDE를 KIUM_GOV_SLIDE로 바꾸면 끝.
+  KIUM_OPEN_SLIDE,
   {
     theme: 'event',
     img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop',
@@ -102,12 +128,30 @@ const LEGAL_HERO_SLIDE: HeroSlide = {
 };
 
 /**
- * 시즌 on: 법정 슬라이드를 선두에, 기존 슬라이드는 한 칸씩 뒤로(첫 장만 즉시 로드 — 나머지 eager 해제).
- * 시즌 off: 기존 배열 그대로(홈 DOM 이 B안 착수 전과 동일).
+ * [F40 · 261007] 첫 장 정책 (C안 · HRD사업팀 유현경 차장 동의, 지예정 대리 확인 중).
+ *   'alternate' = 접속마다 법정 ↔ 공개교육이 번갈아 첫 장(첫 방문은 50:50). 나머지 순서는 고정
+ *   'legal'     = 법정 슬라이드 고정 첫 장, 공개교육 2번째
+ *   'kium'      = 공개교육 슬라이드 고정 첫 장, 법정 2번째
+ * 회신 결과에 따라 이 값 하나만 바꾼다. 법정 시즌 off면 정책과 무관하게 BASE 순서(공개교육 2번째).
+ */
+export type HeroStart = 'alternate' | 'legal' | 'kium';
+export const HERO_START = 'alternate' as HeroStart;
+
+const REST_SLIDES = BASE_HERO_SLIDES.filter((sl) => sl !== KIUM_OPEN_SLIDE).map((sl) => ({ ...sl, eager: false }));
+
+/**
+ * 시즌 on: 법정 · 공개교육이 1·2번(순서는 HERO_START), 나머지는 기존 순서로 뒤에(eager 해제).
+ *   공개교육 슬라이드는 이미지가 없어 eager 대상이 아니다 → 이미지 즉시 로드는 법정 1장 그대로.
+ * 시즌 off: BASE 그대로.
  */
 export const HERO_SLIDES: HeroSlide[] = LEGAL_SEASON.on
-  ? [LEGAL_HERO_SLIDE, ...BASE_HERO_SLIDES.map((sl) => ({ ...sl, eager: false }))]
+  ? HERO_START === 'kium'
+    ? [KIUM_OPEN_SLIDE, LEGAL_HERO_SLIDE, ...REST_SLIDES]
+    : [LEGAL_HERO_SLIDE, KIUM_OPEN_SLIDE, ...REST_SLIDES]
   : BASE_HERO_SLIDES;
+
+/** 클라이언트 교차 대상 여부: true면 HeroCarousel이 1·2번을 접속마다 맞바꾼다 */
+export const HERO_ROTATE = LEGAL_SEASON.on && HERO_START === 'alternate';
 
 // ── 인트로 (원본 537-544) ──
 export const INTRO = {

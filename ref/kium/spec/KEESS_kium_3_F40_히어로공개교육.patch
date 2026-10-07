@@ -1,0 +1,360 @@
+diff --git a/README.md b/README.md
+index 3a17d0e7bf6fc45d819c0677a6ed9ea61a81b380..d87d21adcd1bb607c6260b6730e6900cb6314d4d 100644
+--- a/README.md
++++ b/README.md
+@@ -141,6 +141,11 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
+ 
+ ## 작업 이력 (Changelog)
+ 
++### ★ 홈 히어로 인재키움 공개교육 슬라이드 · 첫 장 교차 (F40 · 261007)
++- **슬라이드**: 정부지원 슬라이드 → 공개교육 슬라이드 교체(원고: HRD사업팀 지예정 대리, 종전 슬라이드는 `KIUM_GOV_SLIDE`로 보존). 태그 옆 `다음 개강 M.D(요일)`은 `getUpcomingSession()`이 회차 데이터로 자동 계산(0건이면 숨김)
++- **C안 첫 장 교차**: `HERO_START='alternate'`(data/home.ts) → 접속마다 법정 ↔ 공개교육이 번갈아 첫 장(첫 방문 50:50). 인라인 스크립트 + CSS로 하이드레이션 전 첫 장 확정(깜빡임 0), `<html suppressHydrationWarning>`. `'legal'` · `'kium'`으로 고정 전환 가능
++- **접근성**: 키보드 포커스가 캐러셀 안에 있으면 자동 넘김 정지
++
+ ### ★ GNB 인재키움 프리미엄 칩 강조 (F41 · 261007)
+ - **범위**: 글자 13→14px · 높이 32→36px · 좌우 여백 14→16px(히트 44px 유지). 반짝임 7s 무한 반복 → 진입 0.4s 후 2.2s × 2회(4.8s) 뒤 정지(WCAG 2.2.2), hover · 포커스 시 1회 재생. 모션 줄이기 시 반짝임 없음. 940px 이하(햄버거) 무변경
+ 
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 9a2ce0ad5eb841978836efd039aff687366df39c..3135e4a2cf8df63a06b3cd5cd9daf9af946f568e 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -29,8 +29,10 @@ export default function RootLayout({
+ }: {
+   children: React.ReactNode;
+ }) {
++  // [F40 · 261007] suppressHydrationWarning: 홈 히어로 인라인 스크립트가 첫 페인트 전 <html data-hero-start>를
++  //   붙인다(C안 첫 장 교차). 이 요소 자신의 속성 불일치 경고만 끄며 하위 트리 검사에는 영향 없다.
+   return (
+-    <html lang="ko" className={`${pretendard.variable} ${gowun.variable}`}>
++    <html lang="ko" className={`${pretendard.variable} ${gowun.variable}`} suppressHydrationWarning>
+       <body>
+         <a href="#main" className="skip-link">본문 바로가기</a>
+         {children}
+diff --git a/components/sections/home/HeroCarousel.tsx b/components/sections/home/HeroCarousel.tsx
+index f53d2534fa19ffed35b2d39b63bdd84004b269ea..049105308f979ba431e3833ed59e41c61e2bb97f 100644
+--- a/components/sections/home/HeroCarousel.tsx
++++ b/components/sections/home/HeroCarousel.tsx
+@@ -1,21 +1,78 @@
+ 'use client';
+ 
+ import Link from 'next/link';
+-import { useCallback, useEffect, useRef, useState } from 'react';
++import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+ import Img from '@/components/common/Img';
+-import { HERO_SLIDES } from '@/data/home';
++import { HERO_ROTATE, HERO_SLIDES } from '@/data/home';
+ import { LgIcon } from '@/components/legal-hub/icons';
++import { fmtDay, getUpcomingSession } from '@/lib/kium/sessions';
+ 
+ const DUR = 6000;
+ 
++/* ── [F40 · 261007] C안 첫 장 교차 ───────────────────────────────────────
++   SSG 마크업은 언제나 HERO_SLIDES 순서(법정 1 · 공개교육 2)다. 서버·첫 클라이언트 렌더가 같아야
++   하이드레이션이 일치하므로, 첫 장 결정은 두 단계로 나눈다.
++   ① 아래 인라인 스크립트: 첫 페인트 전에 <html data-hero-start="legal|kium">를 정한다.
++      CSS(home.css F40)가 하이드레이션 전까지 그 값으로 첫 장을 그린다 → 깜빡임 0.
++   ② 레이아웃 효과: 같은 값을 읽어 슬라이드 순서를 맞바꾸고 data-hero-ready를 켠다(페인트 전).
++   교차 규칙: 직전 접속의 첫 장과 반대(localStorage). 첫 방문·저장 불가는 50:50. */
++const START_KEY = 'keess_hero_start';
++const START_SCRIPT = `(function(){try{var k='${START_KEY}',v;try{var p=localStorage.getItem(k);v=p==='legal'?'kium':p==='kium'?'legal':(Math.random()<.5?'legal':'kium');localStorage.setItem(k,v)}catch(e){v=Math.random()<.5?'legal':'kium'}window.__keessHeroStart=v;document.documentElement.setAttribute('data-hero-start',v)}catch(e){}})();`;
++
++/** 클라이언트 전환(다른 페이지 → 홈)처럼 스크립트가 다시 돌지 않은 마운트에서 같은 규칙으로 고른다 */
++function pickStart(): 'legal' | 'kium' {
++  const w = window as unknown as { __keessHeroStart?: 'legal' | 'kium' };
++  if (w.__keessHeroStart) {
++    const v = w.__keessHeroStart;
++    w.__keessHeroStart = undefined; // 이번 접속분은 소비: 다음 마운트는 새로 교차
++    return v;
++  }
++  let v: 'legal' | 'kium';
++  try {
++    const p = localStorage.getItem(START_KEY);
++    v = p === 'legal' ? 'kium' : p === 'kium' ? 'legal' : Math.random() < 0.5 ? 'legal' : 'kium';
++    localStorage.setItem(START_KEY, v);
++  } catch {
++    v = Math.random() < 0.5 ? 'legal' : 'kium';
++  }
++  document.documentElement.setAttribute('data-hero-start', v);
++  return v;
++}
++
++/** 서버에서는 useEffect(경고 방지), 브라우저에서는 페인트 전 실행 */
++const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
++
++/** [F40] 「다음 개강 11.2(월)」: SSG는 데이터 기준, 마운트 후 오늘 날짜로 다시 계산 */
++function useNextOpenLabel(): string | null {
++  const calc = (now: Date | null) => {
++    const s = getUpcomingSession(now);
++    return s ? fmtDay(s.start) : null;
++  };
++  const [label, setLabel] = useState<string | null>(() => calc(null));
++  useEffect(() => setLabel(calc(new Date())), []);
++  return label;
++}
++
+ export default function HeroCarousel() {
++  const [slides, setSlides] = useState(HERO_SLIDES);
++  const [ready, setReady] = useState(!HERO_ROTATE);
+   const [i, setI] = useState(0);
+   const [playing, setPlaying] = useState(true);
+   const rmRef = useRef(false);
+   const hoverRef = useRef(false);
++  /** [F40] 키보드 포커스가 캐러셀 안에 있는 동안 자동 넘김 정지(WCAG 2.2.2 보강) */
++  const focusRef = useRef(false);
++  const nextOpen = useNextOpenLabel();
+   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+   const progRef = useRef<HTMLSpanElement>(null);
+-  const n = HERO_SLIDES.length;
++  const n = slides.length;
++
++  // [F40] C안: 페인트 전에 1·2번 순서를 확정(인라인 스크립트가 고른 값과 동일)
++  useIsoLayoutEffect(() => {
++    if (!HERO_ROTATE) return;
++    if (pickStart() === 'kium') setSlides([HERO_SLIDES[1], HERO_SLIDES[0], ...HERO_SLIDES.slice(2)]);
++    setReady(true);
++  }, []);
+ 
+   const pad = (x: number) => ('0' + x).slice(-2);
+ 
+@@ -42,7 +99,7 @@ export default function HeroCarousel() {
+ 
+   const schedule = useCallback(() => {
+     if (timer.current) clearTimeout(timer.current);
+-    if (playing && !rmRef.current && !hoverRef.current) {
++    if (playing && !rmRef.current && !hoverRef.current && !focusRef.current) {
+       resetProg();
+       runProg();
+       timer.current = setTimeout(() => setI((x) => (x + 1) % n), DUR);
+@@ -72,7 +129,19 @@ export default function HeroCarousel() {
+   };
+   const onLeave = () => {
+     hoverRef.current = false;
+-    if (playing && !rmRef.current) schedule();
++    if (playing && !rmRef.current && !focusRef.current) schedule();
++  };
++  // [F40] 포커스 진입/이탈: 캐러셀 밖으로 나갈 때만 재개
++  const onFocusIn = () => {
++    if (focusRef.current) return;
++    focusRef.current = true;
++    if (timer.current) clearTimeout(timer.current);
++    freezeProg();
++  };
++  const onFocusOut = (e: React.FocusEvent<HTMLElement>) => {
++    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
++    focusRef.current = false;
++    if (playing && !rmRef.current && !hoverRef.current) schedule();
+   };
+ 
+   const rm = () => rmRef.current;
+@@ -82,20 +151,27 @@ export default function HeroCarousel() {
+   };
+ 
+   return (
++    <>
++    {/* [F40] 첫 페인트 전 첫 장 결정: 교차 대상일 때만 출력 */}
++    {HERO_ROTATE && <script dangerouslySetInnerHTML={{ __html: START_SCRIPT }} />}
+     <section
+       className="hero"
+       id="hero"
+       aria-roledescription="carousel"
+       aria-label="주요 소식"
++      data-hero-ready={ready ? '' : undefined}
+       onMouseEnter={onEnter}
+       onMouseLeave={onLeave}
++      onFocus={onFocusIn}
++      onBlur={onFocusOut}
+     >
+       <div className="hero-track">
+-        {HERO_SLIDES.map((s, k) => (
++        {slides.map((s, k) => (
+           <div
+             key={s.id ?? s.theme}
+             className={`hero-slide${k === i ? ' active' : ''}`}
+             data-theme={s.theme}
++            data-slide={s.id}
+             aria-hidden={k === i ? 'false' : 'true'}
+           >
+             <div className="hs-bg" />
+@@ -109,7 +185,18 @@ export default function HeroCarousel() {
+             <div className="hs-scrim" />
+             <div className="wrap">
+               <div className="hs-content">
+-                {s.tag && <div className="hs-tag">{s.tag}</div>}
++                {s.tag && (
++                  <div className="hs-tag">
++                    {s.tag}
++                    {/* [F40] 다음 개강: 회차 0건이면 출력하지 않는다 */}
++                    {s.nextOpenBadge && nextOpen && (
++                      <>
++                        <span className="hs-tag-dot" aria-hidden="true" />
++                        <span className="hs-tag-next">다음 개강 <b>{nextOpen}</b></span>
++                      </>
++                    )}
++                  </div>
++                )}
+                 {s.eyebrow && <p className="eyebrow">{s.eyebrow}</p>}
+                 <h1 dangerouslySetInnerHTML={{ __html: s.title }} />
+                 <p className="sub" dangerouslySetInnerHTML={{ __html: s.sub }} />
+@@ -162,5 +249,6 @@ export default function HeroCarousel() {
+       </div>
+       <div className="scrolldown">SCROLL<div className="bar" /></div>
+     </section>
++    </>
+   );
+ }
+diff --git a/data/home.ts b/data/home.ts
+index 56c6a19347d06cc72240c8a686976f6e76825939..01590105daa69d7d4cacdabf430bd4c9b91688e7 100644
+--- a/data/home.ts
++++ b/data/home.ts
+@@ -1,5 +1,6 @@
+ // 홈 카피 — keess_home_C_v18 정본 verbatim (하드코딩 금지 · 여기서 주입)
+ import { HUB_COPY, LEGAL_SEASON } from '@/data/legalHub';
++import { KIUM_OPEN_HREF } from '@/lib/kium/gotoOpen';
+ 
+ // ── 히어로 캐러셀 5슬라이드 (원본 535) ──
+ export interface HeroSlide {
+@@ -22,8 +23,41 @@ export interface HeroSlide {
+   secondary?: { label: string; href: string; gaId?: string };
+   link?: { label: string; href: string; gaId?: string };
+   trust?: string;
++  /** [F40] true면 태그 옆에 「다음 개강 M.D(요일)」를 회차 데이터로 자동 표기(회차 0건이면 숨김) */
++  nextOpenBadge?: boolean;
+ }
+ 
++/**
++ * [보존 · F40 이전 운영본] 인재키움 프리미엄 정부지원 슬라이드.
++ * 카피는 lib/kium/content.ts hero 확정본의 축약형(재작성 아님). 현재 미노출.
++ */
++export const KIUM_GOV_SLIDE: HeroSlide = {
++  theme: 'kium',
++  tag: '정부지원',
++  eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
++  title: '교육비 부담은 낮추고, 훈련비의 90~95%는 환급 받고',
++  sub: '맞춤형 교육 설계부터 복잡한 환급 절차까지, KG에듀원이 함께합니다.',
++  cta: { label: '자세히 보기', href: '/kium' },
++};
++
++/**
++ * [F40 · 261007] 인재키움 공개교육 슬라이드: HRD사업팀 지예정 대리 원고(메인·서브·버튼) 그대로.
++ * 사진 슬롯 없이 kium 테마 그라디언트만 사용(LCP 이미지 추가 없음).
++ * 태그 옆 「다음 개강」은 lib/kium/sessions 회차 데이터에서 자동 계산(nextOpenBadge).
++ */
++const KIUM_OPEN_SLIDE: HeroSlide = {
++  id: 'kium-open',
++  theme: 'kium',
++  tag: '공개교육',
++  nextOpenBadge: true,
++  eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
++  // 원고 문구 그대로. 줄바꿈만 추가: 제목은 쉼표 뒤, 설명은 PC에서만(760 이하는 자연 줄바꿈 · home.css F40 .br-pc)
++  title: '필요한 직원만,<br>필요한 교육으로',
++  sub: '단 1명도 신청 가능한 공개교육으로 교육 운영의 부담은 낮추고, <br class="br-pc">필요한 역량은 바로 채워보세요.',
++  cta: { label: '공개교육 신청', href: KIUM_OPEN_HREF, gaId: 'hero_kium_open' },
++  link: { label: '인재키움 프리미엄 알아보기', href: '/kium', gaId: 'hero_kium_more' },
++};
++
+ const BASE_HERO_SLIDES: HeroSlide[] = [
+   {
+     theme: 'brand',
+@@ -34,17 +68,9 @@ const BASE_HERO_SLIDES: HeroSlide[] = [
+     cta: { label: '교육 상담 신청', scroll: '#inq' },
+     eager: true,
+   },
+-  // 인재키움 프리미엄 캠페인 — 카피는 lib/kium/content.ts hero 확정본의 축약형(재작성 아님).
+-  // 사진 슬롯 없이 테마 그라디언트만 사용하고, CTA는 스크롤이 아닌 /kium 라우팅이다.
+-  {
+-    theme: 'kium',
+-    // 이 슬라이드만 'EVENT ·' 접두를 뺀다 — 다른 슬라이드(EVENT·예시 / NEW·예시)는 현행 유지.
+-    tag: '정부지원',
+-    eyebrow: '2026 중소기업 인재 키움 프리미엄 훈련',
+-    title: '교육비 부담은 낮추고, 훈련비의 90~95%는 환급 받고',
+-    sub: '맞춤형 교육 설계부터 복잡한 환급 절차까지, KG에듀원이 함께합니다.',
+-    cta: { label: '자세히 보기', href: '/kium' },
+-  },
++  // [F40 · 261007] 인재키움 정부지원 슬라이드 → 공개교육 슬라이드로 교체(KIUM_OPEN_SLIDE, 아래 정의).
++  //   종전 슬라이드는 KIUM_GOV_SLIDE로 보존한다. 복구 = 이 자리의 KIUM_OPEN_SLIDE를 KIUM_GOV_SLIDE로 바꾸면 끝.
++  KIUM_OPEN_SLIDE,
+   {
+     theme: 'event',
+     img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop',
+@@ -102,13 +128,31 @@ const LEGAL_HERO_SLIDE: HeroSlide = {
+ };
+ 
+ /**
+- * 시즌 on: 법정 슬라이드를 선두에, 기존 슬라이드는 한 칸씩 뒤로(첫 장만 즉시 로드 — 나머지 eager 해제).
+- * 시즌 off: 기존 배열 그대로(홈 DOM 이 B안 착수 전과 동일).
++ * [F40 · 261007] 첫 장 정책 (C안 · HRD사업팀 유현경 차장 동의, 지예정 대리 확인 중).
++ *   'alternate' = 접속마다 법정 ↔ 공개교육이 번갈아 첫 장(첫 방문은 50:50). 나머지 순서는 고정
++ *   'legal'     = 법정 슬라이드 고정 첫 장, 공개교육 2번째
++ *   'kium'      = 공개교육 슬라이드 고정 첫 장, 법정 2번째
++ * 회신 결과에 따라 이 값 하나만 바꾼다. 법정 시즌 off면 정책과 무관하게 BASE 순서(공개교육 2번째).
++ */
++export type HeroStart = 'alternate' | 'legal' | 'kium';
++export const HERO_START = 'alternate' as HeroStart;
++
++const REST_SLIDES = BASE_HERO_SLIDES.filter((sl) => sl !== KIUM_OPEN_SLIDE).map((sl) => ({ ...sl, eager: false }));
++
++/**
++ * 시즌 on: 법정 · 공개교육이 1·2번(순서는 HERO_START), 나머지는 기존 순서로 뒤에(eager 해제).
++ *   공개교육 슬라이드는 이미지가 없어 eager 대상이 아니다 → 이미지 즉시 로드는 법정 1장 그대로.
++ * 시즌 off: BASE 그대로.
+  */
+ export const HERO_SLIDES: HeroSlide[] = LEGAL_SEASON.on
+-  ? [LEGAL_HERO_SLIDE, ...BASE_HERO_SLIDES.map((sl) => ({ ...sl, eager: false }))]
++  ? HERO_START === 'kium'
++    ? [KIUM_OPEN_SLIDE, LEGAL_HERO_SLIDE, ...REST_SLIDES]
++    : [LEGAL_HERO_SLIDE, KIUM_OPEN_SLIDE, ...REST_SLIDES]
+   : BASE_HERO_SLIDES;
+ 
++/** 클라이언트 교차 대상 여부: true면 HeroCarousel이 1·2번을 접속마다 맞바꾼다 */
++export const HERO_ROTATE = LEGAL_SEASON.on && HERO_START === 'alternate';
++
+ // ── 인트로 (원본 537-544) ──
+ export const INTRO = {
+   eyebrow: 'KG에듀원 교육체계',
+diff --git a/lib/kium/sessions.ts b/lib/kium/sessions.ts
+index 23bf3aa067783cacbecee78d9468eabdf225efab..4e51899303ea8feda48fa4534984849c02300608 100644
+--- a/lib/kium/sessions.ts
++++ b/lib/kium/sessions.ts
+@@ -294,3 +294,19 @@ export function getNextOpenSession(s: KiumSession, now: Date | null): KiumSessio
+   if (sameCourse) return sameCourse;
+   return getSessionsByDate().find((o) => o.id !== s.id && effectiveStatus(o, now) !== 'closed');
+ }
++
++/**
++ * [F40 · 261007] 다음 개강 회차: 홈 히어로 공개교육 슬라이드 배지 「다음 개강 11.2(월)」.
++ * 개강일이 오늘 이후(오늘 포함)이고 마감이 아닌 회차 중 가장 빠른 것. 없으면 undefined(배지 숨김).
++ * now가 null(서버 렌더·마운트 전)이면 데이터 값을 그대로 신뢰한다(SSG 규칙 · 하이드레이션 일치).
++ */
++export function getUpcomingSession(now: Date | null): KiumSession | undefined {
++  let today: Date | null = null;
++  if (now) {
++    today = new Date(now);
++    today.setHours(0, 0, 0, 0);
++  }
++  return getSessionsByDate().find(
++    (s) => effectiveStatus(s, now) !== 'closed' && (!today || toDate(s.start).getTime() >= today.getTime())
++  );
++}
+diff --git a/styles/home.css b/styles/home.css
+index 3c63b7cfa354d7991a1996ad3df7fe56cf6cd1f9..582cb6235e3242c959908bbc0c6aaece9941ab50 100644
+--- a/styles/home.css
++++ b/styles/home.css
+@@ -270,3 +270,18 @@
+    실측: GNB 하단 73px (72 + 경계선 1), 홈은 SubNav 없음. 범위는 홈 본문 직속 #inq 만 (/kium·/content 의 #inq 는 제외) */
+ body > main > #inq{scroll-margin-top:calc(73px + 16px - 35px)}
+ @media(max-width:720px){body > main > #inq{scroll-margin-top:calc(73px + 16px - 81px)}}
++
++/* ── [F40 · 261007] 인재키움 공개교육 슬라이드 · C안 첫 장 교차 ─────────────────
++   ① 다음 개강 배지: 기존 .hs-tag 알약 안에 이어 붙인다(태그 줄 레이아웃·여백 불변, 신규 토큰 0) */
++.hs-tag-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.6);flex:none}
++.hs-tag-next{font-weight:700;letter-spacing:.02em;color:rgba(255,255,255,.92)}
++.hs-tag-next b{font-weight:800;color:#fff}
++/* ② 하이드레이션 전 첫 장(data-hero-start=kium): 법정을 숨기고 공개교육을 활성 상태로 그린다.
++   전환 효과 없이 즉시 적용 → 하이드레이션 후 React가 같은 장을 .active로 이어받아 화면 변화 0.
++   data-hero-ready가 켜지면 이 규칙은 모두 해제된다(이후는 기존 .active 규칙만 동작) */
++html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide{transition:none}
++html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide[data-slide="legal"]{opacity:0;visibility:hidden}
++html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide[data-slide="kium-open"]{opacity:1;visibility:visible}
++html[data-hero-start="kium"] .hero:not([data-hero-ready]) .hero-slide[data-slide="kium-open"] :is(.hs-tag,.eyebrow,h1,.sub,.actions,.hs-link){opacity:1;transform:none}
++/* ③ 설명 줄바꿈은 PC 전용(760 이하에서 강제 줄바꿈이 한 단어 고아 줄을 만든다) */
++@media(max-width:760px){.hero-slide br.br-pc{display:none}}

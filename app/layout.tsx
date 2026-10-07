@@ -29,8 +29,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // [F40 · 261007] suppressHydrationWarning: 홈 히어로 인라인 스크립트가 첫 페인트 전 <html data-hero-start>를
+  //   붙인다(C안 첫 장 교차). 이 요소 자신의 속성 불일치 경고만 끄며 하위 트리 검사에는 영향 없다.
   return (
-    <html lang="ko" className={`${pretendard.variable} ${gowun.variable}`}>
+    <html lang="ko" className={`${pretendard.variable} ${gowun.variable}`} suppressHydrationWarning>
       <body>
         <a href="#main" className="skip-link">본문 바로가기</a>
         {children}
