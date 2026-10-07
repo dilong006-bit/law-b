@@ -7,6 +7,7 @@
 | 기준 커밋 | feat/legal-b ce05d8b |
 | 커밋 | 16 `d7a4341` 구조·문구 / 17 `f1754cd` 폼 / 18 검수·보고 (이 문서) |
 | 작성일 | 2026-10-06 |
+| 이관 문서 | [ref/legal/HANDOFF_legal-B_upgrade-04.md](HANDOFF_legal-B_upgrade-04.md) |
 
 ## 1. 요청 9건 반영 결과
 
@@ -121,7 +122,7 @@
 | 콘솔 오류 | 0 (11폭 + 해시 진입) |
 | CLS (로드) | / 0, /content 0.0005~0.0007 |
 | 외부 요청 | images.unsplash.com 만 |
-| axe | /content `aria-prohibited-attr .xls` 1건, 홈 `heading-order` 1건: 둘 다 기준 배포본(ce05d8b)과 동일한 기존 값, 신규 0 |
+| axe | /content `aria-prohibited-attr .xls` 1건, 홈 `heading-order` 1건: 둘 다 기준 배포본(ce05d8b)과 동일한 기존 값, 신규 0. §9 S1·S2 참고 |
 | tsc · build | 통과 |
 | 단위 | 35 / 35 (review261006 6 포함) |
 | E2E | 129 / 129 (legal-review-261006 12, uiux-k2 6 포함). 워커 4 실행에서는 매회 다른 3~4건이 브라우저 정지(2분 타임아웃)·1.2초 타이머 지연으로 실패, 단독 재실행 통과, 워커 2 전체 실행 129 통과 |
@@ -141,3 +142,14 @@
 - 예상 교육인원 새 값 `lte300` ('~ 300명'): 수신 측 코드표·통계 매핑 추가 필요 (전 폼 공통)
 - 희망과정 토큰: 문의 내용 앞 `[희망과정: …]` 에 '산업안전보건교육' 이 포함될 수 있음 (자체 콘텐츠 없음, 제휴·후속 제안 대상)
 - 진단·법정 기준 표·지표는 플래그(`diagnose.show`, `law.show`, `head.statsShow`)로 복원 가능
+
+## 9. 사이트 공통 개선 항목
+
+- 이번 변경과 무관한 기존 이슈. 이번 범위에서는 수정하지 않음
+
+| No | 위치 | 내용 | 기준 |
+|---|---|---|---|
+| S1 | /content `.xls` | axe aria-prohibited-attr 1건 | README R5 기존 값 |
+| S2 | 홈 `#p1 .ptext .lines` | axe heading-order 1건 | 기준 배포본 ce05d8b 동일 |
+| S3 | /hrd 첫 방문 | CLS 0.0128 | README R5 기존 값 |
+| S4 | E2E (tests-fi) | 동시 실행 4개 불안정 (이 PC 기준, 브라우저 정지·타이머 지연) | workers 2 로 고정 완료 (5317ac4) |
