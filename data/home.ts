@@ -1,6 +1,7 @@
 // 홈 카피 — keess_home_C_v18 정본 verbatim (하드코딩 금지 · 여기서 주입)
 import { HUB_COPY, LEGAL_SEASON } from '@/data/legalHub';
 import { KIUM_OPEN_HREF } from '@/lib/kium/gotoOpen';
+import { KIUM_BROCHURE } from '@/lib/kium/brochure';
 
 // ── 히어로 캐러셀 5슬라이드 (원본 535) ──
 export interface HeroSlide {
@@ -20,7 +21,8 @@ export interface HeroSlide {
   cta: { label: string; scroll?: string; href?: string; gaId?: string };
   eager?: boolean;
   /** 이하 선택 필드(legal-B LB18) — 값이 있을 때만 렌더 */
-  secondary?: { label: string; href: string; gaId?: string };
+  /** download(선택, F42) = 파일 다운로드 링크(<a download>)로 렌더 · 값은 저장 파일명 */
+  secondary?: { label: string; href: string; gaId?: string; download?: string };
   link?: { label: string; href: string; gaId?: string };
   trust?: string;
   /** [F40] true면 태그 옆에 「다음 개강 M.D(요일)」를 회차 데이터로 자동 표기(회차 0건이면 숨김) */
@@ -55,6 +57,10 @@ const KIUM_OPEN_SLIDE: HeroSlide = {
   title: '필요한 직원만,<br>필요한 교육으로',
   sub: '단 1명도 신청 가능한 공개교육으로 교육 운영의 부담은 낮추고, <br class="br-pc">필요한 역량은 바로 채워보세요.',
   cta: { label: '공개교육 신청', href: KIUM_OPEN_HREF, gaId: 'hero_kium_open' },
+  // [F42] 과정 소개서: KIUM_BROCHURE.ready=true일 때만 2차 버튼 생성(false면 필드 자체가 없다)
+  ...(KIUM_BROCHURE.ready
+    ? { secondary: { label: KIUM_BROCHURE.label, href: KIUM_BROCHURE.href, gaId: 'hero_kium_brochure', download: KIUM_BROCHURE.fileName } }
+    : {}),
   link: { label: '인재키움 프리미엄 알아보기', href: '/kium', gaId: 'hero_kium_more' },
 };
 

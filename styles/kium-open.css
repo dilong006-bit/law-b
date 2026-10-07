@@ -333,6 +333,15 @@ button.kium-pill-ses:focus-visible{border-color:currentColor;box-shadow:var(--sh
 
 /* ── 보기 전환 세그먼트 ───────────────────────────────────────── */
 .kium-modeseg-row{margin-top:22px;display:flex}
+/* [F42 · 261007] 과정 소개서 링크: 세그먼트 행 오른쪽(좁은 화면은 아래 줄). 링크가 없으면 행은 종전과 같다 */
+.kium-modeseg-row:has(.kium-brochure){flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px}
+.kium-brochure{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 4px;
+  font-size:14px;font-weight:700;color:var(--p1);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--p1) 35%,transparent);
+  text-underline-offset:5px;transition:text-decoration-color .2s var(--ease)}
+.kium-brochure .ic{flex:none}
+.kium-brochure .meta{display:inline-block;font-size:12px;font-weight:600;color:var(--muted)}
+.kium-brochure:focus-visible{outline:2px solid var(--p1);outline-offset:2px;border-radius:6px}
+@media (hover:hover) and (pointer:fine){.kium-brochure:hover{text-decoration-color:var(--p1)}}
 .kium-modeseg .kium-viewseg-btn{display:inline-flex;align-items:center;gap:7px}
 .kium-modeseg .cnt{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
 .kium-modeseg .kium-viewseg-btn[aria-pressed="true"] .cnt{color:var(--p1)}

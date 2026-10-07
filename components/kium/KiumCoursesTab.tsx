@@ -15,6 +15,7 @@ import {
 } from './kiumIcons';
 import { KIUM_CONTENT } from '@/lib/kium/content';
 import { KIUM_GOTO_OPEN_EVENT } from '@/lib/kium/gotoOpen';
+import { KIUM_BROCHURE } from '@/lib/kium/brochure';
 import { KIUM_OPEN_THUMBS } from '@/lib/kium/openThumbs';
 import { KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
 import { getAllCourses, getCourseById, getOpenFaq } from '@/lib/kium/queries';
@@ -369,6 +370,21 @@ export default function KiumCoursesTab() {
             공개교육 <span className="cnt">{openCourseTotal}</span>
           </button>
         </div>
+        {/* [F42] 과정 소개서: 게시 스위치(KIUM_BROCHURE.ready) on일 때만 DOM 생성. 두 보기 공통 */}
+        {KIUM_BROCHURE.ready && (
+          <a
+            className="kium-brochure"
+            href={KIUM_BROCHURE.href}
+            download={KIUM_BROCHURE.fileName}
+            data-ga-id="kium_brochure_download"
+          >
+            <svg className="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" />
+            </svg>
+            {KIUM_BROCHURE.label}
+            <span className="meta">{KIUM_BROCHURE.sizeLabel}</span>
+          </a>
+        )}
       </div>
       {/* ── 필터 — 보기를 고르고, 그 안에서 거른다 ─────────────────────
           [F38 · 261007] 과정 11개 규모라 전체과정 보기도 분야 필터를 두지 않는다(카드 분야 라벨로 충분).

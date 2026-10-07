@@ -1,0 +1,225 @@
+diff --git a/README.md b/README.md
+index d87d21adcd1bb607c6260b6730e6900cb6314d4d..25510d6815b2d630bb16bcf5c1b3fdb47f173916 100644
+--- a/README.md
++++ b/README.md
+@@ -141,6 +141,10 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
+ 
+ ## 작업 이력 (Changelog)
+ 
++### ★ 인재키움 과정 소개서 다운로드 (F42 · 261007 · 게시 스위치 off)
++- **범위**: `lib/kium/brochure.ts` `ready=false` → 버튼 DOM 미생성. 개정본 수령 시 ①`public/downloads/` 파일 배치 ②`sizeLabel` 실측 ③`ready=true` 3가지만 변경. 노출 위치: 홈 공개교육 슬라이드 2차 버튼 + 과정안내 세그먼트 행 오른쪽(폼 없는 직접 다운로드)
++- **회귀**: `scripts/verify-kium-f40.mjs` 22단언(F40~F43 통합) 신설
++
+ ### ★ 홈 히어로 인재키움 공개교육 슬라이드 · 첫 장 교차 (F40 · 261007)
+ - **슬라이드**: 정부지원 슬라이드 → 공개교육 슬라이드 교체(원고: HRD사업팀 지예정 대리, 종전 슬라이드는 `KIUM_GOV_SLIDE`로 보존). 태그 옆 `다음 개강 M.D(요일)`은 `getUpcomingSession()`이 회차 데이터로 자동 계산(0건이면 숨김)
+ - **C안 첫 장 교차**: `HERO_START='alternate'`(data/home.ts) → 접속마다 법정 ↔ 공개교육이 번갈아 첫 장(첫 방문 50:50). 인라인 스크립트 + CSS로 하이드레이션 전 첫 장 확정(깜빡임 0), `<html suppressHydrationWarning>`. `'legal'` · `'kium'`으로 고정 전환 가능
+diff --git a/components/kium/KiumCoursesTab.tsx b/components/kium/KiumCoursesTab.tsx
+index d1573a6463d4ec0e84121fda64d0e8e26c88f27f..4449aebc547f7443be59d5bef09c0f4a661f9265 100644
+--- a/components/kium/KiumCoursesTab.tsx
++++ b/components/kium/KiumCoursesTab.tsx
+@@ -15,6 +15,7 @@ import {
+ } from './kiumIcons';
+ import { KIUM_CONTENT } from '@/lib/kium/content';
+ import { KIUM_GOTO_OPEN_EVENT } from '@/lib/kium/gotoOpen';
++import { KIUM_BROCHURE } from '@/lib/kium/brochure';
+ import { KIUM_OPEN_THUMBS } from '@/lib/kium/openThumbs';
+ import { KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
+ import { getAllCourses, getCourseById, getOpenFaq } from '@/lib/kium/queries';
+@@ -369,6 +370,21 @@ export default function KiumCoursesTab() {
+             공개교육 <span className="cnt">{openCourseTotal}</span>
+           </button>
+         </div>
++        {/* [F42] 과정 소개서: 게시 스위치(KIUM_BROCHURE.ready) on일 때만 DOM 생성. 두 보기 공통 */}
++        {KIUM_BROCHURE.ready && (
++          <a
++            className="kium-brochure"
++            href={KIUM_BROCHURE.href}
++            download={KIUM_BROCHURE.fileName}
++            data-ga-id="kium_brochure_download"
++          >
++            <svg className="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
++              <path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" />
++            </svg>
++            {KIUM_BROCHURE.label}
++            <span className="meta">{KIUM_BROCHURE.sizeLabel}</span>
++          </a>
++        )}
+       </div>
+       {/* ── 필터 — 보기를 고르고, 그 안에서 거른다 ─────────────────────
+           [F38 · 261007] 과정 11개 규모라 전체과정 보기도 분야 필터를 두지 않는다(카드 분야 라벨로 충분).
+diff --git a/components/sections/home/HeroCarousel.tsx b/components/sections/home/HeroCarousel.tsx
+index 049105308f979ba431e3833ed59e41c61e2bb97f..556303bb97c609c306a5856f106c238ae4d912c1 100644
+--- a/components/sections/home/HeroCarousel.tsx
++++ b/components/sections/home/HeroCarousel.tsx
+@@ -212,11 +212,16 @@ export default function HeroCarousel() {
+                       {s.cta.label}
+                     </button>
+                   )}
+-                  {s.secondary && (
++                  {s.secondary && (s.secondary.download ? (
++                    // [F42] 파일 다운로드: 라우팅 대상이 아니므로 Link가 아닌 <a download>
++                    <a className="btn btn-glass" href={s.secondary.href} download={s.secondary.download} data-ga-id={s.secondary.gaId}>
++                      {s.secondary.label}
++                    </a>
++                  ) : (
+                     <Link className="btn btn-glass" href={s.secondary.href} data-ga-id={s.secondary.gaId}>
+                       {s.secondary.label}
+                     </Link>
+-                  )}
++                  ))}
+                 </div>
+                 {s.link && <Link className="hs-link" href={s.link.href} data-ga-id={s.link.gaId}>{s.link.label} <LgIcon name="arrow-right" size={16} /></Link>}
+                 {s.trust && <p className="hs-trust">{s.trust}</p>}
+diff --git a/data/home.ts b/data/home.ts
+index 01590105daa69d7d4cacdabf430bd4c9b91688e7..b4a119b343e8dfc6119c1f09c9b339ce20f4848b 100644
+--- a/data/home.ts
++++ b/data/home.ts
+@@ -1,6 +1,7 @@
+ // 홈 카피 — keess_home_C_v18 정본 verbatim (하드코딩 금지 · 여기서 주입)
+ import { HUB_COPY, LEGAL_SEASON } from '@/data/legalHub';
+ import { KIUM_OPEN_HREF } from '@/lib/kium/gotoOpen';
++import { KIUM_BROCHURE } from '@/lib/kium/brochure';
+ 
+ // ── 히어로 캐러셀 5슬라이드 (원본 535) ──
+ export interface HeroSlide {
+@@ -20,7 +21,8 @@ export interface HeroSlide {
+   cta: { label: string; scroll?: string; href?: string; gaId?: string };
+   eager?: boolean;
+   /** 이하 선택 필드(legal-B LB18) — 값이 있을 때만 렌더 */
+-  secondary?: { label: string; href: string; gaId?: string };
++  /** download(선택, F42) = 파일 다운로드 링크(<a download>)로 렌더 · 값은 저장 파일명 */
++  secondary?: { label: string; href: string; gaId?: string; download?: string };
+   link?: { label: string; href: string; gaId?: string };
+   trust?: string;
+   /** [F40] true면 태그 옆에 「다음 개강 M.D(요일)」를 회차 데이터로 자동 표기(회차 0건이면 숨김) */
+@@ -55,6 +57,10 @@ const KIUM_OPEN_SLIDE: HeroSlide = {
+   title: '필요한 직원만,<br>필요한 교육으로',
+   sub: '단 1명도 신청 가능한 공개교육으로 교육 운영의 부담은 낮추고, <br class="br-pc">필요한 역량은 바로 채워보세요.',
+   cta: { label: '공개교육 신청', href: KIUM_OPEN_HREF, gaId: 'hero_kium_open' },
++  // [F42] 과정 소개서: KIUM_BROCHURE.ready=true일 때만 2차 버튼 생성(false면 필드 자체가 없다)
++  ...(KIUM_BROCHURE.ready
++    ? { secondary: { label: KIUM_BROCHURE.label, href: KIUM_BROCHURE.href, gaId: 'hero_kium_brochure', download: KIUM_BROCHURE.fileName } }
++    : {}),
+   link: { label: '인재키움 프리미엄 알아보기', href: '/kium', gaId: 'hero_kium_more' },
+ };
+ 
+diff --git a/lib/kium/brochure.ts b/lib/kium/brochure.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..7d64608bd5acded96cd6da66527c34d0dee39457
+--- /dev/null
++++ b/lib/kium/brochure.ts
+@@ -0,0 +1,19 @@
++/**
++ * [F42 · 261007] 인재키움 프리미엄 공개교육 과정 소개서 (HRD사업팀 요청).
++ *
++ * ★ 게시 스위치: ready
++ *   false = 다운로드 버튼을 DOM에 만들지 않는다(홈 히어로 2차 버튼 · 과정안내 상단 링크 모두).
++ *   true  = 두 위치에 노출. 반드시 public/downloads/ 에 아래 fileName 파일이 있어야 한다.
++ *
++ * 현재 false 사유: 수령본(과정개요서)에 폐강 8과정·단가가 포함돼 게시 불가.
++ *   개정본(노출 11과정 · 단가 제외) 수령 시 ①파일 배치 ②sizeLabel 실측 기입 ③ready=true, 3가지만 바꾼다.
++ * 방식: 폼 없는 직접 다운로드(게이트 없음). 다운로드 후 상담은 기존 [문의하기]·회차 카드 흐름이 받는다.
++ */
++export const KIUM_BROCHURE = {
++  ready: false,
++  label: '과정 소개서 받기',
++  fileName: 'KG에듀원_인재키움프리미엄_공개교육_과정소개서.pdf',
++  href: '/downloads/KG에듀원_인재키움프리미엄_공개교육_과정소개서.pdf',
++  /** 버튼 보조 표기. 파일 배치 시 실측값으로 기입(예: 'PDF · 2.4MB') */
++  sizeLabel: 'PDF',
++} as const;
+diff --git a/scripts/verify-kium-f40.mjs b/scripts/verify-kium-f40.mjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..6adb9ede9b529f7c5ccdf9f36556047df9862839
+--- /dev/null
++++ b/scripts/verify-kium-f40.mjs
+@@ -0,0 +1,69 @@
++// 인재키움 공개교육 신청 유도 회귀 단언 (F40 히어로 · F41 GNB 칩 · F42 소개서 · F43 /kium CTA · 261007)
++// 기준: ref/kium/spec/KEESS_kium_공개교육신청유도_F40-F43_기술명세서_v1.0_261007.md §7
++// 브라우저 없이 서버 HTML(SSG)·CSS만 확인한다. 실행: BASE=http://localhost:3001 node scripts/verify-kium-f40.mjs
++const BASE = process.env.BASE || 'http://localhost:3001';
++const results = [];
++const ok = (id, pass, detail = '') => { results.push(pass); console.log(`${pass ? 'PASS' : 'FAIL'} ${id} ${detail}`); };
++const text = (h) => h.replace(/<!-- -->/g, '').replace(/&amp;/g, '&');
++
++try {
++  /* ── F40 홈 히어로 ─────────────────────────────────────────── */
++  const hr = await fetch(`${BASE}/`);
++  const home = text(await hr.text());
++  ok('H1 / 200', hr.status === 200, `status ${hr.status}`);
++  const iLegal = home.indexOf('data-slide="legal"');
++  const iKium = home.indexOf('data-slide="kium-open"');
++  ok('H2 법정 1 · 공개교육 2 (SSG 순서)', iLegal > 0 && iKium > iLegal, `legal@${iLegal} kium@${iKium}`);
++  ok('H3 슬라이드 7장', (home.match(/class="hero-slide/g) || []).length === 7);
++  const kium = home.slice(iKium, home.indexOf('class="hero-slide', iKium + 10));
++  ok('H4 태그 「공개교육」', />공개교육</.test(kium));
++  const badge = kium.match(/다음 개강 <b>(\d{1,2}\.\d{1,2}\(.\))<\/b>/);
++  ok('H5 다음 개강 배지', !!badge, badge ? badge[1] : '없음(회차 0건이면 정상)');
++  ok('H6 메인 카피', kium.includes('필요한 직원만,<br/>필요한 교육으로') || kium.includes('필요한 직원만,<br>필요한 교육으로'));
++  ok('H7 서브 카피(원고 그대로)', kium.replace(/<br[^>]*>/g, '').includes('단 1명도 신청 가능한 공개교육으로 교육 운영의 부담은 낮추고, 필요한 역량은 바로 채워보세요.'));
++  const a1 = kium.match(/<a[^>]*data-ga-id="hero_kium_open"[^>]*>([^<]*)</);
++  ok('H8 1차 [공개교육 신청] → 공개교육 보기', !!a1 && a1[1] === '공개교육 신청' && a1[0].includes('href="/kium?tab=courses&mode=open"'), a1 ? a1[1] : '없음');
++  ok('H9 보조 링크 → /kium', kium.includes('href="/kium"') && kium.includes('인재키움 프리미엄 알아보기'));
++  ok('H10 C안 첫 장 스크립트', home.includes("keess_hero_start") && home.includes('data-hero-start'));
++  ok('H11 정부지원 슬라이드 비노출', !home.includes('훈련비의 90~95%는 환급 받고'));
++
++  /* ── F42 과정 소개서(게시 스위치 off 기준) ─────────────────── */
++  const kr = await fetch(`${BASE}/kium`);
++  const kiumHtml = text(await kr.text());
++  const brochureOn = home.includes('hero_kium_brochure') || kiumHtml.includes('kium_brochure_download');
++  if (brochureOn) {
++    const m = kiumHtml.match(/class="kium-brochure" href="([^"]+)"/);
++    const pr = m ? await fetch(`${BASE}${encodeURI(m[1])}`) : null;
++    ok('B1 소개서 on: PDF 200', !!pr && pr.status === 200, m ? m[1] : '링크 없음');
++  } else {
++    ok('B1 소개서 off: 버튼 0건', !home.includes('과정 소개서 받기') && !kiumHtml.includes('과정 소개서 받기'));
++  }
++
++  /* ── F43 /kium 상단 CTA ───────────────────────────────────── */
++  ok('K1 /kium 200', kr.status === 200, `status ${kr.status}`);
++  const s = kiumHtml.indexOf('class="kium-hero-cta');
++  const cta = kiumHtml.slice(s, kiumHtml.indexOf('</div>', s));
++  const i1 = cta.indexOf('>공개교육 신청하기<');
++  const i2 = cta.indexOf('>문의하기<');
++  ok('K2 순서 [공개교육 신청하기] → [문의하기]', s > 0 && i1 > 0 && i2 > i1);
++  ok('K3 1차 딥링크 · GA', /class="btn btn-ink" href="\/kium\?tab=courses&mode=open" data-ga-id="kium_hero_open"/.test(cta));
++  ok('K4 2차 #inq · GA', /class="kium-btn-ghost" href="#inq" data-ga-id="kium_hero_inquiry"/.test(cta));
++  ok('K5 구 라벨 0건(상단)', !cta.includes('지원대상 확인') && !cta.includes('신청 문의'));
++  ok('K6 FAQ 하단 [신청 문의] 유지(범위 밖)', /faq-cta[^>]*>신청 문의</.test(kiumHtml));
++
++  /* ── F41 GNB 칩 · F40 CSS ─────────────────────────────────── */
++  const hrefs = [...new Set([...home.matchAll(/href="(\/_next\/static\/css\/[^"]+\.css)"/g)].map((m) => m[1]))];
++  let css = '';
++  for (const h of hrefs) css += await (await fetch(`${BASE}${h}`)).text();
++  ok('C1 CSS 수집', css.length > 0, `${hrefs.length}개`);
++  const chip = css.match(/\.nav-chip\{[^}]*\}/)?.[0] || '';
++  ok('C2 칩 높이 36 · 글자 14', /height:36px/.test(chip) && /font-size:14px/.test(chip), chip.slice(0, 80));
++  const shim = css.match(/\.nav-chip \.shimmer\{[^}]*\}/)?.[0] || '';
++  ok('C3 반짝임 2회 후 정지(무한 반복 0)', /animation:chip-shimmer 2\.2s[^;}]*\.4s 2 both/.test(shim) && !/infinite/.test(shim), shim.match(/animation:[^;}]*/)?.[0] || '');
++  ok('C4 C안 하이드레이션 전 규칙', css.includes('html[data-hero-start=kium] .hero:not([data-hero-ready])') || css.includes('html[data-hero-start="kium"] .hero:not([data-hero-ready])'));
++} catch (e) {
++  ok('실행 오류', false, String(e).split('\n')[0]);
++}
++const fail = results.filter((p) => !p).length;
++console.log(`\n${results.length - fail}/${results.length} PASS`);
++process.exit(fail ? 1 : 0);
+diff --git a/styles/kium-open.css b/styles/kium-open.css
+index ac23097db3a09537c60333827b6c7fcdaabd4edc..2ad3e3004badf0930f2dc9839cb1595a38b10abd 100644
+--- a/styles/kium-open.css
++++ b/styles/kium-open.css
+@@ -333,6 +333,15 @@ button.kium-pill-ses:focus-visible{border-color:currentColor;box-shadow:var(--sh
+ 
+ /* ── 보기 전환 세그먼트 ───────────────────────────────────────── */
+ .kium-modeseg-row{margin-top:22px;display:flex}
++/* [F42 · 261007] 과정 소개서 링크: 세그먼트 행 오른쪽(좁은 화면은 아래 줄). 링크가 없으면 행은 종전과 같다 */
++.kium-modeseg-row:has(.kium-brochure){flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px}
++.kium-brochure{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 4px;
++  font-size:14px;font-weight:700;color:var(--p1);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--p1) 35%,transparent);
++  text-underline-offset:5px;transition:text-decoration-color .2s var(--ease)}
++.kium-brochure .ic{flex:none}
++.kium-brochure .meta{display:inline-block;font-size:12px;font-weight:600;color:var(--muted)}
++.kium-brochure:focus-visible{outline:2px solid var(--p1);outline-offset:2px;border-radius:6px}
++@media (hover:hover) and (pointer:fine){.kium-brochure:hover{text-decoration-color:var(--p1)}}
+ .kium-modeseg .kium-viewseg-btn{display:inline-flex;align-items:center;gap:7px}
+ .kium-modeseg .cnt{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+ .kium-modeseg .kium-viewseg-btn[aria-pressed="true"] .cnt{color:var(--p1)}

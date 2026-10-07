@@ -212,11 +212,16 @@ export default function HeroCarousel() {
                       {s.cta.label}
                     </button>
                   )}
-                  {s.secondary && (
+                  {s.secondary && (s.secondary.download ? (
+                    // [F42] 파일 다운로드: 라우팅 대상이 아니므로 Link가 아닌 <a download>
+                    <a className="btn btn-glass" href={s.secondary.href} download={s.secondary.download} data-ga-id={s.secondary.gaId}>
+                      {s.secondary.label}
+                    </a>
+                  ) : (
                     <Link className="btn btn-glass" href={s.secondary.href} data-ga-id={s.secondary.gaId}>
                       {s.secondary.label}
                     </Link>
-                  )}
+                  ))}
                 </div>
                 {s.link && <Link className="hs-link" href={s.link.href} data-ga-id={s.link.gaId}>{s.link.label} <LgIcon name="arrow-right" size={16} /></Link>}
                 {s.trust && <p className="hs-trust">{s.trust}</p>}
