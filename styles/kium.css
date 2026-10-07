@@ -392,13 +392,11 @@
 .kium-lab.cat{background:color-mix(in srgb,var(--p1) 8%,#fff);color:var(--p1)}
 /* [수정 4] 카테고리 컬러 dot — 해당 카테고리 --mesh-a. 색은 보조 신호이고 라벨 텍스트가 정보를 든다 */
 .kium-lab .kium-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--dot,var(--p1))}
-/* [카테고리 재지정 · 260824] 7종. 신규 색 없음 — 소멸한 executive/common의 색을
+/* [F35 · 261007] 5종(roleup·business 소멸, 규칙 삭제). [카테고리 재지정 · 260824] 7종. 신규 색 없음 — 소멸한 executive/common의 색을
    business/comm에 재배정하고, 남는 cs 1종만 기존 전역 토큰 var(--p4)로 채운다. */
 .kium-lab.cat[data-cat="onboarding"]{--dot:#2563EB}
-.kium-lab.cat[data-cat="roleup"]{--dot:#7C3AED}
 .kium-lab.cat[data-cat="leadership"]{--dot:#3730A3}
 .kium-lab.cat[data-cat="ai"]{--dot:#0891B2}
-.kium-lab.cat[data-cat="business"]{--dot:#172554}
 .kium-lab.cat[data-cat="comm"]{--dot:#52525B}
 .kium-lab.cat[data-cat="cs"]{--dot:var(--p2)}
 /* [수정 12]로 제거됐던 본문 과정명 — 이미지 모드에서만 복원된다(썸네일이 과정명을 못 들기 때문).
@@ -443,10 +441,8 @@
 /* [카테고리 재지정 · 260824] business ← 구 executive 색, comm ← 구 common 색 재배정.
    cs만 기존 전역 토큰 var(--p2)(#E91E63)와 그 파생 틴트 — 신규 hex 생성 0. */
 .kium-thumb[data-cat="onboarding"]{--mesh-a:#2563EB;--mesh-b:#60A5FA}
-.kium-thumb[data-cat="roleup"]{--mesh-a:#7C3AED;--mesh-b:#C4B5FD}
 .kium-thumb[data-cat="leadership"]{--mesh-a:#3730A3;--mesh-b:#818CF8}
 .kium-thumb[data-cat="ai"]{--mesh-a:#0891B2;--mesh-b:#67E8F9}
-.kium-thumb[data-cat="business"]{--mesh-a:#172554;--mesh-b:#D4A72C}
 .kium-thumb[data-cat="comm"]{--mesh-a:#52525B;--mesh-b:#D4D4D8}
 .kium-thumb[data-cat="cs"]{--mesh-a:var(--p2);--mesh-b:color-mix(in srgb,var(--p2) 45%,#fff)}
 /* 텍스트 스크림 — 하단 40% 1겹.

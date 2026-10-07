@@ -127,7 +127,7 @@ export default function KiumCoursesTab() {
   const seasonOff = future.length === 0;
 
   /* ── 카탈로그 ─────────────────────────────────────────────────────────
-     전체 보기 = 19과정 전건. 공개교육 보기 = 필터 결과에 회차가 남은 개설 과정만
+     전체 보기 = 전체 과정 전건. 공개교육 보기 = 필터 결과에 회차가 남은 개설 과정만
      (회차가 하나도 없는 카드를 공개교육 보기에 세우면 "일정 보기"라는 라벨이 거짓말이 된다) */
   const allCourses = useMemo(() => getAllCourses(), []);
   const allCats = useMemo(() => getCategoryCounts(), []);
@@ -142,7 +142,7 @@ export default function KiumCoursesTab() {
   const courses = isOpenMode ? openCourses : allCourses;
   const categories = isOpenMode ? openCats : allCats;
   /**
-   * 분야 칩의 [전체] 카운트는 **보기 기준 카탈로그 규모**다(전체 19 / 공개교육 9).
+   * 분야 칩의 [전체] 카운트는 **보기 기준 카탈로그 규모**다(전체 과정 수 / 공개교육 과정 수).
    * 필터를 걸 때마다 이 숫자가 같이 줄면 분류별 카운트(고정)와 축이 어긋나 읽을 수 없게 된다.
    * 필터 연동으로 움직여야 하는 숫자는 모드 헤더의 회차 수 하나뿐이다.
    */
@@ -515,7 +515,7 @@ export default function KiumCoursesTab() {
 
       {/* 카드의 '정부지원 환급' 배지를 뺀 자리에 **대체 문구를 두지 않는다**(명세 v1.1 §3-4).
           히어로가 탭 위에서 이미 "훈련비의 90~95%는 환급 받고"를 말하고, 사업소개 탭 전체가
-          환급 설명이다. 카탈로그는 과정을 '고르는' 자리라 19개 전건에 공통인 사실은
+          환급 설명이다. 카탈로그는 과정을 '고르는' 자리라 전체 과정에 공통인 사실은
           고르는 데 기여하지 않는다. 공개교육 보기의 .kium-modehead-s는 회차 단위라 맥락이 달라 유지. */}
 
       {/* ── 전체 보기 인트로 1줄 — 공개교육으로 넘어가는 텍스트 입구.

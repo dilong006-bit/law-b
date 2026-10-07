@@ -49,7 +49,9 @@ export function getCategoryCounts(): { key: KiumCategory; label: string; count: 
       key,
       label: KIUM_CATEGORY_META[key].label,
       count: KIUM_COURSES.filter((c) => c.category === key).length,
-    }));
+    }))
+    // [F35 · 261007] 0건 분야는 칩 자체를 만들지 않는다(openCategoryCounts와 규칙 통일).
+    .filter((c) => c.count > 0);
 }
 
 /**

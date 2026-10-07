@@ -86,6 +86,12 @@ export const KIUM_STATUS_ORDER: KiumSessionStatus[] = ['recruiting', 'confirmed'
  *
  *   ※ 오픈 전 실제 모집 상태를 회신 받아 이 필드만 전건 교체할 것. 일자는 건드리지 않는다.
  */
+/*
+ * [과정 축소 · F34 · 261007] 삭제 과정의 회차 5건 제거 → 20 → 15회차.
+ *   onpow-r1·r2(kium-03) · nego-r1(kium-12) · speech-r1(kium-13) · report-r1(kium-14)
+ *   잔여 15건의 일자·displayMonth·status는 무변경. 월별 10월 5 / 11월 6 / 12월 4.
+ *   위 주석의 '20건'·'9과정' 수치는 작성 시점 값이다(현행 값은 전부 이 배열에서 파생).
+ */
 export const KIUM_SESSIONS: KiumSession[] = [
   // AI활용 — 업무효율화: Agent (kium-09)
   { id: 'agent-r1',  courseId: 'kium-09', displayMonth: 10, start: '2026-10-12', end: '2026-10-13', status: 'closing' },
@@ -99,12 +105,6 @@ export const KIUM_SESSIONS: KiumSession[] = [
   { id: 'aijob-r1',  courseId: 'kium-11', displayMonth: 10, start: '2026-10-19', end: '2026-10-20', status: 'recruiting' },
   { id: 'aijob-r2',  courseId: 'kium-11', displayMonth: 11, start: '2026-11-16', end: '2026-11-17', status: 'closing' },
   { id: 'aijob-r3',  courseId: 'kium-11', displayMonth: 12, start: '2026-12-14', end: '2026-12-15', status: 'confirmed' },
-  // 비즈니스 역량 — 전략적 비즈니스 협상 스킬 (kium-12)
-  { id: 'nego-r1',   courseId: 'kium-12', displayMonth: 10, start: '2026-10-27', end: '2026-10-27', status: 'recruiting' },
-  // 비즈니스 역량 — 스피치&프레젠테이션 클리닉 (kium-13)
-  { id: 'speech-r1', courseId: 'kium-13', displayMonth: 11, start: '2026-11-12', end: '2026-11-13', status: 'closing' },
-  // 비즈니스 역량 — 인정받는 직장인의 구두보고 스킬 (kium-14)
-  { id: 'report-r1', courseId: 'kium-14', displayMonth: 12, start: '2026-12-11', end: '2026-12-11', status: 'confirmed' },
   // CS·민원응대 — CS 종합 솔루션 (kium-19)
   { id: 'cs-r1',     courseId: 'kium-19', displayMonth: 10, start: '2026-10-26', end: '2026-10-26', status: 'closing' },
   { id: 'cs-r2',     courseId: 'kium-19', displayMonth: 11, start: '2026-11-20', end: '2026-11-20', status: 'confirmed' },
@@ -119,9 +119,6 @@ export const KIUM_SESSIONS: KiumSession[] = [
   //   설계는 그대로 유효하다: 요일을 저장하지 않으므로 확정 날짜만 넣으면
   //   화면에 `12.16(수) ~ 17(목)`으로 정확히 출력된다.
   { id: 'relead-r3', courseId: 'kium-04', displayMonth: 12, start: '2026-12-16', end: '2026-12-17', status: 'recruiting' },
-  // 신입·온보딩 — On-Powering 리텐션 (kium-03)
-  { id: 'onpow-r1',  courseId: 'kium-03', displayMonth: 12, start: '2026-12-09', end: '2026-12-10', status: 'recruiting' },
-  { id: 'onpow-r2',  courseId: 'kium-03', displayMonth: 12, start: '2026-12-28', end: '2026-12-29', status: 'recruiting' },
 ];
 
 /** 공개교육 개설 과정 id — KIUM_SESSIONS에서 파생(수기 목록 금지) */
@@ -133,7 +130,7 @@ export function isOpenCourse(courseId: string): boolean {
   return KIUM_OPEN_COURSE_IDS.includes(courseId);
 }
 
-/** 공개교육 9과정 — KIUM_COURSES 기존 정렬(카테고리 order → 연번) 유지 */
+/** 공개교육 개설 과정 — KIUM_COURSES 기존 정렬(카테고리 order → 연번) 유지 */
 export function getOpenCourses(): KiumCourse[] {
   return KIUM_COURSES.filter((c) => isOpenCourse(c.id));
 }
@@ -158,7 +155,7 @@ export function countByMonth(month: 10 | 11 | 12): number {
 /** 총 회차 수 — 히어로 지표. 수기 숫자 금지 */
 export const KIUM_SESSION_TOTAL = KIUM_SESSIONS.length;
 
-/** 공개교육 9과정 기준 카테고리 카운트 (0건 카테고리는 칩 자체를 만들지 않는다) */
+/** 공개교육 개설 과정 기준 카테고리 카운트 (0건 카테고리는 칩 자체를 만들지 않는다) */
 export function openCategoryCounts(): { key: KiumCategory; label: string; count: number }[] {
   const open = getOpenCourses();
   return (Object.keys(KIUM_CATEGORY_META) as KiumCategory[])

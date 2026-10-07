@@ -18,9 +18,9 @@ import { fmtPrice, KIUM_PRICE_NOTE } from '@/lib/kium/pricing';
  *
  * 데이터는 data.ts 기존 필드만 사용한다. 개요서에 있던 '특장점 섹션 헤드라인'에 해당하는
  * 필드는 data.ts에 존재하지 않으므로 표기를 생략했다(완료 보고 명시).
- * 교육 단가는 원칙적으로 데이터에도 화면에도 없다. 단 공개교육 9과정은 예외로,
+ * 교육 단가는 원칙적으로 데이터에도 화면에도 없다. 단 공개교육 개설 과정은 예외로,
  * 1인 단가(lib/kium/pricing.ts N열)와 개강 일정을 메타 pill 2종으로 노출한다
- * (공개교육 탭 명세 §1-1 · §5-11). 위탁 10과정은 종전대로 두 pill 자체를 렌더하지 않는다.
+ * (공개교육 탭 명세 §1-1 · §5-11). 위탁 과정은 종전대로 두 pill 자체를 렌더하지 않는다.
  *
  * [고도화 §4-2] `variant="open"`은 공개교육 탭 전용 배치다. 회차 카드 스트립을
  *   헤더 바로 아래(정보 순서 ①)로 올려 "언제 열리는지"를 첫 화면에 둔다.
@@ -110,7 +110,7 @@ export default function KiumCoursePanel({
           <b>정원</b>
           <span className="num">{course.capacity}명</span>
         </span>
-        {/* 공개교육 9과정 한정 — 위탁 10과정은 미렌더('-' 표기 금지).
+        {/* 공개교육 개설 과정 한정 — 위탁 과정은 미렌더('-' 표기 금지).
             open 변형은 스트립이 일정을 이미 보여주므로 '교육 일정' pill을 중복 렌더하지 않는다. */}
         {isOpenCourse(course.id) && !isOpenVar && (
           <>
@@ -207,7 +207,7 @@ export default function KiumCoursePanel({
             사용자의 인지 순서 `이 과정 괜찮겠다 → 그럼 언제 하지? → 신청`에 맞춰
             읽기를 마친 지점, 곧 결정 지점에 둔다.
           open 변형은 이미 헤더 아래(①)에 같은 블록이 있으므로 여기서는 렌더하지 않는다.
-          위탁 10과정은 isOpenCourse()가 false라 블록 자체가 생성되지 않는다('-' 표기 금지). */}
+          위탁 과정은 isOpenCourse()가 false라 블록 자체가 생성되지 않는다('-' 표기 금지). */}
       {!isOpenVar && isOpenCourse(course.id) && (
         <SessionStrip
           course={course}
@@ -222,7 +222,7 @@ export default function KiumCoursePanel({
       )}
 
       {/* ⑦ CTA — 분기 기준은 '보기'가 아니라 '그 과정의 신청 방식'이다(F19).
-          공개교육 9과정은 어느 보기에서 열어도 경로 B로 간다
+          공개교육 개설 과정은 어느 보기에서 열어도 경로 B로 간다
           ("회차 중 맞는 게 없으면 일정 협의"). 블록의 회차 CTA(경로 A)와 중복이 아니다 —
           의도가 갈린다: 회차 CTA는 "이 날짜로 하겠다", 하단 CTA는 "관심 있는데 일정을 협의".
           onConsultCourse가 없는 호출부에서는 기존 경로 ①로 폴백해 동작을 잃지 않는다. */}

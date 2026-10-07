@@ -149,7 +149,7 @@ export default function SessionListView({
                       </span>
                       <span>
                         <IconWallet size={16} />
-                        {/* [BT-25] '1인 기준'은 공개교육 9과정 전건 동일한 값이다.
+                        {/* [BT-25] '1인 기준'은 공개교육 과정 전건 동일한 값이다.
                             행마다 반복하면 20회가 되는데, 지워도 어떤 행의 의미도 달라지지 않는다.
                             전건 같은 값은 항목이 아니라 영역에 속한다 → 컨테이너 헤더에서 한 번만. */}
                         <b className="num">{fmtPrice(c.id)}</b>
