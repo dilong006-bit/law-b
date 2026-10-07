@@ -1,5 +1,5 @@
 // /kium 인재키움 과정 축소 19 → 11 회귀 단언 (F34·F35 · 261007)
-// 기준: ref/kium/spec/KEESS_kium_과정축소19to11_기술명세서_v1.0_261007.md §6
+// 기준: ref/kium/spec/KEESS_kium_과정축소19to11_기술명세서_최종_v2.0_261007.md §4
 // 실행: BASE=http://localhost:3001 node scripts/verify-kium-f34.mjs
 import { chromium } from 'playwright';
 
