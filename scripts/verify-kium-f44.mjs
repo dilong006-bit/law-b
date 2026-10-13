@@ -1,5 +1,5 @@
-// 인재키움 과정개요서 다운로드 게시 회귀 단언 (F44 · 261013)
-// 기준: ref/kium/spec/KEESS_kium_과정개요서다운로드_F44_기술명세서_최종_v1.0_261013.md §6
+// 인재키움 과정 소개서 다운로드 회귀 단언 (F44 게시 · F45 라벨·메타 고도화 · 261013) · 22단언
+// 기준: F44 기술명세서 §6 + ref/kium/spec/KEESS_kium_과정소개서라벨_F45_전략및기술명세서_v1.0_261013.md §5
 // 브라우저 없이 서버 HTML(SSG)·정적 파일만 확인한다.
 // 실행: BASE=http://localhost:3001 EXPECT_BYTES=<실측 바이트> node scripts/verify-kium-f44.mjs
 const BASE = process.env.BASE || 'http://localhost:3001';
@@ -27,9 +27,9 @@ try {
 
   const s = kium.indexOf('class="kium-brochure"');
   const body = kium.slice(s, kium.indexOf('</a>', s));
-  ok('D7 라벨 「과정개요서 받기」', body.includes('과정개요서 받기'));
+  ok('D7 라벨 「과정 소개서 받기」 (수치 접두 없음)', body.includes('과정 소개서 받기') && !/\d+개 과정 소개서/.test(body));
   const meta = body.match(/class="meta">([^<]*)</);
-  ok('D8 메타 「PDF · NNNKB」 형식', !!meta && /^PDF · (\d{1,4}KB|\d+\.\dMB)$/.test(meta[1]), meta ? meta[1] : '없음');
+  ok('D8 메타 「(PDF NNNKB)」 형식', !!meta && /^\(PDF (\d{1,4}KB|\d+\.\dMB)\)$/.test(meta[1]), meta ? meta[1] : '없음');
 
   const segRow = kium.lastIndexOf('class="kium-modeseg-row"', s);
   const segEnd = kium.indexOf('class="kium-viewseg kium-modeseg"', segRow);
@@ -52,8 +52,16 @@ try {
   ok('H2 홈 히어로 개요서 버튼 0건 (showInHero=false)', !home.includes('hero_kium_brochure') && !home.includes('과정개요서 받기'));
   ok('H3 홈 공개교육 슬라이드 1차·보조 링크 유지', home.includes('data-ga-id="hero_kium_open"') && home.includes('data-ga-id="hero_kium_more"'));
 
-  ok('R1 구 라벨 0건', !kium.includes('과정 소개서 받기'));
+  ok('R1 구 라벨 0건 (F44 「과정개요서 받기」)', !kium.includes('과정개요서 받기'));
   ok('R2 구 파일명 0건', !kium.includes('공개교육_과정소개서'));
+
+  /* ── F45 메타 시각 위계 (CSS) ── */
+  const hrefs = [...new Set([...kium.matchAll(/href="(\/_next\/static\/css\/[^"]+\.css)"/g)].map((m) => m[1]))];
+  let css = '';
+  for (const h of hrefs) css += await (await fetch(`${BASE}${h}`)).text();
+  const metaRule = css.match(/\.kium-brochure \.meta\{[^}]*\}/)?.[0] || '';
+  ok('C1 메타 12px · 400 (가늘게)', /font-size:12px/.test(metaRule) && /font-weight:400/.test(metaRule), metaRule.slice(0, 120));
+  ok('C2 메타 색 #6b7079 (AA 4.77:1)', /color:#6b7079/i.test(metaRule));
 } catch (e) {
   ok('실행 오류', false, String(e).split('\n')[0]);
 }

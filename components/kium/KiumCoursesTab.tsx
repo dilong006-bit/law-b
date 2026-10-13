@@ -370,7 +370,7 @@ export default function KiumCoursesTab() {
             공개교육 <span className="cnt">{openCourseTotal}</span>
           </button>
         </div>
-        {/* [F42 · F44] 과정개요서: KIUM_BROCHURE.ready on일 때만 DOM 생성. 두 보기 공통 · 세그먼트 행 오른쪽(좁은 화면은 아래 줄) */}
+        {/* [F42 · F44 · F45] 과정 소개서: KIUM_BROCHURE.ready on일 때만 DOM 생성. 두 보기 공통 · 세그먼트 행 오른쪽(좁은 화면은 아래 줄) · 메타는 괄호 단일 텍스트 노드 */}
         {KIUM_BROCHURE.ready && (
           <a
             className="kium-brochure"
@@ -383,7 +383,7 @@ export default function KiumCoursesTab() {
               <path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" />
             </svg>
             {KIUM_BROCHURE.label}
-            <span className="meta">{KIUM_BROCHURE.sizeLabel}</span>
+            <span className="meta">{`(${KIUM_BROCHURE.sizeLabel})`}</span>
           </a>
         )}
       </div>

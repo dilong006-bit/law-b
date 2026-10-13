@@ -1,5 +1,6 @@
 /**
- * [F42 · 261007 → F44 · 261013] 인재키움 프리미엄 과정개요서 다운로드 (업무 27338 · 10/8 댓글).
+ * [F42 · F44 · F45] 인재키움 프리미엄 과정 소개서 다운로드 (업무 27338 · 10/8 댓글).
+ *   화면 라벨은 고객 용어 `과정 소개서`, 다운로드 파일명은 공단 문서명 `과정개요서` 유지
  *
  * ★ 게시 스위치
  *   ready      = 전체 스위치. false면 모든 위치에서 DOM 0
@@ -19,9 +20,9 @@ const VERSION = '261008';
 export const KIUM_BROCHURE = {
   ready: true,
   showInHero: false,
-  label: '과정개요서 받기',
+  label: '과정 소개서 받기',
   fileName: 'KG에듀원_2026_인재키움프리미엄_과정개요서.pdf',
   href: `/downloads/${SERVER_FILE}?v=${VERSION}`,
-  /** 실측: Math.round(bytes / 1024) → 'PDF · NNNKB' (1MB 이상은 'PDF · N.NMB') */
-  sizeLabel: 'PDF · 552KB',
+  /** 실측: Math.round(bytes / 1024) → 'PDF NNNKB' (1MB 이상은 'PDF N.NMB') */
+  sizeLabel: 'PDF 552KB',
 } as const;
