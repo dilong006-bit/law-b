@@ -370,12 +370,13 @@ export default function KiumCoursesTab() {
             공개교육 <span className="cnt">{openCourseTotal}</span>
           </button>
         </div>
-        {/* [F42] 과정 소개서: 게시 스위치(KIUM_BROCHURE.ready) on일 때만 DOM 생성. 두 보기 공통 */}
+        {/* [F42 · F44] 과정개요서: KIUM_BROCHURE.ready on일 때만 DOM 생성. 두 보기 공통 · 세그먼트 행 오른쪽(좁은 화면은 아래 줄) */}
         {KIUM_BROCHURE.ready && (
           <a
             className="kium-brochure"
             href={KIUM_BROCHURE.href}
             download={KIUM_BROCHURE.fileName}
+            type="application/pdf"
             data-ga-id="kium_brochure_download"
           >
             <svg className="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

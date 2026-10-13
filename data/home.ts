@@ -57,8 +57,8 @@ const KIUM_OPEN_SLIDE: HeroSlide = {
   title: '필요한 직원만,<br>필요한 교육으로',
   sub: '단 1명도 신청 가능한 공개교육으로 교육 운영의 부담은 낮추고, <br class="br-pc">필요한 역량은 바로 채워보세요.',
   cta: { label: '공개교육 신청', href: KIUM_OPEN_HREF, gaId: 'hero_kium_open' },
-  // [F42] 과정 소개서: KIUM_BROCHURE.ready=true일 때만 2차 버튼 생성(false면 필드 자체가 없다)
-  ...(KIUM_BROCHURE.ready
+  // [F42 · F44] 과정개요서: ready && showInHero 일 때만 2차 버튼 생성(F44 showInHero=false → 필드 자체가 없다)
+  ...(KIUM_BROCHURE.ready && KIUM_BROCHURE.showInHero
     ? { secondary: { label: KIUM_BROCHURE.label, href: KIUM_BROCHURE.href, gaId: 'hero_kium_brochure', download: KIUM_BROCHURE.fileName } }
     : {}),
   link: { label: '인재키움 프리미엄 알아보기', href: '/kium', gaId: 'hero_kium_more' },

@@ -141,11 +141,17 @@ playwright.config.ts  # 회귀 테스트 설정(chromium 고정 · dev 포트 30
 
 ## 작업 이력 (Changelog)
 
+### ★ 인재키움 과정개요서 다운로드 게시 (F44 · 261013)
+- **범위**: F42 스위치 on. 서버 파일 `public/downloads/kgeduone_kium_premium_course_overview_2026.pdf`(고정) · 다운로드 표시명 `KG에듀원_2026_인재키움프리미엄_과정개요서.pdf`(`<a download>`) · 캐시 `?v=261008`(교체 시 수령일로 갱신) · 라벨 `과정개요서 받기` · 메타 `PDF · 552KB`
+- **게시본**: 사업부 개정본(261001) 11과정 · 13쪽 · 단가 포함 원형(10/13 확정). 10/8 댓글 첨부본은 19개판이라 미사용
+- **위치**: 과정안내 세그먼트 행 오른쪽만(두 보기 공통). 홈 히어로 2차 버튼은 `showInHero=false`로 미노출
+- **회귀**: `scripts/verify-kium-f44.mjs` 20단언. 기준: `ref/kium/spec/KEESS_kium_과정개요서다운로드_F44_기술명세서_최종_v1.0_261013.md`
+
 ### ★ 홈 히어로 첫 장 C안 확정 반영 (F40 후속 · 261007)
 - **확정**: 접속마다 법정 ↔ 공개교육 첫 장 교차(C안). 10/7 HRD사업팀 유현경 차장 · HRD솔루션팀 지예정 대리 동의. 동작 무변경(`HERO_START='alternate'` 유지)
 - **정정**: 주석 · README의 지예정 대리 소속 표기 HRD사업팀 → HRD솔루션팀
 
-### ★ 인재키움 과정 소개서 다운로드 (F42 · 261007 · 게시 스위치 off)
+### ★ 인재키움 과정 소개서 다운로드 (F42 · 261007 · 게시 스위치 off → F44에서 on)
 - **범위**: `lib/kium/brochure.ts` `ready=false` → 버튼 DOM 미생성. 개정본 수령 시 ①`public/downloads/` 파일 배치 ②`sizeLabel` 실측 ③`ready=true` 3가지만 변경. 노출 위치: 홈 공개교육 슬라이드 2차 버튼 + 과정안내 세그먼트 행 오른쪽(폼 없는 직접 다운로드)
 - **회귀**: `scripts/verify-kium-f40.mjs` 22단언(F40~F43 통합) 신설
 
